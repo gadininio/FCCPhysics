@@ -4,8 +4,8 @@ flavor = "ee" # mumu, ee
 
 # list of processes (mandatory)
 processList_mumu = {
-    'p8_ee_WW_ecm240':{'fraction': 0.01}, 
-    'p8_ee_ZZ_ecm240':{'fraction': 0.01},
+    # 'p8_ee_WW_ecm240':{'fraction': 0.01}, 
+    # 'p8_ee_ZZ_ecm240':{'fraction': 0.01},
     'wzp6_ee_mumuH_HWW_ecm240':{'fraction': 1},
 }
 

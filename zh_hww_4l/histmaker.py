@@ -1,17 +1,17 @@
 
-flavor = "ee" # mumu, ee
-# flavor = "mumu" # mumu, ee
+# flavor = "ee"
+flavor = "mumu"
 
 # list of processes (mandatory)
 processList_mumu = {
-    'p8_ee_ZZ_ecm240':{'fraction': 1},
-    'p8_ee_WW_ecm240':{'fraction': 1}, 
+    # 'p8_ee_ZZ_ecm240':{'fraction': 0.01},
+    # 'p8_ee_WW_ecm240':{'fraction': 0.01}, 
     'wzp6_ee_mumuH_HWW_ecm240':{'fraction': 1},
 }
 
 processList_ee = {
-    'p8_ee_ZZ_ecm240':{'fraction': 1},
-    'p8_ee_WW_ecm240':{'fraction': 1}, 
+    # 'p8_ee_ZZ_ecm240':{'fraction': 0.01},
+    # 'p8_ee_WW_ecm240':{'fraction': 0.01}, 
     'wzp6_ee_eeH_HWW_ecm240':{'fraction': 1},
 }
 
@@ -57,6 +57,7 @@ bins_cosThetaMiss = (10000, 0, 1)
 bins_theta = (500, -5, 5)
 bins_eta = (600, -3, 3)
 bins_phi = (500, -5, 5)
+bins_dR = (1000, -10, 10)
 
 bins_count = (50, 0, 50)
 bins_charge = (10, -5, 5)
@@ -98,9 +99,9 @@ def build_graph(df, dataset):
     df = df.Define("muons_q", "FCCAnalyses::ReconstructedParticle::get_charge(muons)")
     df = df.Define("muons_no", "FCCAnalyses::ReconstructedParticle::get_n(muons)")
 
-    # compute the muon isolation and store muons with an isolation cut of 0.25 in a separate column muons_sel_iso
-    df = df.Define("muons_iso", "FCCAnalyses::ZHfunctions::coneIsolation(0.01, 0.5)(muons, ReconstructedParticles)")
-    df = df.Define("muons_sel_iso", "FCCAnalyses::ZHfunctions::sel_iso(0.25)(muons, muons_iso)")
+    # # compute the muon isolation and store muons with an isolation cut of 0.25 in a separate column muons_sel_iso
+    # df = df.Define("muons_iso", "FCCAnalyses::ZHfunctions::coneIsolation(0.01, 0.5)(muons, ReconstructedParticles)")
+    # df = df.Define("muons_sel_iso", "FCCAnalyses::ZHfunctions::sel_iso(0.25)(muons, muons_iso)")
 
 
     # define electrons
@@ -115,9 +116,9 @@ def build_graph(df, dataset):
     df = df.Define("electrons_q", "FCCAnalyses::ReconstructedParticle::get_charge(electrons)")
     df = df.Define("electrons_no", "FCCAnalyses::ReconstructedParticle::get_n(electrons)")
 
-    # compute the muon isolation and store muons with an isolation cut of 0.25 in a separate column muons_sel_iso
-    df = df.Define("electrons_iso", "FCCAnalyses::ZHfunctions::coneIsolation(0.01, 0.5)(electrons, ReconstructedParticles)")
-    df = df.Define("electrons_sel_iso", "FCCAnalyses::ZHfunctions::sel_iso(0.25)(electrons, electrons_iso)")
+    # # compute the muon isolation and store muons with an isolation cut of 0.25 in a separate column muons_sel_iso
+    # df = df.Define("electrons_iso", "FCCAnalyses::ZHfunctions::coneIsolation(0.01, 0.5)(electrons, ReconstructedParticles)")
+    # df = df.Define("electrons_sel_iso", "FCCAnalyses::ZHfunctions::sel_iso(0.25)(electrons, electrons_iso)")
 
 
     # baseline histograms, before any selection cuts (store with _cut0)
@@ -127,7 +128,7 @@ def build_graph(df, dataset):
     results.append(df.Histo1D(("muons_phi_cut0", "", *bins_phi), "muons_phi"))
     results.append(df.Histo1D(("muons_q_cut0", "", *bins_charge), "muons_q"))
     results.append(df.Histo1D(("muons_no_cut0", "", *bins_count), "muons_no"))
-    results.append(df.Histo1D(("muons_iso_cut0", "", *bins_iso), "muons_iso"))
+    # results.append(df.Histo1D(("muons_iso_cut0", "", *bins_iso), "muons_iso"))
 
     results.append(df.Histo1D(("electrons_all_p_cut0", "", *bins_p_mu), "electrons_all_p"))
     results.append(df.Histo1D(("electrons_p_cut0", "", *bins_p_mu), "electrons_p"))
@@ -135,7 +136,7 @@ def build_graph(df, dataset):
     results.append(df.Histo1D(("electrons_phi_cut0", "", *bins_phi), "electrons_phi"))
     results.append(df.Histo1D(("electrons_q_cut0", "", *bins_charge), "electrons_q"))
     results.append(df.Histo1D(("electrons_no_cut0", "", *bins_count), "electrons_no"))
-    results.append(df.Histo1D(("electrons_iso_cut0", "", *bins_iso), "electrons_iso"))
+    # results.append(df.Histo1D(("electrons_iso_cut0", "", *bins_iso), "electrons_iso"))
 
 
     #########
@@ -148,7 +149,8 @@ def build_graph(df, dataset):
     #########
     ### CUT 1: at least 1 muon with at least one isolated one
     #########
-    df = df.Filter(f"{leps}_no >= 1 && {leps}_sel_iso.size() > 0")
+    # df = df.Filter(f"{leps}_no >= 1 && {leps}_sel_iso.size() > 0")
+    df = df.Filter(f"{leps}_no == 4")
     df = df.Define("cut1", "1")
     results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut1"))
 
@@ -156,10 +158,39 @@ def build_graph(df, dataset):
     #########
     ### CUT 2: at least 2 opposite-sign (OS) leptons
     #########
-    df = df.Filter(f"{leps}_no >= 2 && abs(Sum({leps}_q)) < {leps}_q.size()")
+    # df = df.Filter(f"{leps}_no >= 2 && abs(Sum({leps}_q)) < {leps}_q.size()")
+    df = df.Filter(f"abs(Sum({leps}_q)) <= {leps}_q.size() - 4")
     df = df.Define("cut2", "2")
     results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut2"))
 
+    df = df.Define("muon0_p", "muons_p[0]")
+    df = df.Define("muon1_p", "muons_p[1]")
+    df = df.Define("muon2_p", "muons_p[2]")
+    df = df.Define("muon3_p", "muons_p[3]")
+    results.append(df.Histo1D(("muon0_p_cut2", "", *bins_p_mu), "muon0_p"))
+    results.append(df.Histo1D(("muon1_p_cut2", "", *bins_p_mu), "muon1_p"))
+    results.append(df.Histo1D(("muon2_p_cut2", "", *bins_p_mu), "muon2_p"))
+    results.append(df.Histo1D(("muon3_p_cut2", "", *bins_p_mu), "muon3_p"))
+
+
+    #########
+    ### CUT 3: leading muon pT [25, 80] GeV, subleading muon pT [15, 80] GeV, third muon pT [10,80] GeV, fourth muon pT [10,75] GeV
+    #########
+    df = df.Filter("muon0_p > 25 && muon0_p < 80")
+    df = df.Filter("muon1_p > 15 && muon1_p < 80")
+    df = df.Filter("muon2_p > 10 && muon2_p < 80")
+    df = df.Filter("muon3_p > 10 && muon3_p < 75")
+    df = df.Define("cut3", "3")
+    results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut3"))
+    results.append(df.Histo1D(("muon0_p_cut3", "", *bins_p_mu), "muon0_p"))
+    results.append(df.Histo1D(("muon1_p_cut3", "", *bins_p_mu), "muon1_p"))
+    results.append(df.Histo1D(("muon2_p_cut3", "", *bins_p_mu), "muon2_p"))
+    results.append(df.Histo1D(("muon3_p_cut3", "", *bins_p_mu), "muon3_p"))
+
+
+    #########
+    ### Reconstruct the Z->mumu candidate
+    #########
     # now we build the Z resonance based on the available leptons.
     # the function resonanceBuilder_mass_recoil returns the best lepton pair compatible with the Z mass (91.2 GeV) and recoil at 125 GeV
     # the argument 0.4 gives a weight to the Z mass and the recoil mass in the chi2 minimization
@@ -173,43 +204,77 @@ def build_graph(df, dataset):
     df = df.Define("zll_recoil_m", "FCCAnalyses::ReconstructedParticle::get_mass(zll_recoil)[0]") # recoil mass
     df = df.Define("zll_leps_p", "FCCAnalyses::ReconstructedParticle::get_p(zll_leps)") # get the momentum of the 2 leptons from the Z resonance
 
-df = df.Define("leps_WW", "FCCAnasyss::RecoPartice::remove(zll_leps, muons)")
-df = df.Define("leps_WW", "FCCAnasyss::RecoPartice::remove(zll_leps, electrons)")
-'''
-1. calculate signal eff
-2. compute S/sqrt(B) = (S1+S2)/sqrt(B1+B2)
-3. Compare with different selections
+    df = df.Define("zll_leps_p0", "zll_leps_p[0]") # the leptons 
+    df = df.Define("zll_leps_p1", "zll_leps_p[1]") # the leptons 
+    results.append(df.Histo1D(("zll_leps_p0", "", *bins_p_mu), "zll_leps_p0"))
+    results.append(df.Histo1D(("zll_leps_p1", "", *bins_p_mu), "zll_leps_p1"))
 
-'''
+
+    #### Additional studies with the two leptons not coming from the Z (to characterize the WW system)
+    df = df.Define("leps_WW", "FCCAnalyses::ReconstructedParticle::remove(muons, zll_leps)")
+    df = df.Define("leps_WW_p", "FCCAnalyses::ReconstructedParticle::get_p(leps_WW)")
+    df = df.Define("leps_WW_theta", "FCCAnalyses::ReconstructedParticle::get_theta(leps_WW)")
+    df = df.Define("leps_WW_phi", "FCCAnalyses::ReconstructedParticle::get_phi(leps_WW)")
+    df = df.Define("leps_WW_q", "FCCAnalyses::ReconstructedParticle::get_charge(leps_WW)")
+    df = df.Define("leps_WW_no", "FCCAnalyses::ReconstructedParticle::get_n(leps_WW)")
+    
+    df = df.Define("leps_WW_tlv0", "FCCAnalyses::ReconstructedParticle::get_tlv(leps_WW, 0)")
+    df = df.Define("leps_WW_tlv1", "FCCAnalyses::ReconstructedParticle::get_tlv(leps_WW, 1)")
+    df = df.Define("leps_WW_dR", "leps_WW_tlv0.DeltaR(leps_WW_tlv1)")
+
+    
+    df = df.Define("leps_WW_p0", "leps_WW_p[0]")
+    df = df.Define("leps_WW_p1", "leps_WW_p[1]")
+    results.append(df.Histo1D(("leps_WW_p0", "", *bins_p_mu), "leps_WW_p0"))
+    results.append(df.Histo1D(("leps_WW_p1", "", *bins_p_mu), "leps_WW_p1"))
+    results.append(df.Histo1D(("leps_WW_dR", "", *bins_dR), "leps_WW_dR"))
+    
+    # df = df.Define("leps_WW", "FCCAnasyss::RecoPartice::remove(zll_leps, electrons)")
+    '''
+    1. calculate signal eff
+    2. compute S/sqrt(B) = (S1+S2)/sqrt(B1+B2)
+    3. Compare with different selections
+
+    '''
+
+
+    df = df.Define("zll_leps_p0_index", "FCCAnalyses::ZHfunctions::matchMuonIndex(zll_leps_p0, {muon0_p, muon1_p, muon2_p, muon3_p})")
+    df = df.Define("zll_leps_p1_index", "FCCAnalyses::ZHfunctions::matchMuonIndex(zll_leps_p1, {muon0_p, muon1_p, muon2_p, muon3_p})")
+
+    results.append(df.Histo1D(("zll_leps_p0_index", "", 5, -1.5, 3.5), "zll_leps_p0_index"))  # Which muon is zll_leps_p0?
+    results.append(df.Histo1D(("zll_leps_p1_index", "", 5, -1.5, 3.5), "zll_leps_p1_index"))  # Which muon is zll_leps_p1?
+
 
     #########
-    ### CUT 3: Z mass window
+    ### CUT 4: Z mass window
     #########
     results.append(df.Histo1D(("zll_m_cut2", "", *bins_m_ll), "zll_m"))
     df = df.Filter("zll_m > 86 && zll_m < 96")
-    df = df.Define("cut3", "3")
-    results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut3"))
-
-
-    #########
-    ### CUT 4: Z momentum
-    #########
-    results.append(df.Histo1D(("zll_p_cut3", "", *bins_p_ll), "zll_p"))
-    df = df.Filter("zll_p > 20 && zll_p < 70")
     df = df.Define("cut4", "4")
     results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut4"))
 
 
     #########
-    ### CUT 5: cosThetaMiss
-    #########  
-    df = df.Define("missingEnergy", "FCCAnalyses::ZHfunctions::missingEnergy(240., ReconstructedParticles)")
-    df = df.Define("cosTheta_miss", "FCCAnalyses::ZHfunctions::get_cosTheta_miss(missingEnergy)")
-    results.append(df.Histo1D(("cosThetaMiss_cut4", "", *bins_cosThetaMiss), "cosTheta_miss")) # plot it before the cut
-
-    df = df.Filter("cosTheta_miss < 0.98")
+    ### CUT 5: Z momentum
+    #########
+    results.append(df.Histo1D(("zll_p_cut3", "", *bins_p_ll), "zll_p"))
+    df = df.Filter("zll_p > 20 && zll_p < 70")
     df = df.Define("cut5", "5")
     results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut5"))
+
+
+    #########
+    ### CUT 5: cosThetaMiss
+    #########  
+    df = df.Define("missingEnergyVec", "FCCAnalyses::ZHfunctions::missingEnergy(240., ReconstructedParticles)")
+    df = df.Define("cosTheta_miss", "FCCAnalyses::ZHfunctions::get_cosTheta_miss(missingEnergyVec)")
+    df = df.Define("missingEnergy", "FCCAnalyses::ZHfunctions::get_missing_energy(missingEnergyVec)")
+    results.append(df.Histo1D(("cosThetaMiss_cut5", "", *bins_cosThetaMiss), "cosTheta_miss")) # plot it before the cut
+    results.append(df.Histo1D(("missingEnergy_cut5", "", *bins_p_mu), "missingEnergy")) # plot it before the cut
+
+    df = df.Filter("cosTheta_miss < 0.98")
+    df = df.Define("cut6", "6")
+    results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut6"))
 
 
     #########
@@ -217,34 +282,34 @@ df = df.Define("leps_WW", "FCCAnasyss::RecoPartice::remove(zll_leps, electrons)"
     #########
     results.append(df.Histo1D(("zll_recoil_m", "", *bins_recoil), "zll_recoil_m")) # plot it before the cut
     df = df.Filter("zll_recoil_m < 140 && zll_recoil_m > 120")
-    df = df.Define("cut6", "6")
-    results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut6"))
-
-
-    #########
-    ### CUT 7: at least 4 leptons (to further suppress WW->lvlv)
-    #########
-    df = df.Define("leptons_no", "muons_no + electrons_no")
-    results.append(df.Histo1D(("leptons_no", "", *bins_count), "leptons_no"))
-    df = df.Filter("leptons_no >= 4")
     df = df.Define("cut7", "7")
     results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut7"))
 
 
-    #########
-    ### CUT 8: at least 4 isolated leptons (to further suppress WW->lvlv)
-    #########
-    df = df.Filter("muons_sel_iso.size() + electrons_sel_iso.size() >= 4")
-    df = df.Define("cut8", "8")
-    results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut8"))
+    # #########
+    # ### CUT 7: at least 4 leptons (to further suppress WW->lvlv)
+    # #########
+    # df = df.Define("leptons_no", "muons_no + electrons_no")
+    # results.append(df.Histo1D(("leptons_no", "", *bins_count), "leptons_no"))
+    # df = df.Filter("leptons_no >= 4")
+    # df = df.Define("cut7", "7")
+    # results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut7"))
 
 
-    #########
-    ### CUT 9: at least 2 pairs of 2 opposite-sign (OS) leptons
-    #########
-    df = df.Filter("abs(Sum(muons_q)) + abs(Sum(electrons_q)) <= muons_q.size() + electrons_q.size() -4")
-    df = df.Define("cut9", "9")
-    results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut9"))
+    # #########
+    # ### CUT 8: at least 4 isolated leptons (to further suppress WW->lvlv)
+    # #########
+    # df = df.Filter("muons_sel_iso.size() + electrons_sel_iso.size() >= 4")
+    # df = df.Define("cut8", "8")
+    # results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut8"))
+
+
+    # #########
+    # ### CUT 9: at least 2 pairs of 2 opposite-sign (OS) leptons
+    # #########
+    # df = df.Filter("abs(Sum(muons_q)) + abs(Sum(electrons_q)) <= muons_q.size() + electrons_q.size() -4")
+    # df = df.Define("cut9", "9")
+    # results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut9"))
 
 
     ########################
@@ -254,6 +319,10 @@ df = df.Define("leps_WW", "FCCAnasyss::RecoPartice::remove(zll_leps, electrons)"
     results.append(df.Histo1D(("zll_recoil_m_final", "", *bins_recoil_final), "zll_recoil_m"))
     results.append(df.Histo1D(("zll_p_final", "", *bins_p_ll), "zll_p"))
     results.append(df.Histo1D(("zll_leps_p_final", "", *bins_p_mu), "zll_leps_p"))
+
+    results.append(df.Histo1D(("cosThetaMiss_final", "", *bins_cosThetaMiss), "cosTheta_miss"))
+    results.append(df.Histo1D(("missingEnergy_final", "", *bins_p_mu), "missingEnergy"))
+
 
 
     return results, weightsum
