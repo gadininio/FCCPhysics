@@ -136,6 +136,17 @@ Vec_rp resonanceBuilder_mass_recoil::resonanceBuilder_mass_recoil::operator()(Ve
 }
 
 
+// Return the index (0..3) of the muon whose momentum matches lepton_p
+int matchMuonIndex(float lepton_p,
+                    const std::vector<float>& muon_p_list,
+                    float tol = 1e-3) {
+    for (size_t i = 0; i < muon_p_list.size(); ++i) {
+        if (std::fabs(muon_p_list[i] - lepton_p) < tol) {
+            return static_cast<int>(i);
+        }
+    }
+    return -1; // not found
+}
 
 
 struct sel_iso {
@@ -224,7 +235,6 @@ Vec_i get_iso(Vec_f iso, float arg_max_iso) {
     return result;
 }
 
- 
 // returns missing energy vector, based on reco particles
 Vec_rp missingEnergy(float ecm, Vec_rp in, float p_cutoff = 0.0) {
     float px = 0, py = 0, pz = 0, e = 0;

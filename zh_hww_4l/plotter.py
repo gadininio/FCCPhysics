@@ -37,6 +37,19 @@ legend['ZH'] = 'ZH'
 
 hists = {}
 
+hists["zll_recoil_m_cut5"] = {
+    "output":   "zll_recoil_m_cut5",
+    "logy":     False,
+    "stack":    True,
+    "rebin":    10,
+    "xmin":     120,
+    "xmax":     140,
+    "ymin":     0,
+    # "ymax":     2500,
+    "xtitle":   "Recoil (GeV)",
+    "ytitle":   "Events / 100 MeV",
+}
+
 hists["zll_recoil_m_final"] = {
     "output":   "zll_recoil_m",
     "logy":     False,
@@ -50,6 +63,19 @@ hists["zll_recoil_m_final"] = {
     "ytitle":   "Events / 100 MeV",
 }
 
+hists["zll_p_cut4"] = {
+    "output":   "zll_p_cut4",
+    "logy":     False,
+    "stack":    True,
+    # "rebin":    2,
+    "xmin":     0,
+    "xmax":     80,
+    "ymin":     0,
+    # "ymax":     2000,
+    "xtitle":   "p(#mu^{#plus}#mu^{#minus}) (GeV)",
+    "ytitle":   "Events ",
+}
+
 hists["zll_p_final"] = {
     "output":   "zll_p",
     "logy":     False,
@@ -60,6 +86,19 @@ hists["zll_p_final"] = {
     "ymin":     0,
     # "ymax":     2000,
     "xtitle":   "p(#mu^{#plus}#mu^{#minus}) (GeV)",
+    "ytitle":   "Events ",
+}
+
+hists["zll_m_cut3"] = {
+    "output":   "zll_m_cut3",
+    "logy":     False,
+    "stack":    True,
+    # "rebin":    2,
+    "xmin":     86,
+    "xmax":     96,
+    "ymin":     0,
+    # "ymax":     3000,
+    "xtitle":   "m(#mu^{#plus}#mu^{#minus}) (GeV)",
     "ytitle":   "Events ",
 }
 
@@ -76,8 +115,8 @@ hists["zll_m_final"] = {
     "ytitle":   "Events ",
 }
 
-hists["cosThetaMiss_cut5"] = {
-    "output":   "cosThetaMiss_cut5",
+hists["cosThetaMiss_cut6"] = {
+    "output":   "cosThetaMiss_cut6",
     "logy":     False,
     "stack":    True,
     "rebin":    200,
@@ -104,8 +143,8 @@ hists["cosThetaMiss_final"] = {
     # "extralab": "After cos(#theta_{miss}) cut",
 }
 
-hists["missingEnergy_cut5"] = {
-    "output":   "missingEnergy_cut5",
+hists["missingEnergy_cut7"] = {
+    "output":   "missingEnergy_cut7",
     "logy":     False,
     "stack":    True,
     "rebin":    10,
@@ -115,7 +154,7 @@ hists["missingEnergy_cut5"] = {
     "ymax":     45,
     "xtitle":   "MissingEnergy (GeV)",
     "ytitle":   "Events ",
-    "extralab": "Before cos(#theta_{miss}) cut",
+    "extralab": "Before E_{miss} cut",
 }
 
 hists["missingEnergy_final"] = {
@@ -137,12 +176,13 @@ hists["cutFlow"] = {
     "logy":     False,
     "stack":    False,
     "xmin":     0,
-    "xmax":     10,
+    "xmax":     9,
     # "ymin":     1e4,
     # "ymax":     1e11,
     "ymin":     0,
     # "ymax":     3e5,    
-    "xtitle":   ["All events", "#geq 1 #mu^{#pm} + ISO", "#geq 2 #mu^{#pm} + OS", "86 < m_{#mu^{+}#mu^{#minus}} < 96", "20 < p_{#mu^{+}#mu^{#minus}} < 70", "|cos#theta_{miss}| < 0.98", "120 < m_{rec} < 140", "#geq 4 l^{#pm}", "#geq 4 ISO l^{#pm}", "2 OS l^{#pm} pairs"],
+    # "xtitle":   ["All events", "#geq 1 #mu^{#pm} + ISO", "#geq 2 #mu^{#pm} + OS", "86 < m_{#mu^{+}#mu^{#minus}} < 96", "20 < p_{#mu^{+}#mu^{#minus}} < 70", "|cos#theta_{miss}| < 0.98", "120 < m_{rec} < 140", "#geq 4 l^{#pm}", "#geq 4 ISO l^{#pm}", "2 OS l^{#pm} pairs"],
+    "xtitle":   ["All events", "4 leptons", "2 OS leptons", "Leptons p_{T}", "86 < m_{#mu^{+}#mu^{#minus}} < 96", "20 < p_{#mu^{+}#mu^{#minus}} < 70", "|cos#theta_{miss}| < 0.98", "30 < E_{miss} < 110", "120 < m_{rec} < 140"],
     "ytitle":   "Events ",
     "scaleSig": 10,
     "dumpTable": True,
@@ -174,7 +214,7 @@ hists["muon0_p_cut2"] = {
     # "ymax":     100000,
     "xtitle":   "P_{#mu_{0}} (GeV)",
     "ytitle":   "Events ",
-    # "extralab": "Before cos(#theta_{miss}) cut",
+    "extralab": "Before lepton p_{T} cuts",
 }
 
 hists["muon1_p_cut2"] = {
@@ -188,7 +228,7 @@ hists["muon1_p_cut2"] = {
     # "ymax":     100000,
     "xtitle":   "P_{#mu_{1}} (GeV)",
     "ytitle":   "Events ",
-    # "extralab": "Before cos(#theta_{miss}) cut",
+    "extralab": "Before lepton p_{T} cuts",
 }
 
 hists["muon2_p_cut2"] = {
@@ -202,7 +242,7 @@ hists["muon2_p_cut2"] = {
     # "ymax":     100000,
     "xtitle":   "P_{#mu_{2}} (GeV)",
     "ytitle":   "Events ",
-    # "extralab": "Before cos(#theta_{miss}) cut",
+    "extralab": "Before lepton p_{T} cuts",
 }
 
 hists["muon3_p_cut2"] = {
@@ -216,7 +256,7 @@ hists["muon3_p_cut2"] = {
     # "ymax":     100000,
     "xtitle":   "P_{#mu_{3}} (GeV)",
     "ytitle":   "Events ",
-    # "extralab": "Before cos(#theta_{miss}) cut",
+    "extralab": "Before lepton p_{T} cuts",
 }
 
 
@@ -375,4 +415,119 @@ hists["zll_leps_p1_index"] = {
     "xtitle":   ["Not found", "muons[0]", "muons[1]", "muons[2]", "muons[3]"],
     "extralab":   "Muon index for zll_leps[1]",
 }
-    
+
+
+
+
+
+hists["WW_mass_cut8"] = {
+    "output":   "WW_mass_cut8",
+    "logy":     False,
+    "stack":    True,
+    "rebin":    5,
+    "xmin":     0,
+    "xmax":     170,
+    # "ymin":     10,
+    # "ymax":     100000,
+    "xtitle":   "m_{WW*} (GeV)",
+    "ytitle":   "Events ",
+    # "extralab": "Before cos(#theta_{miss}) cut",
+}
+
+hists["WW_mass_final"] = {
+    "output":   "WW_mass",
+    "logy":     False,
+    "stack":    True,
+    "rebin":    5,
+    "xmin":     0,
+    "xmax":     170,
+    # "ymin":     10,
+    # "ymax":     100000,
+    "xtitle":   "m_{WW*} (GeV)",
+    "ytitle":   "Events ",
+    # "extralab": "Before cos(#theta_{miss}) cut",
+}
+
+hists["WW_p_cut8"] = {
+    "output":   "WW_p_cut8",
+    "logy":     False,
+    "stack":    True,
+    "rebin":    5,
+    "xmin":     0,
+    "xmax":     100,
+    # "ymin":     10,
+    # "ymax":     100000,
+    "xtitle":   "p_{WW*}",
+    "ytitle":   "Events ",
+    # "extralab": "Before cos(#theta_{miss}) cut",
+}
+
+hists["WW_p_final"] = {
+    "output":   "WW_p",
+    "logy":     False,
+    "stack":    True,
+    "rebin":    5,
+    "xmin":     0,
+    "xmax":     100,
+    # "ymin":     10,
+    # "ymax":     100000,
+    "xtitle":   "p_{WW*}",
+    "ytitle":   "Events ",
+    # "extralab": "Before cos(#theta_{miss}) cut",
+}
+
+hists["WW_theta_cut8"] = {
+    "output":   "WW_theta_cut8",
+    "logy":     False,
+    "stack":    True,
+    "rebin":    10,
+    "xmin":     0,
+    "xmax":     5,
+    # "ymin":     10,
+    # "ymax":     100000,
+    "xtitle":   "#theta_{WW*}",
+    "ytitle":   "Events ",
+    # "extralab": "Before cos(#theta_{miss}) cut",
+}
+
+hists["WW_theta_final"] = {
+    "output":   "WW_theta",
+    "logy":     False,
+    "stack":    True,
+    "rebin":    10,
+    "xmin":     0,
+    "xmax":     5,
+    # "ymin":     10,
+    # "ymax":     100000,
+    "xtitle":   "#theta_{WW*}",
+    "ytitle":   "Events ",
+    # "extralab": "Before cos(#theta_{miss}) cut",
+}
+
+hists["WW_phi_cut8"] = {
+    "output":   "WW_phi_cut8",
+    "logy":     False,
+    "stack":    True,
+    "rebin":    10,
+    "xmin":     -3.5,
+    "xmax":     3.5,
+    # "ymin":     10,
+    # "ymax":     100000,
+    "xtitle":   "#phi_{WW*}",
+    "ytitle":   "Events ",
+    # "extralab": "Before cos(#theta_{miss}) cut",
+}
+
+hists["WW_phi_final"] = {
+    "output":   "WW_phi",
+    "logy":     False,
+    "stack":    True,
+    "rebin":    10,
+    "xmin":     -3.5,
+    "xmax":     3.5,
+    # "ymin":     10,
+    # "ymax":     100000,
+    "xtitle":   "#phi_{WW*}",
+    "ytitle":   "Events ",
+    # "extralab": "Before cos(#theta_{miss}) cut",
+}
