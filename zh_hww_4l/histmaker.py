@@ -6,6 +6,8 @@ flavor = "mumu"
 processList_mumu = {
     # 'p8_ee_ZZ_ecm240':{'fraction': 0.01},
     # 'p8_ee_WW_ecm240':{'fraction': 0.01}, 
+    'p8_ee_ZZ_ecm240':{'fraction': 1},
+    'p8_ee_WW_ecm240':{'fraction': 1}, 
     'wzp6_ee_mumuH_HWW_ecm240':{'fraction': 1},
 }
 
@@ -147,7 +149,7 @@ def build_graph(df, dataset):
 
 
     #########
-    ### CUT 1: at least 1 muon with at least one isolated one
+    ### CUT 1: exactly 4 leptons (add isolation later)
     #########
     # df = df.Filter(f"{leps}_no >= 1 && {leps}_sel_iso.size() > 0")
     df = df.Filter(f"{leps}_no == 4")
@@ -163,24 +165,27 @@ def build_graph(df, dataset):
     df = df.Define("cut2", "2")
     results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut2"))
 
+
+    #########
+    ### CUT 3: leptons pT: leading muon pT [25, 80] GeV, subleading muon pT [15, 80] GeV, third muon pT [10,80] GeV, fourth muon pT [10,75] GeV
+    #########
     df = df.Define("muon0_p", "muons_p[0]")
     df = df.Define("muon1_p", "muons_p[1]")
     df = df.Define("muon2_p", "muons_p[2]")
     df = df.Define("muon3_p", "muons_p[3]")
+    
     results.append(df.Histo1D(("muon0_p_cut2", "", *bins_p_mu), "muon0_p"))
     results.append(df.Histo1D(("muon1_p_cut2", "", *bins_p_mu), "muon1_p"))
     results.append(df.Histo1D(("muon2_p_cut2", "", *bins_p_mu), "muon2_p"))
     results.append(df.Histo1D(("muon3_p_cut2", "", *bins_p_mu), "muon3_p"))
-
-
-    #########
-    ### CUT 3: leading muon pT [25, 80] GeV, subleading muon pT [15, 80] GeV, third muon pT [10,80] GeV, fourth muon pT [10,75] GeV
-    #########
+    
     df = df.Filter("muon0_p > 25 && muon0_p < 80")
     df = df.Filter("muon1_p > 15 && muon1_p < 80")
     df = df.Filter("muon2_p > 10 && muon2_p < 80")
     df = df.Filter("muon3_p > 10 && muon3_p < 75")
+    
     df = df.Define("cut3", "3")
+    
     results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut3"))
     results.append(df.Histo1D(("muon0_p_cut3", "", *bins_p_mu), "muon0_p"))
     results.append(df.Histo1D(("muon1_p_cut3", "", *bins_p_mu), "muon1_p"))
@@ -234,6 +239,7 @@ def build_graph(df, dataset):
     #########
     ### CUT 7: cosThetaMiss
     #########  
+    df = df.Define("missingEnergy_vec", "FCCAnalyses::ZHfunctions::missingEnergy(240., ReconstructedParticles)")
     df = df.Define("cosTheta_miss", "FCCAnalyses::ZHfunctions::get_cosTheta_miss(missingEnergy_vec)")
     results.append(df.Histo1D(("cosThetaMiss_cut6", "", *bins_cosThetaMiss), "cosTheta_miss")) # plot it before the cut
     df = df.Filter("cosTheta_miss < 0.98")
@@ -259,13 +265,13 @@ def build_graph(df, dataset):
     df = df.Define("zll_leps_p", "FCCAnalyses::ReconstructedParticle::get_p(zll_leps)") # get the momentum of the 2 leptons from the Z resonance
     df = df.Define("zll_leps_p0", "zll_leps_p[0]") # the leptons 
     df = df.Define("zll_leps_p1", "zll_leps_p[1]") # the leptons 
-    results.append(df.Histo1D(("zll_leps_p0", "", *bins_p_mu), "zll_leps_p0"))
-    results.append(df.Histo1D(("zll_leps_p1", "", *bins_p_mu), "zll_leps_p1"))
+    results.append(df.Histo1D(("zll_leps_p0_cut8", "", *bins_p_mu), "zll_leps_p0"))
+    results.append(df.Histo1D(("zll_leps_p1_cut8", "", *bins_p_mu), "zll_leps_p1"))
 
     df = df.Define("zll_leps_p0_index", "FCCAnalyses::ZHfunctions::matchMuonIndex(zll_leps_p0, {muon0_p, muon1_p, muon2_p, muon3_p})")
     df = df.Define("zll_leps_p1_index", "FCCAnalyses::ZHfunctions::matchMuonIndex(zll_leps_p1, {muon0_p, muon1_p, muon2_p, muon3_p})")
-    results.append(df.Histo1D(("zll_leps_p0_index", "", 5, -1.5, 3.5), "zll_leps_p0_index"))  # Which muon is zll_leps_p0?
-    results.append(df.Histo1D(("zll_leps_p1_index", "", 5, -1.5, 3.5), "zll_leps_p1_index"))  # Which muon is zll_leps_p1?
+    results.append(df.Histo1D(("zll_leps_p0_index_cut8", "", 5, -1.5, 3.5), "zll_leps_p0_index"))  # Which muon is zll_leps_p0?
+    results.append(df.Histo1D(("zll_leps_p1_index_cut8", "", 5, -1.5, 3.5), "zll_leps_p1_index"))  # Which muon is zll_leps_p1?
 
     ## Additional studies with the two leptons not coming from the Z (to characterize the WW system)
     df = df.Define("leps_WW", "FCCAnalyses::ReconstructedParticle::remove(muons, zll_leps)")
@@ -281,9 +287,9 @@ def build_graph(df, dataset):
     
     df = df.Define("leps_WW_p0", "leps_WW_p[0]")
     df = df.Define("leps_WW_p1", "leps_WW_p[1]")
-    results.append(df.Histo1D(("leps_WW_p0", "", *bins_p_mu), "leps_WW_p0"))
-    results.append(df.Histo1D(("leps_WW_p1", "", *bins_p_mu), "leps_WW_p1"))
-    results.append(df.Histo1D(("leps_WW_dR", "", *bins_dR), "leps_WW_dR"))
+    results.append(df.Histo1D(("leps_WW_p0_cut8", "", *bins_p_mu), "leps_WW_p0"))
+    results.append(df.Histo1D(("leps_WW_p1_cut8", "", *bins_p_mu), "leps_WW_p1"))
+    results.append(df.Histo1D(("leps_WW_dR_cut8", "", *bins_dR), "leps_WW_dR"))
     
     # df = df.Define("leps_WW", "FCCAnasyss::RecoPartice::remove(zll_leps, electrons)")
     '''
@@ -294,7 +300,6 @@ def build_graph(df, dataset):
     '''
 
     # Build the WW system using the two leptons not coming from the Z and the missing energy vector
-    df = df.Define("missingEnergy_vec", "FCCAnalyses::ZHfunctions::missingEnergy(240., ReconstructedParticles)")
     df = df.Define("missingEnergy_tlv", "FCCAnalyses::ReconstructedParticle::get_tlv(missingEnergy_vec, 0)")
     df = df.Define("WW_tlv", "missingEnergy_tlv + leps_WW_tlv0 + leps_WW_tlv1")
     df = df.Define("WW_mass", "WW_tlv.M()")
@@ -319,7 +324,7 @@ def build_graph(df, dataset):
     ### CUT 10: WW system momentum
     #########  
     df = df.Filter("WW_p > 25 && WW_p < 60")
-    df = df.Define("cut9", "9")
+    df = df.Define("cut10", "10")
     results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut8"))
 
 
@@ -330,6 +335,8 @@ def build_graph(df, dataset):
     results.append(df.Histo1D(("zll_recoil_m_final", "", *bins_recoil_final), "zll_recoil_m"))
     results.append(df.Histo1D(("zll_p_final", "", *bins_p_ll), "zll_p"))
     results.append(df.Histo1D(("zll_leps_p_final", "", *bins_p_mu), "zll_leps_p"))
+    results.append(df.Histo1D(("zll_leps_p0_final", "", *bins_p_mu), "zll_leps_p0"))
+    results.append(df.Histo1D(("zll_leps_p1_final", "", *bins_p_mu), "zll_leps_p1"))
 
     results.append(df.Histo1D(("cosThetaMiss_final", "", *bins_cosThetaMiss), "cosTheta_miss"))
     results.append(df.Histo1D(("missingEnergy_final", "", *bins_p_mu), "missingEnergy"))
@@ -338,6 +345,9 @@ def build_graph(df, dataset):
     results.append(df.Histo1D(("WW_p_final", "", *bins_p_ll), "WW_p"))
     results.append(df.Histo1D(("WW_theta_final", "", *bins_theta), "WW_theta"))
     results.append(df.Histo1D(("WW_phi_final", "", *bins_phi), "WW_phi"))
-
+    results.append(df.Histo1D(("leps_WW_p0_final", "", *bins_p_mu), "leps_WW_p0"))
+    results.append(df.Histo1D(("leps_WW_p1_final", "", *bins_p_mu), "leps_WW_p1"))
+    results.append(df.Histo1D(("leps_WW_dR_final", "", *bins_dR), "leps_WW_dR"))
+    
     return results, weightsum
 

@@ -41,13 +41,14 @@ hists["zll_recoil_m_cut5"] = {
     "output":   "zll_recoil_m_cut5",
     "logy":     False,
     "stack":    True,
-    "rebin":    10,
-    "xmin":     120,
-    "xmax":     140,
+    "rebin":    1,
+    "xmin":     110,
+    "xmax":     150,
     "ymin":     0,
     # "ymax":     2500,
-    "xtitle":   "Recoil (GeV)",
+    "xtitle":   "m_{rec} (GeV)",
     "ytitle":   "Events / 100 MeV",
+    "extralab": "Before m_{rec} cut",
 }
 
 hists["zll_recoil_m_final"] = {
@@ -55,11 +56,11 @@ hists["zll_recoil_m_final"] = {
     "logy":     False,
     "stack":    True,
     "rebin":    10,
-    "xmin":     120,
-    "xmax":     140,
+    "xmin":     110,
+    "xmax":     150,
     "ymin":     0,
     # "ymax":     2500,
-    "xtitle":   "Recoil (GeV)",
+    "xtitle":   "m_{rec} (GeV)",
     "ytitle":   "Events / 100 MeV",
 }
 
@@ -72,8 +73,10 @@ hists["zll_p_cut4"] = {
     "xmax":     80,
     "ymin":     0,
     # "ymax":     2000,
-    "xtitle":   "p(#mu^{#plus}#mu^{#minus}) (GeV)",
+    "xtitle":   "p(l^{#plus}l^{#minus}) (GeV)",
     "ytitle":   "Events ",
+    "extralab": "Before p(l^{#plus}l^{#minus}) cut",
+
 }
 
 hists["zll_p_final"] = {
@@ -85,7 +88,7 @@ hists["zll_p_final"] = {
     "xmax":     80,
     "ymin":     0,
     # "ymax":     2000,
-    "xtitle":   "p(#mu^{#plus}#mu^{#minus}) (GeV)",
+    "xtitle":   "p(l^{#plus}l^{#minus}) (GeV)",
     "ytitle":   "Events ",
 }
 
@@ -98,8 +101,9 @@ hists["zll_m_cut3"] = {
     "xmax":     96,
     "ymin":     0,
     # "ymax":     3000,
-    "xtitle":   "m(#mu^{#plus}#mu^{#minus}) (GeV)",
+    "xtitle":   "m(l^{#plus}l^{#minus}) (GeV)",
     "ytitle":   "Events ",
+    "extralab": "Before m(l^{#plus}l^{#minus}) cut",
 }
 
 hists["zll_m_final"] = {
@@ -111,7 +115,7 @@ hists["zll_m_final"] = {
     "xmax":     96,
     "ymin":     0,
     # "ymax":     3000,
-    "xtitle":   "m(#mu^{#plus}#mu^{#minus}) (GeV)",
+    "xtitle":   "m(l^{#plus}l^{#minus}) (GeV)",
     "ytitle":   "Events ",
 }
 
@@ -182,7 +186,7 @@ hists["cutFlow"] = {
     "ymin":     0,
     # "ymax":     3e5,    
     # "xtitle":   ["All events", "#geq 1 #mu^{#pm} + ISO", "#geq 2 #mu^{#pm} + OS", "86 < m_{#mu^{+}#mu^{#minus}} < 96", "20 < p_{#mu^{+}#mu^{#minus}} < 70", "|cos#theta_{miss}| < 0.98", "120 < m_{rec} < 140", "#geq 4 l^{#pm}", "#geq 4 ISO l^{#pm}", "2 OS l^{#pm} pairs"],
-    "xtitle":   ["All events", "4 leptons", "2 OS leptons", "Leptons p_{T}", "86 < m_{#mu^{+}#mu^{#minus}} < 96", "20 < p_{#mu^{+}#mu^{#minus}} < 70", "|cos#theta_{miss}| < 0.98", "30 < E_{miss} < 110", "120 < m_{rec} < 140"],
+    "xtitle":   ["All events", "4 leptons", "2 OS leptons", "Leptons p_{T}", "86 < m_{l^{+}l^{#minus}} < 96", "20 < p_{l^{+}l^{#minus}} < 70", "|cos#theta_{miss}| < 0.98", "30 < E_{miss} < 110", "120 < m_{rec} < 140"],
     "ytitle":   "Events ",
     "scaleSig": 10,
     "dumpTable": True,
@@ -271,7 +275,7 @@ hists["muon0_p_cut3"] = {
     # "ymax":     100000,
     "xtitle":   "P_{#mu_{0}} (GeV)",
     "ytitle":   "Events ",
-    # "extralab": "Before cos(#theta_{miss}) cut",
+    "extralab": "After lepton p_{T} cuts",
 }
 
 hists["muon1_p_cut3"] = {
@@ -285,7 +289,7 @@ hists["muon1_p_cut3"] = {
     # "ymax":     100000,
     "xtitle":   "P_{#mu_{1}} (GeV)",
     "ytitle":   "Events ",
-    # "extralab": "Before cos(#theta_{miss}) cut",
+    "extralab": "After lepton p_{T} cuts",
 }
 
 hists["muon2_p_cut3"] = {
@@ -299,7 +303,7 @@ hists["muon2_p_cut3"] = {
     # "ymax":     100000,
     "xtitle":   "P_{#mu_{2}} (GeV)",
     "ytitle":   "Events ",
-    # "extralab": "Before cos(#theta_{miss}) cut",
+    "extralab": "After lepton p_{T} cuts",
 }
 
 hists["muon3_p_cut3"] = {
@@ -313,11 +317,25 @@ hists["muon3_p_cut3"] = {
     # "ymax":     100000,
     "xtitle":   "P_{#mu_{3}} (GeV)",
     "ytitle":   "Events ",
-    # "extralab": "Before cos(#theta_{miss}) cut",
+    "extralab": "After lepton p_{T} cuts",
 }
 
 
-hists["leps_WW_p0"] = {
+# hists["leps_WW_p0_cut8"] = {
+#     "output":   "leps_WW_p0_cut8",
+#     "logy":     False,
+#     "stack":    True,
+#     "rebin":    5,
+#     "xmin":     0,
+#     "xmax":     100,
+#     # "ymin":     10,
+#     # "ymax":     100000,
+#     "xtitle":   "P_{l_{WW}^{0}} (GeV)",
+#     "ytitle":   "Events ",
+#     "extralab": "Before P_{l_{WW}^{0}} cut",
+# }
+
+hists["leps_WW_p0_final"] = {
     "output":   "leps_WW_p0",
     "logy":     False,
     "stack":    True,
@@ -331,7 +349,21 @@ hists["leps_WW_p0"] = {
     # "extralab": "Before cos(#theta_{miss}) cut",
 }
 
-hists["leps_WW_p1"] = {
+# hists["leps_WW_p1_cut8"] = {
+#     "output":   "leps_WW_p1_cut8",
+#     "logy":     False,
+#     "stack":    True,
+#     "rebin":    5,
+#     "xmin":     0,
+#     "xmax":     100,
+#     # "ymin":     10,
+#     # "ymax":     100000,
+#     "xtitle":   "P_{l_{WW}^{1}} (GeV)",
+#     "ytitle":   "Events ",
+#     "extralab": "Before P_{l_{WW}^{1}} cut",
+# }
+
+hists["leps_WW_p1_final"] = {
     "output":   "leps_WW_p1",
     "logy":     False,
     "stack":    True,
@@ -345,7 +377,21 @@ hists["leps_WW_p1"] = {
     # "extralab": "Before cos(#theta_{miss}) cut",
 }
 
-hists["leps_WW_dR"] = {
+# hists["leps_WW_dR_cut8"] = {
+#     "output":   "leps_WW_dR_cut8",
+#     "logy":     False,
+#     "stack":    True,
+#     "rebin":    10,
+#     "xmin":     -5,
+#     "xmax":     5,
+#     # "ymin":     10,
+#     # "ymax":     100000,
+#     "xtitle":   "#DeltaR_{l_{WW}^{0},l_{WW}^{1}}",
+#     "ytitle":   "Events ",
+#     "extralab": "Before #DeltaR_{l_{WW}^{0},l_{WW}^{1}} cut",
+# }
+
+hists["leps_WW_dR_final"] = {
     "output":   "leps_WW_dR",
     "logy":     False,
     "stack":    True,
@@ -359,7 +405,21 @@ hists["leps_WW_dR"] = {
     # "extralab": "Before cos(#theta_{miss}) cut",
 }
 
-hists["zll_leps_p0"] = {
+hists["zll_leps_p0_cut8"] = {
+    "output":   "zll_leps_p0_cut8",
+    "logy":     False,
+    "stack":    True,
+    "rebin":    5,
+    "xmin":     0,
+    "xmax":     100,
+    # "ymin":     10,
+    # "ymax":     100000,
+    "xtitle":   "P_{l_{Z}^{0}} (GeV)",
+    "ytitle":   "Events ",
+    "extralab": "Before P_{l_{Z}^{0}} cut",
+}
+
+hists["zll_leps_p0_final"] = {
     "output":   "zll_leps_p0",
     "logy":     False,
     "stack":    True,
@@ -373,7 +433,20 @@ hists["zll_leps_p0"] = {
     # "extralab": "Before cos(#theta_{miss}) cut",
 }
 
-hists["zll_leps_p1"] = {
+hists["zll_leps_p1_cut8"] = {
+    "output":   "zll_leps_p1_cut8",
+    "logy":     False,
+    "stack":    True,
+    "rebin":    5,
+    "xmin":     0,
+    "xmax":     100,
+    # "ymin":     10,
+    # "ymax":     100000,
+    "xtitle":   "P_{l_{Z}^{1}} (GeV)",
+    "extralab": "Before P_{l_{Z}^{1}} cut",
+}
+    
+hists["zll_leps_p1_final"] = {
     "output":   "zll_leps_p1",
     "logy":     False,
     "stack":    True,
@@ -384,11 +457,9 @@ hists["zll_leps_p1"] = {
     # "ymax":     100000,
     "xtitle":   "P_{l_{Z}^{1}} (GeV)",
 }
-    
-
 
 # debug
-hists["zll_leps_p0_index"] = {
+hists["zll_leps_p0_index_cut8"] = {
     "output":   "zll_leps_p0_index",
     "logy":     False,
     "stack":    True,
@@ -402,7 +473,8 @@ hists["zll_leps_p0_index"] = {
     "extralab":   "Muon index for zll_leps[0]",
 }
 
-hists["zll_leps_p1_index"] = {
+# debug
+hists["zll_leps_p1_index_cut8"] = {
     "output":   "zll_leps_p1_index",
     "logy":     False,
     "stack":    True,
@@ -416,10 +488,6 @@ hists["zll_leps_p1_index"] = {
     "extralab":   "Muon index for zll_leps[1]",
 }
 
-
-
-
-
 hists["WW_mass_cut8"] = {
     "output":   "WW_mass_cut8",
     "logy":     False,
@@ -431,7 +499,7 @@ hists["WW_mass_cut8"] = {
     # "ymax":     100000,
     "xtitle":   "m_{WW*} (GeV)",
     "ytitle":   "Events ",
-    # "extralab": "Before cos(#theta_{miss}) cut",
+    "extralab": "Before m_{WW*} cut",
 }
 
 hists["WW_mass_final"] = {
@@ -459,7 +527,7 @@ hists["WW_p_cut8"] = {
     # "ymax":     100000,
     "xtitle":   "p_{WW*}",
     "ytitle":   "Events ",
-    # "extralab": "Before cos(#theta_{miss}) cut",
+    "extralab": "Before p_{WW*} cut",
 }
 
 hists["WW_p_final"] = {
@@ -487,7 +555,7 @@ hists["WW_theta_cut8"] = {
     # "ymax":     100000,
     "xtitle":   "#theta_{WW*}",
     "ytitle":   "Events ",
-    # "extralab": "Before cos(#theta_{miss}) cut",
+    "extralab": "Before #theta_{WW*} cut",
 }
 
 hists["WW_theta_final"] = {
@@ -515,7 +583,7 @@ hists["WW_phi_cut8"] = {
     # "ymax":     100000,
     "xtitle":   "#phi_{WW*}",
     "ytitle":   "Events ",
-    # "extralab": "Before cos(#theta_{miss}) cut",
+    "extralab": "Before #phi_{WW*} cut",
 }
 
 hists["WW_phi_final"] = {
