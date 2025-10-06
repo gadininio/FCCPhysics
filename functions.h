@@ -77,8 +77,9 @@ Vec_rp resonanceBuilder_mass_recoil::resonanceBuilder_mass_recoil::operator()(Ve
         } while(std::next_permutation(v.begin(), v.end()));
     }
     else {
-        std::cout << "ERROR: resonanceBuilder_mass_recoil, at least two leptons required." << std::endl;
-        exit(1);
+        return Vec_rp(); // return empty list
+        // std::cout << "ERROR: resonanceBuilder_mass_recoil, at least two leptons required." << std::endl;
+        // exit(1);
     }
 
     if(result.size() > 1) {
@@ -121,8 +122,9 @@ Vec_rp resonanceBuilder_mass_recoil::resonanceBuilder_mass_recoil::operator()(Ve
             bestReso.emplace_back(l2);
         }
         else {
-            std::cout << "ERROR: resonanceBuilder_mass_recoil, no mininum found." << std::endl;
-            exit(1);
+            return Vec_rp(); // return empty list
+            // std::cout << "ERROR: resonanceBuilder_mass_recoil, no mininum found." << std::endl;
+            // exit(1);
         }
         return bestReso;
     }
@@ -133,6 +135,196 @@ Vec_rp resonanceBuilder_mass_recoil::resonanceBuilder_mass_recoil::operator()(Ve
         result.emplace_back(l2);
         return result;
     }
+}
+
+
+
+
+// build the Z resonance based on the available leptons. Returns the best lepton pair compatible with the Z mass and recoil at 125 GeV
+// technically, it returns a ReconstructedParticleData object with index 0 the di-lepton system, index and 2 the leptons of the pair
+struct categorizer {
+    float m_resonance_mass;
+    float m_recoil_mass;
+    float chi2_recoil_frac;
+    float ecm;
+    bool m_use_MC_Kinematics;
+    categorizer(float arg_resonance_mass, float arg_recoil_mass, float arg_chi2_recoil_frac, float arg_ecm, bool arg_use_MC_Kinematics);
+    Vec_rp operator()(Vec_rp muon_legs, Vec_rp electron_legs, Vec_i recind, Vec_i mcind, Vec_rp reco, Vec_mc mc, Vec_i parents, Vec_i daugthers) ;
+    void buildResonances(const Vec_rp &legs, const Vec_i &recind, const Vec_i &mcind, const Vec_rp &reco, const Vec_mc &mc, Vec_rp &result, std::vector<std::vector<int>> &pairs);
+};
+
+categorizer::categorizer(float arg_resonance_mass, float arg_recoil_mass, float arg_chi2_recoil_frac, float arg_ecm, bool arg_use_MC_Kinematics) {
+    m_resonance_mass = arg_resonance_mass, m_recoil_mass = arg_recoil_mass, chi2_recoil_frac = arg_chi2_recoil_frac, ecm = arg_ecm, m_use_MC_Kinematics = arg_use_MC_Kinematics;
+}
+
+// -----------------------------------------------
+// Build all opposite-charge resonance candidates
+void categorizer::buildResonances(const Vec_rp &legs, const Vec_i &recind, const Vec_i &mcind, const Vec_rp &reco, const Vec_mc &mc, Vec_rp &result, std::vector<std::vector<int>> &pairs) {
+
+    int n = legs.size();
+    ROOT::VecOps::RVec<bool> v(n);
+    std::fill(v.end() - 2, v.end(), true);
+
+    do {
+        std::vector<int> pair;
+        rp reso;
+        reso.charge = 0;
+        reso.type = legs[0].type; // assume all legs are of the same type
+        TLorentzVector reso_lv;
+
+        for (int i = 0; i < n; ++i) {
+            if (v[i]) {
+                pair.push_back(i);
+                reso.charge += legs[i].charge;
+                TLorentzVector leg_lv;
+
+                if (m_use_MC_Kinematics) {
+                    int track_index = legs[i].tracks_begin;
+                    int mc_index = ReconstructedParticle2MC::getTrack2MC_index(track_index, recind, mcind, reco);
+                    if (mc_index >= 0 && mc_index < mc.size()) {
+                        leg_lv.SetXYZM(mc.at(mc_index).momentum.x, mc.at(mc_index).momentum.y, mc.at(mc_index).momentum.z, mc.at(mc_index).mass);
+                    }
+                }
+                else {
+                    leg_lv.SetXYZM(legs[i].momentum.x, legs[i].momentum.y, legs[i].momentum.z, legs[i].mass);
+                }
+
+                reso_lv += leg_lv;
+            }
+        }
+
+        if (reso.charge != 0)
+            continue;
+
+        reso.momentum.x = reso_lv.Px();
+        reso.momentum.y = reso_lv.Py();
+        reso.momentum.z = reso_lv.Pz();
+        reso.mass = reso_lv.M();
+
+        result.emplace_back(reso);
+        pairs.push_back(pair);
+
+    } while (std::next_permutation(v.begin(), v.end()));
+}
+
+Vec_rp categorizer::categorizer::operator()(Vec_rp legs_muons, Vec_rp legs_electrons, Vec_i recind, Vec_i mcind, Vec_rp reco, Vec_mc mc, Vec_i parents, Vec_i daugthers) {
+    Vec_rp result;
+    std::vector<std::vector<int>> pairs; // for each permutation, add the indices of the muons
+  
+    if(legs_muons.size() > 1)
+        buildResonances(legs_muons, recind, mcind, reco, mc, result, pairs);
+    else if(legs_electrons.size() > 1)
+        buildResonances(legs_electrons, recind, mcind, reco, mc, result, pairs);
+    else {
+        return Vec_rp(); // return empty list
+        // std::cout << "ERROR: categorizer, at least two leptons required." << std::endl;
+        // exit(1);
+    }
+
+    Vec_rp bestReso;
+    bestReso.reserve(3);
+    std::vector<int> selected_indices;
+
+    if(result.size() == 0) {
+        return Vec_rp(); // return empty list
+        // std::cout << "ERROR: categorizer, no opposite-charge lepton pair found." << std::endl;
+        // exit(1);
+    }
+    else if(result.size() == 1) { // only one pair found
+        bestReso.push_back(result.at(0));
+        selected_indices = {0, 1};
+    }
+    else { // more than one pair found, select the best one
+        int idx_min = -1;
+        float d_min = 9e9;
+        for (int i = 0; i < result.size(); ++i) {
+
+            // calculate recoil
+            auto recoil_p4 = TLorentzVector(0, 0, 0, ecm);
+            TLorentzVector tv1;
+            tv1.SetXYZM(result.at(i).momentum.x, result.at(i).momentum.y, result.at(i).momentum.z, result.at(i).mass);
+            recoil_p4 -= tv1;
+
+            auto recoil_fcc = edm4hep::ReconstructedParticleData();
+            recoil_fcc.momentum.x = recoil_p4.Px();
+            recoil_fcc.momentum.y = recoil_p4.Py();
+            recoil_fcc.momentum.z = recoil_p4.Pz();
+            recoil_fcc.mass = recoil_p4.M();
+
+            TLorentzVector tg;
+            tg.SetXYZM(result.at(i).momentum.x, result.at(i).momentum.y, result.at(i).momentum.z, result.at(i).mass);
+
+            float boost = tg.P();
+            float mass = std::pow(result.at(i).mass - m_resonance_mass, 2); // mass
+            float rec = std::pow(recoil_fcc.mass - m_recoil_mass, 2); // recoil
+            float d = (1.0-chi2_recoil_frac)*mass + chi2_recoil_frac*rec;
+
+            if(d < d_min) {
+                d_min = d;
+                idx_min = i;
+            }
+        }
+        if(idx_min > -1) { // best pair candidate found
+            bestReso.push_back(result.at(idx_min));
+            selected_indices = pairs[idx_min];
+        }
+        else {
+            std::cout << "ERROR: categorizer, no mininum found." << std::endl;
+            exit(1);
+        }
+    }
+
+    // Add the two leptons of the selected pair to 'bestRepo' list that will be returned.
+    rp l1, l2;
+    if(bestReso.at(0).type == 13) {
+        l1 = legs_muons[selected_indices[0]];
+        l2 = legs_muons[selected_indices[1]];
+    }
+    else {
+        l1 = legs_electrons[selected_indices[0]];
+        l2 = legs_electrons[selected_indices[1]];
+    }
+    bestReso.emplace_back(l1);
+    bestReso.emplace_back(l2);
+
+    // Find the two other leptons not in the selected pair
+    if (bestReso.at(0).type == 13) {  // The resonance is a muon pair
+        for (size_t i = 0; i < legs_muons.size(); ++i) {
+            if (i != selected_indices[0] && i != selected_indices[1]) {  // add all muons not in the pair
+                bestReso.push_back(legs_muons[i]);
+            }
+        }
+        for (size_t i = 0; i < legs_electrons.size(); ++i) {  // add all electrons
+            bestReso.push_back(legs_electrons[i]);
+        }
+    }
+    else {  // The resonance is an electron pair
+        for (size_t i = 0; i < legs_muons.size(); ++i) {  // add all muons
+            bestReso.push_back(legs_muons[i]);
+        }
+    }
+    for (size_t i = 0; i < legs_electrons.size(); ++i) {  // add all electrons not in the pair
+        if (i != selected_indices[0] && i != selected_indices[1]) {
+            bestReso.push_back(legs_electrons[i]);
+        }
+    }
+
+    // // print bestReso content for debugging
+    // for(size_t i = 0; i < bestReso.size(); ++i) {
+    //     std::cout << "bestReso[" << i << "] type: " << bestReso[i].type << " charge: " << bestReso[i].charge << " p: " << std::sqrt(bestReso[i].momentum.x*bestReso[i].momentum.x + bestReso[i].momentum.y*bestReso[i].momentum.y + bestReso[i].momentum.z*bestReso[i].momentum.z) << " mass: " << bestReso[i].mass << std::endl;
+    // }
+    
+    return bestReso;
+}
+
+
+Vec_rp sortByPt(Vec_rp in) {
+    std::sort(in.begin(), in.end(), [](const auto& a, const auto& b) {
+        const float ptA = std::hypot(a.momentum.x, a.momentum.y);
+        const float ptB = std::hypot(b.momentum.x, b.momentum.y);
+        return ptA > ptB;
+    });
+    return in;
 }
 
 
