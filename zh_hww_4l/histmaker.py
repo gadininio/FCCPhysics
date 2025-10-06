@@ -1,19 +1,19 @@
 
-# flavor = "ee"
-flavor = "mumu"
+category = '4mu0e'
+flavor = 'mumu'  # 'mumu' or 'ee'
+bkg_fraction = 0.05
+
 
 # list of processes (mandatory)
 processList_mumu = {
-    # 'p8_ee_ZZ_ecm240':{'fraction': 0.01},
-    # 'p8_ee_WW_ecm240':{'fraction': 0.01}, 
-    'p8_ee_ZZ_ecm240':{'fraction': 1},
-    'p8_ee_WW_ecm240':{'fraction': 1}, 
+    'p8_ee_ZZ_ecm240':{'fraction': bkg_fraction},
+    'p8_ee_WW_ecm240':{'fraction': bkg_fraction}, 
     'wzp6_ee_mumuH_HWW_ecm240':{'fraction': 1},
 }
 
 processList_ee = {
-    # 'p8_ee_ZZ_ecm240':{'fraction': 0.01},
-    # 'p8_ee_WW_ecm240':{'fraction': 0.01}, 
+    'p8_ee_ZZ_ecm240':{'fraction': bkg_fraction},
+    'p8_ee_WW_ecm240':{'fraction': bkg_fraction}, 
     'wzp6_ee_eeH_HWW_ecm240':{'fraction': 1},
 }
 
@@ -38,7 +38,7 @@ includePaths = ["../functions.h"]
 #inputDir    = "localSamples/"
 
 #Optional: output directory, default is local running directory
-outputDir   = f"outputs/hists/{flavor}/"
+outputDir   = f"outputs/hists/{category}/"
 
 
 # optional: ncpus, default is 4, -1 uses all cores available
@@ -183,9 +183,7 @@ def build_graph(df, dataset):
     df = df.Filter("muon1_p > 15 && muon1_p < 80")
     df = df.Filter("muon2_p > 10 && muon2_p < 80")
     df = df.Filter("muon3_p > 10 && muon3_p < 75")
-    
     df = df.Define("cut3", "3")
-    
     results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut3"))
     results.append(df.Histo1D(("muon0_p_cut3", "", *bins_p_mu), "muon0_p"))
     results.append(df.Histo1D(("muon1_p_cut3", "", *bins_p_mu), "muon1_p"))
@@ -306,8 +304,6 @@ def build_graph(df, dataset):
     df = df.Define("WW_p", "WW_tlv.P()")
     df = df.Define("WW_theta", "WW_tlv.Theta()")
     df = df.Define("WW_phi", "WW_tlv.Phi()")
-    results.append(df.Histo1D(("WW_mass_cut8", "", *bins_m_ll), "WW_mass"))
-    results.append(df.Histo1D(("WW_p_cut8", "", *bins_p_ll), "WW_p"))
     results.append(df.Histo1D(("WW_theta_cut8", "", *bins_theta), "WW_theta"))
     results.append(df.Histo1D(("WW_phi_cut8", "", *bins_phi), "WW_phi"))
 
@@ -315,17 +311,19 @@ def build_graph(df, dataset):
     #########
     ### CUT 9: WW system mass window
     #########  
-    df = df.Filter("WW_mass > 60 && WW_mass < 135")
+    results.append(df.Histo1D(("WW_mass_cut8", "", *bins_m_ll), "WW_mass"))
+    df = df.Filter("WW_mass > 80 && WW_mass < 135")
     df = df.Define("cut9", "9")
-    results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut8"))
+    results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut9"))
 
 
     #########
     ### CUT 10: WW system momentum
     #########  
-    df = df.Filter("WW_p > 25 && WW_p < 60")
+    results.append(df.Histo1D(("WW_p_cut9", "", *bins_p_ll), "WW_p"))
+    df = df.Filter("WW_p > 25 && WW_p < 55")
     df = df.Define("cut10", "10")
-    results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut8"))
+    results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut10"))
 
 
     ########################
