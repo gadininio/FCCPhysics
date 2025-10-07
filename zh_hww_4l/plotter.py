@@ -42,7 +42,10 @@ colors['WW'] = ROOT.kBlue+1
 colors['ZZ'] = ROOT.kGreen+2
 
 procs = {}
-procs['signal'] = {'ZH':[f'wzp6_ee_{flavor}H_HWW_ecm240']}
+if flavor=='ll':
+    procs['signal'] = {'ZH':['wzp6_ee_eeH_HWW_ecm240', 'wzp6_ee_mumuH_HWW_ecm240']}
+else:
+    procs['signal'] = {'ZH':[f'wzp6_ee_{flavor}H_HWW_ecm240']}
 procs['backgrounds'] =  {'WW':['p8_ee_WW_ecm240'], 'ZZ':['p8_ee_ZZ_ecm240']}
 # procs['backgrounds'] =  {}
 
