@@ -3,12 +3,7 @@ import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))  # add parent dir
 import zh_hww_4l.plotter as plotter
 import ROOT
-
-add_perc = True
-
-procs = {}
-procs['signal'] = {'Z(ee)H':'wzp6_ee_eeH_HWW_ecm240', 'Z(mumu)H':'wzp6_ee_mumuH_HWW_ecm240'}
-procs['backgrounds'] =  {'WW':'p8_ee_WW_ecm240', 'ZZ':'p8_ee_ZZ_ecm240'}
+import argparse
 
 def load_histogram(file_path, hist_name='cutFlow'):
     file = ROOT.TFile.Open(file_path)
@@ -27,6 +22,19 @@ def combine_signal_histograms(hists, signal_keys):
         combined.Add(hists[key])
     return combined
 
+# Parse command-line arguments
+parser = argparse.ArgumentParser(description="Combine cutflows and optionally add percentages.")
+parser.add_argument('--add-perc', '-a', action='store_true', help='Add percentage columns to the cutflow table', default=False)
+args = parser.parse_args()
+add_perc = args.add_perc
+
+# Define processes
+procs = {}
+procs['signal'] = {'Z(ee)H':'wzp6_ee_eeH_HWW_ecm240', 'Z(mumu)H':'wzp6_ee_mumuH_HWW_ecm240'}
+procs['backgrounds'] =  {'WW':'p8_ee_WW_ecm240', 'ZZ':'p8_ee_ZZ_ecm240'}
+signal_combined_name = 'Z(ll)H'
+
+# Extract cutflow configuration
 cutflow_cfg = plotter.hists['cutFlow']
 proc_list = list(procs['signal'].keys()) + list(procs['backgrounds'].keys())
 scaleSig = cutflow_cfg['scaleSig'] if 'scaleSig' in cutflow_cfg else 1.
@@ -42,8 +50,8 @@ for sample_name in proc_list:
 
 # Combine signal histograms into one
 signal_keys = list(procs['signal'].keys())
-hists['Z(ll)H'] = combine_signal_histograms(hists, signal_keys)
-proc_list = ['Z(ll)H'] + proc_list
+hists[signal_combined_name] = combine_signal_histograms(hists, signal_keys)
+proc_list = [signal_combined_name] + proc_list
 
 out_orig = sys.stdout
 with open(f"{'../zh_hww_4l/'+plotter.outdir}/cutFlow_combined.txt", 'w') as f:
@@ -56,9 +64,10 @@ with open(f"{'../zh_hww_4l/'+plotter.outdir}/cutFlow_combined.txt", 'w') as f:
 
         tmp = []
         tmp2 = []
+        tmp0 = []
         for i,cut in enumerate(cuts):
             s = hists[proc_list[0]].GetBinContent(i+1)
-            s_plus_b = sum([hists[p].GetBinContent(i+1) for p in proc_list])
+            s_plus_b = sum([hists[p].GetBinContent(i+1) for p in proc_list if p != signal_combined_name])
             significance = s/(s_plus_b**0.5) if s_plus_b > 0 else 0
             row = ["Cut %d"%i, cut, "%.3f"%significance]
             for j,sample_name in enumerate(proc_list):
@@ -66,9 +75,13 @@ with open(f"{'../zh_hww_4l/'+plotter.outdir}/cutFlow_combined.txt", 'w') as f:
                 row.append(f"{yield_:.4e} ({yield_/tmp[j] if j<len(tmp) and tmp[j]>0 else 1.:.1%})")
                 tmp2.append(yield_)
             print(formatted_row.format(*row))
+            if i==0: tmp0 = tmp2
             tmp = tmp2
             tmp2 = []
-            
+        row = ["Total", "", ""]
+        row += [f"{tmp[j]/tmp0[j]:.2%}" for j in range(len(tmp0))]
+        print('\n'+formatted_row.format(*row))
+        
     else:
         formatted_row = '{:<10} {:<30} {:<15} ' + ' '.join(['{:<15}']*len(proc_list))
         print(formatted_row.format(*(["#", "Cut", "Significance"]+proc_list)))
@@ -76,7 +89,7 @@ with open(f"{'../zh_hww_4l/'+plotter.outdir}/cutFlow_combined.txt", 'w') as f:
         
         for i,cut in enumerate(cuts):
             s = hists[proc_list[0]].GetBinContent(i+1)
-            s_plus_b = sum([hists[p].GetBinContent(i+1) for p in proc_list])
+            s_plus_b = sum([hists[p].GetBinContent(i+1) for p in proc_list if p != signal_combined_name])
             significance = s/(s_plus_b**0.5) if s_plus_b > 0 else 0
             row = ["Cut %d"%i, cut, "%.3f"%significance]
             for j,sample_name in enumerate(proc_list):
