@@ -3,7 +3,7 @@ bkg_fraction = 0.05
 debug = False
 fullrun = True
 
-if fullrun: bkg_fraction = 1
+if fullrun and not debug: bkg_fraction = 1
 
 # list of processes (mandatory)
 processList_mumu = {
@@ -34,8 +34,10 @@ includePaths = ["../functions.h"]
 #inputDir    = "localSamples/"
 
 #Optional: output directory, default is local running directory
-outputDir   = f"outputs/hists{'_full' if fullrun else ''}/"
-
+output_fix = ""
+if debug: output_fix = "_debug"
+elif fullrun: output_fix = "_full"
+outputDir   = f"outputs/hists{output_fix}/"
 
 # optional: ncpus, default is 4, -1 uses all cores available
 nCPUS       = -1
@@ -187,10 +189,6 @@ def build_graph(df, dataset):
     df = df.Filter("lep3_p > 10 && lep3_p < 75")
     df = df.Define("cut3", "3")
     results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut3"))
-    results.append(df.Histo1D(("lep0_p_cut3", "", *bins_p_mu), "lep0_p"))
-    results.append(df.Histo1D(("lep1_p_cut3", "", *bins_p_mu), "lep1_p"))
-    results.append(df.Histo1D(("lep2_p_cut3", "", *bins_p_mu), "lep2_p"))
-    results.append(df.Histo1D(("lep3_p_cut3", "", *bins_p_mu), "lep3_p"))
 
 
     #########
@@ -200,24 +198,21 @@ def build_graph(df, dataset):
     #     df = df.Define("test", "FCCAnalyses::ZHfunctions::test()")
         # df.Display(["test"]).Print()
 
-    
-    # now we build the Z resonance based on the available leptons.
-    # the function resonanceBuilder_mass_recoil returns the best lepton pair compatible with the Z mass (91.2 GeV) and recoil at 125 GeV
-    # the argument 0.4 gives a weight to the Z mass and the recoil mass in the chi2 minimization
-    # technically, it returns a ReconstructedParticleData object with index 0 the di-lepton system, index 1 and 2 the leptons of the pair
-    df = df.Define("zbuilder_result", f"FCCAnalyses::ZHfunctions::categorizer(91.2, 125, 0.4, 240, false)(muons, electrons, MCRecoAssociations0, MCRecoAssociations1, ReconstructedParticles, Particle, Particle0, Particle1)")
+    # Now we build the Z resonance based on the available leptons.
+    # The function resonanceBuilder_mass_recoil_advanced returns the best lepton pair compatible with the Z mass (91.2 GeV) and recoil at 125 GeV, out of the 4 leptons, and the two remaining leptons coming from the W's.
+    # The argument 0.4 gives a weight to the Z mass and the recoil mass in the chi2 minimization.
+    # Technically, it returns a ReconstructedParticleData object with index 0 the Z->ll di-lepton system, index 1 and 2 the leptons of the pair, and index 3 and 4 the other two leptons.
+    # If no pair is found, the returned vector is empty.
+    # We then require that at least one pair was found (size>=5) to keep the event.
+    df = df.Define("zbuilder_result", f"FCCAnalyses::ZHfunctions::resonanceBuilder_mass_recoil_advanced(91.2, 125, 0.4, 240, false)(muons, electrons, MCRecoAssociations0, MCRecoAssociations1, ReconstructedParticles, Particle, Particle0, Particle1)")
     df = df.Filter("zbuilder_result.size() >= 5") # make sure at least one pair was found (and additional two leptons)
     
-    df = df.Define("zll", "Vec_rp{zbuilder_result[0]}") # the Z
-    df = df.Define("zll_m", "FCCAnalyses::ReconstructedParticle::get_mass(zll)[0]") # Z mass
-    df = df.Define("zll_p", "FCCAnalyses::ReconstructedParticle::get_p(zll)[0]") # momentum of the Z
-    df = df.Define("zll_recoil", "FCCAnalyses::ReconstructedParticle::recoilBuilder(240)(zll)") # compute the recoil based on the reconstructed Z
-    df = df.Define("zll_recoil_m", "FCCAnalyses::ReconstructedParticle::get_mass(zll_recoil)[0]") # recoil mass
-
 
     #########
     ### CUT 4: Z mass window
     #########
+    df = df.Define("zll", "Vec_rp{zbuilder_result[0]}") # the Z
+    df = df.Define("zll_m", "FCCAnalyses::ReconstructedParticle::get_mass(zll)[0]") # Z mass
     results.append(df.Histo1D(("zll_m_cut3", "", *bins_m_ll), "zll_m"))
     df = df.Filter("zll_m > 86 && zll_m < 96")
     df = df.Define("cut4", "4")
@@ -226,6 +221,7 @@ def build_graph(df, dataset):
 
     #########
     ### CUT 5: Z momentum
+    df = df.Define("zll_p", "FCCAnalyses::ReconstructedParticle::get_p(zll)[0]") # momentum of the Z
     #########
     results.append(df.Histo1D(("zll_p_cut4", "", *bins_p_ll), "zll_p"))
     df = df.Filter("zll_p > 20 && zll_p < 70")
@@ -234,8 +230,10 @@ def build_graph(df, dataset):
 
 
     #########
-    ### CUT 6: recoil mass window
+    ### CUT 6: recoil mass window (reconstructed Higgs mass using the recoil method)
     #########
+    df = df.Define("zll_recoil", "FCCAnalyses::ReconstructedParticle::recoilBuilder(240)(zll)") # compute the recoil based on the reconstructed Z
+    df = df.Define("zll_recoil_m", "FCCAnalyses::ReconstructedParticle::get_mass(zll_recoil)[0]") # recoil mass
     results.append(df.Histo1D(("zll_recoil_m_cut5", "", *bins_recoil), "zll_recoil_m")) # plot it before the cut
     df = df.Filter("zll_recoil_m < 140 && zll_recoil_m > 120")
     df = df.Define("cut6", "6")
@@ -277,40 +275,31 @@ def build_graph(df, dataset):
 
     df = df.Define("zll_leps_p0_index", "FCCAnalyses::ZHfunctions::matchMuonIndex(zll_leps_p0, {lep0_p, lep1_p, lep2_p, lep3_p})")
     df = df.Define("zll_leps_p1_index", "FCCAnalyses::ZHfunctions::matchMuonIndex(zll_leps_p1, {lep0_p, lep1_p, lep2_p, lep3_p})")
-    results.append(df.Histo1D(("zll_leps_p0_index_cut8", "", 5, -1.5, 3.5), "zll_leps_p0_index"))  # Which muon is zll_leps_p0?
-    results.append(df.Histo1D(("zll_leps_p1_index_cut8", "", 5, -1.5, 3.5), "zll_leps_p1_index"))  # Which muon is zll_leps_p1?
+    results.append(df.Histo1D(("zll_leps_p0_index_cut8", "", 5, -1, 4), "zll_leps_p0_index"))  # Which muon is zll_leps_p0?
+    results.append(df.Histo1D(("zll_leps_p1_index_cut8", "", 5, -1, 4), "zll_leps_p1_index"))  # Which muon is zll_leps_p1?
 
-    ## Additional studies with the two leptons not coming from the Z (to characterize the WW system)
+    ## Additional studies with the two leptons coming from the WW
     df = df.Define("WW_leps", "Vec_rp{zbuilder_result[3],zbuilder_result[4]}") # the leptons 
     df = df.Define("WW_leps_p", "FCCAnalyses::ReconstructedParticle::get_p(WW_leps)")
-    df = df.Define("WW_leps_theta", "FCCAnalyses::ReconstructedParticle::get_theta(WW_leps)")
-    df = df.Define("WW_leps_phi", "FCCAnalyses::ReconstructedParticle::get_phi(WW_leps)")
-    df = df.Define("WW_leps_q", "FCCAnalyses::ReconstructedParticle::get_charge(WW_leps)")
-    df = df.Define("WW_leps_no", "FCCAnalyses::ReconstructedParticle::get_n(WW_leps)")
-    
+    # df = df.Define("WW_leps_theta", "FCCAnalyses::ReconstructedParticle::get_theta(WW_leps)")
+    # df = df.Define("WW_leps_phi", "FCCAnalyses::ReconstructedParticle::get_phi(WW_leps)")
+    # df = df.Define("WW_leps_q", "FCCAnalyses::ReconstructedParticle::get_charge(WW_leps)")
+    # df = df.Define("WW_leps_no", "FCCAnalyses::ReconstructedParticle::get_n(WW_leps)")
+    df = df.Define("WW_leps_category", "FCCAnalyses::ZHfunctions::getWWleptonicCategory(WW_leps)")
+    results.append(df.Histo1D(("WW_leps_category_cut8", "", 4, -1, 3), "WW_leps_category"))
+
     df = df.Define("WW_leps_tlv0", "FCCAnalyses::ReconstructedParticle::get_tlv(WW_leps, 0)")
     df = df.Define("WW_leps_tlv1", "FCCAnalyses::ReconstructedParticle::get_tlv(WW_leps, 1)")
     df = df.Define("WW_leps_dR", "WW_leps_tlv0.DeltaR(WW_leps_tlv1)")
-    
     df = df.Define("WW_leps_p0", "WW_leps_p[0]")
     df = df.Define("WW_leps_p1", "WW_leps_p[1]")
     results.append(df.Histo1D(("WW_leps_p0_cut8", "", *bins_p_mu), "WW_leps_p0"))
     results.append(df.Histo1D(("WW_leps_p1_cut8", "", *bins_p_mu), "WW_leps_p1"))
     results.append(df.Histo1D(("WW_leps_dR_cut8", "", *bins_dR), "WW_leps_dR"))
-    
-    # df = df.Define("WW_leps", "FCCAnasyss::RecoPartice::remove(zll_leps, electrons)")
-    '''
-    1. calculate signal eff
-    2. compute S/sqrt(B) = (S1+S2)/sqrt(B1+B2)
-    3. Compare with different selections
 
-    '''
-
-    # Build the WW system using the two leptons not coming from the Z and the missing energy vector
+    ## Build the WW system using the two leptons not coming from the Z and the missing energy vector
     df = df.Define("missingEnergy_tlv", "FCCAnalyses::ReconstructedParticle::get_tlv(missingEnergy_vec, 0)")
     df = df.Define("WW_tlv", "missingEnergy_tlv + WW_leps_tlv0 + WW_leps_tlv1")
-    df = df.Define("WW_mass", "WW_tlv.M()")
-    df = df.Define("WW_p", "WW_tlv.P()")
     df = df.Define("WW_theta", "WW_tlv.Theta()")
     df = df.Define("WW_phi", "WW_tlv.Phi()")
     results.append(df.Histo1D(("WW_theta_cut8", "", *bins_theta), "WW_theta"))
@@ -320,6 +309,7 @@ def build_graph(df, dataset):
     #########
     ### CUT 9: WW system mass window
     #########  
+    df = df.Define("WW_mass", "WW_tlv.M()")
     results.append(df.Histo1D(("WW_mass_cut8", "", *bins_m_ll), "WW_mass"))
     df = df.Filter("WW_mass > 80 && WW_mass < 135")
     df = df.Define("cut9", "9")
@@ -329,6 +319,7 @@ def build_graph(df, dataset):
     #########
     ### CUT 10: WW system momentum
     #########  
+    df = df.Define("WW_p", "WW_tlv.P()")
     results.append(df.Histo1D(("WW_p_cut9", "", *bins_p_ll), "WW_p"))
     df = df.Filter("WW_p > 25 && WW_p < 55")
     df = df.Define("cut10", "10")
@@ -338,10 +329,14 @@ def build_graph(df, dataset):
     ########################
     # Final histograms
     ########################
+    results.append(df.Histo1D(("lep0_p_final", "", *bins_p_mu), "lep0_p"))
+    results.append(df.Histo1D(("lep1_p_final", "", *bins_p_mu), "lep1_p"))
+    results.append(df.Histo1D(("lep2_p_final", "", *bins_p_mu), "lep2_p"))
+    results.append(df.Histo1D(("lep3_p_final", "", *bins_p_mu), "lep3_p"))
+    
     results.append(df.Histo1D(("zll_m_final", "", *bins_m_ll), "zll_m"))
     results.append(df.Histo1D(("zll_recoil_m_final", "", *bins_recoil_final), "zll_recoil_m"))
     results.append(df.Histo1D(("zll_p_final", "", *bins_p_ll), "zll_p"))
-    results.append(df.Histo1D(("zll_leps_p_final", "", *bins_p_mu), "zll_leps_p"))
     results.append(df.Histo1D(("zll_leps_p0_final", "", *bins_p_mu), "zll_leps_p0"))
     results.append(df.Histo1D(("zll_leps_p1_final", "", *bins_p_mu), "zll_leps_p1"))
 
@@ -356,5 +351,9 @@ def build_graph(df, dataset):
     results.append(df.Histo1D(("WW_leps_p1_final", "", *bins_p_mu), "WW_leps_p1"))
     results.append(df.Histo1D(("WW_leps_dR_final", "", *bins_dR), "WW_leps_dR"))
     
+    results.append(df.Histo1D(("zll_leps_p0_index_final", "", 5, -1, 4), "zll_leps_p0_index"))  # Which muon is zll_leps_p0?
+    results.append(df.Histo1D(("zll_leps_p1_index_final", "", 5, -1, 4), "zll_leps_p1_index"))  # Which muon is zll_leps_p1?
+    results.append(df.Histo1D(("WW_leps_category_final", "", 4, -1, 3), "WW_leps_category"))
+
     return results, weightsum
 

@@ -31,7 +31,7 @@ prodTag     = "FCCee/winter2023/IDEA/"
 procDict = "FCCee_procDict_winter2023_IDEA.json"
 
 # additional/custom C++ functions, defined in header files (optional)
-includePaths = ["../functions.h"]
+includePaths = ["../../functions.h"]
 
 # Define the input dir (optional)
 #inputDir    = "outputs/FCCee/higgs/mH-recoil/mumu/stage1"

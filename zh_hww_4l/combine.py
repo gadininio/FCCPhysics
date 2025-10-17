@@ -15,7 +15,7 @@ inputDir       = f"outputs/FCCee/higgs/mass-xsec/final_selection/{flavor}/"
 selection      = "sel3"
 
 
-sig_procs = {'sig':['wzp6_ee_mumuH_ecm240']}
+sig_procs = {'sig':['wzp6_ee_eeH_HWW_ecm240', 'wzp6_ee_mumuH_HWW_ecm240']}
 bkg_procs = {'bkg':['p8_ee_WW_ecm240', 'p8_ee_ZZ_ecm240']}
 
 

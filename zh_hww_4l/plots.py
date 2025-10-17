@@ -1,20 +1,6 @@
-'''
-Do this before plotting:
-    cd outputs/hists && hadd -f wzp6_ee_llH_HWW_ecm240.root wzp6_ee_eeH_HWW_ecm240.root  wzp6_ee_mumuH_HWW_ecm240.root && cd ../../
-    full run in lxplus973
-'''
-
 import ROOT
 
-# category = '4mu0e'  # 4mu0e, 3mu1e, 2mu2e, 4e0mu, 3e1mu, 2e2mu
-
-# flavor = "mumu" if category in ['4mu0e', '3mu1e', '2mu2e'] else "ee"
-# Z_leptons = '#mu^{+}#mu^{-}' if flavor=='mumu' else 'e^{+}e^{-}'
-# if category in ['4mu0e', '2e2mu']: W_leptons = '#mu^{+}#nu #mu^{-}#nu'
-# if category in ['4e0mu', '2mu2e']: W_leptons = 'e^{+}#nu e^{-}#nu'
-# if category in ['3mu1e', '3e1mu']: W_leptons = 'e^{+}#nu #mu^{-}#nu'
-
-flavor = 'll'
+flavor = 'ee'  # 'mumu', 'ee', 'll'
 if flavor=='mumu':
     Z_leptons = '#mu^{+}#mu^{-}'
 if flavor=='ee':
@@ -25,8 +11,6 @@ if flavor=='ll':
 # global parameters
 intLumi        = 1.
 intLumiLabel   = "L = 10.8 ab^{-1}"
-# ana_tex        = 'e^{+}e^{-}#rightarrow Z(' + Z_leptons + f')H, H#rightarrow WW*#rightarrow {W_leptons} ({category})'
-# ana_tex        = 'e^{+}e^{-}#rightarrow Z(' + Z_leptons + f')H, H#rightarrow WW*#rightarrow {W_leptons}'
 ana_tex        = 'e^{+}e^{-}#rightarrow Z(' + Z_leptons + ')H, H#rightarrow WW*#rightarrow l^{+}#nu l^{-}#nu'
 delphesVersion = '3.4.2'
 energy         = 240.0
@@ -206,7 +190,7 @@ hists["cutFlow"] = {
     "ymin":     0.1,
     # "ymax":     1e3,
     # "xtitle":   ["All events", "#geq 1 #mu^{#pm} + ISO", "#geq 2 #mu^{#pm} + OS", "86 < m_{#mu^{+}#mu^{#minus}} < 96", "20 < p_{#mu^{+}#mu^{#minus}} < 70", "|cos#theta_{miss}| < 0.98", "120 < m_{rec} < 140", "#geq 4 l^{#pm}", "#geq 4 ISO l^{#pm}", "2 OS l^{#pm} pairs"],
-    "xtitle":   ["All events", "4 leptons", "2 OS leptons", "Leptons p_{T}", "86 < m_{l^{+}l^{-}} < 96", "20 < p_{l^{+}l^{-}} < 70", "120 < m_{rec} < 140", "|cos#theta_{miss}| < 0.98", "30 < E_{miss} < 110", "80 < m_{WW*} < 135", "25 < p_{WW*} < 55"],
+    "xtitle":   ["All events", "4 leptons", "2 OS pairs", "Leptons p_{T}", "86 < m_{l^{+}l^{-}} < 96", "20 < p_{l^{+}l^{-}} < 70", "120 < m_{rec} < 140", "|cos#theta_{miss}| < 0.98", "30 < E_{miss} < 110", "80 < m_{WW*} < 135", "25 < p_{WW*} < 55"],
     # , "#theta_{WW*} < 2.5", "#phi_{WW*} < 2.5"],
     "ytitle":   "Events ",
     "scaleSig": 1,
@@ -285,8 +269,8 @@ hists["lep3_p_cut2"] = {
 }
 
 
-hists["lep0_p_cut3"] = {
-    "output":   "lep0_p_cut3",
+hists["lep0_p_final"] = {
+    "output":   "lep0_p",
     "logy":     False,
     "stack":    False,
     "rebin":    5,
@@ -296,11 +280,11 @@ hists["lep0_p_cut3"] = {
     # "ymax":     100000,
     "xtitle":   "P_{#mu_{0}} (GeV)",
     "ytitle":   "Events ",
-    "extralab": "After lepton p_{T} cuts",
+    # "extralab": "After lepton p_{T} cuts",
 }
 
-hists["lep1_p_cut3"] = {
-    "output":   "lep1_p_cut3",
+hists["lep1_p_final"] = {
+    "output":   "lep1_p",
     "logy":     False,
     "stack":    False,
     "rebin":    5,
@@ -310,11 +294,11 @@ hists["lep1_p_cut3"] = {
     # "ymax":     100000,
     "xtitle":   "P_{#mu_{1}} (GeV)",
     "ytitle":   "Events ",
-    "extralab": "After lepton p_{T} cuts",
+    # "extralab": "After lepton p_{T} cuts",
 }
 
-hists["lep2_p_cut3"] = {
-    "output":   "lep2_p_cut3",
+hists["lep2_p_final"] = {
+    "output":   "lep2_p",
     "logy":     False,
     "stack":    False,
     "rebin":    5,
@@ -324,11 +308,11 @@ hists["lep2_p_cut3"] = {
     # "ymax":     100000,
     "xtitle":   "P_{#mu_{2}} (GeV)",
     "ytitle":   "Events ",
-    "extralab": "After lepton p_{T} cuts",
+    # "extralab": "After lepton p_{T} cuts",
 }
 
-hists["lep3_p_cut3"] = {
-    "output":   "lep3_p_cut3",
+hists["lep3_p_final"] = {
+    "output":   "lep3_p",
     "logy":     False,
     "stack":    False,
     "rebin":    5,
@@ -338,7 +322,7 @@ hists["lep3_p_cut3"] = {
     # "ymax":     100000,
     "xtitle":   "P_{#mu_{3}} (GeV)",
     "ytitle":   "Events ",
-    "extralab": "After lepton p_{T} cuts",
+    # "extralab": "After lepton p_{T} cuts",
 }
 
 
@@ -479,36 +463,6 @@ hists["zll_leps_p1_final"] = {
     "xtitle":   "P_{l_{Z}^{1}} (GeV)",
 }
 
-# debug
-hists["zll_leps_p0_index_cut8"] = {
-    "output":   "zll_leps_p0_index",
-    "logy":     False,
-    "stack":    False,
-    # "rebin":    5,
-    # "xmin":     0,
-    # "xmax":     100,
-    # "ymin":     10,
-    "ymax":     180,
-    # "xtitle":   "Lepton index for zll_leps[0]",
-    "xtitle":   ["Not found", "leptons[0]", "leptons[1]", "leptons[2]", "leptons[3]"],
-    "extralab":   "Lepton index for zll_leps[0]",
-}
-
-# debug
-hists["zll_leps_p1_index_cut8"] = {
-    "output":   "zll_leps_p1_index",
-    "logy":     False,
-    "stack":    False,
-    # "rebin":    5,
-    # "xmin":     0,
-    # "xmax":     100,
-    # "ymin":     10,
-    # "ymax":     180,
-    # "xtitle":   "Lepton index for zll_leps[1]",
-    "xtitle":   ["Not found", "leptons[0]", "leptons[1]", "leptons[2]", "leptons[3]"],
-    "extralab":   "Lepton index for zll_leps[1]",
-}
-
 hists["WW_mass_cut8"] = {
     "output":   "WW_mass_cut8",
     "logy":     False,
@@ -565,19 +519,19 @@ hists["WW_p_final"] = {
     # "extralab": "Before cos(#theta_{miss}) cut",
 }
 
-hists["WW_theta_cut8"] = {
-    "output":   "WW_theta_cut8",
-    "logy":     False,
-    "stack":    False,
-    "rebin":    10,
-    "xmin":     0,
-    "xmax":     5,
-    # "ymin":     10,
-    # "ymax":     100000,
-    "xtitle":   "#theta_{WW*}",
-    "ytitle":   "Events ",
-    "extralab": "Before #theta_{WW*} cut",
-}
+# hists["WW_theta_cut8"] = {
+#     "output":   "WW_theta_cut8",
+#     "logy":     False,
+#     "stack":    False,
+#     "rebin":    10,
+#     "xmin":     0,
+#     "xmax":     5,
+#     # "ymin":     10,
+#     # "ymax":     100000,
+#     "xtitle":   "#theta_{WW*}",
+#     "ytitle":   "Events ",
+#     "extralab": "Before #theta_{WW*} cut",
+# }
 
 hists["WW_theta_final"] = {
     "output":   "WW_theta",
@@ -593,19 +547,19 @@ hists["WW_theta_final"] = {
     # "extralab": "Before cos(#theta_{miss}) cut",
 }
 
-hists["WW_phi_cut8"] = {
-    "output":   "WW_phi_cut8",
-    "logy":     False,
-    "stack":    False,
-    "rebin":    10,
-    "xmin":     -3.5,
-    "xmax":     3.5,
-    # "ymin":     10,
-    # "ymax":     100000,
-    "xtitle":   "#phi_{WW*}",
-    "ytitle":   "Events ",
-    "extralab": "Before #phi_{WW*} cut",
-}
+# hists["WW_phi_cut8"] = {
+#     "output":   "WW_phi_cut8",
+#     "logy":     False,
+#     "stack":    False,
+#     "rebin":    10,
+#     "xmin":     -3.5,
+#     "xmax":     3.5,
+#     # "ymin":     10,
+#     # "ymax":     100000,
+#     "xtitle":   "#phi_{WW*}",
+#     "ytitle":   "Events ",
+#     "extralab": "Before #phi_{WW*} cut",
+# }
 
 hists["WW_phi_final"] = {
     "output":   "WW_phi",
@@ -619,4 +573,63 @@ hists["WW_phi_final"] = {
     "xtitle":   "#phi_{WW*}",
     "ytitle":   "Events ",
     # "extralab": "Before cos(#theta_{miss}) cut",
+}
+
+################
+### debug plots
+################
+hists["zll_leps_p0_index_final"] = {
+    "output":   "zll_leps_p0_index",
+    "logy":     False,
+    "stack":    False,
+    # "rebin":    5,
+    # "xmin":     0,
+    # "xmax":     100,
+    # "ymin":     10,
+    # "ymax":     180,
+    # "xtitle":   "Lepton index for leading Z->ll lepton (zll_leps[0])",
+    "xtitle":   ["Not found", "leptons[0]", "leptons[1]", "leptons[2]", "leptons[3]"],
+    "extralab":   "Lepton index for leading Z->ll lepton (zll_leps[0])",
+}
+
+hists["zll_leps_p1_index_final"] = {
+    "output":   "zll_leps_p1_index",
+    "logy":     False,
+    "stack":    False,
+    # "rebin":    5,
+    # "xmin":     0,
+    # "xmax":     100,
+    # "ymin":     10,
+    # "ymax":     180,
+    # "xtitle":   "Lepton index for subleading Z->ll lepton (zll_leps[1])",
+    "xtitle":   ["Not found", "leptons[0]", "leptons[1]", "leptons[2]", "leptons[3]"],
+    "extralab":   "Lepton index for subleading Z->ll lepton (zll_leps[1])",
+}
+
+hists["WW_leps_category_cut8"] = {
+    "output":   "WW_leps_category_cut8",
+    "logy":     False,
+    "stack":    False,
+    # "rebin":    5,
+    # "xmin":     -1,
+    # "xmax":     3,
+    # "ymin":     10,
+    # "ymax":     180,
+    # "xtitle":   "WW leptons category",
+    "xtitle":   ["Not leptonic", "e^{+}e^{-}", "#mu^{+}#mu^{-}", "e-#mu / #mu-e"],
+    "extralab":   "WW leptons category, before WW lepton cuts",
+}
+
+hists["WW_leps_category_final"] = {
+    "output":   "WW_leps_category",
+    "logy":     False,
+    "stack":    False,
+    # "rebin":    5,
+    # "xmin":     -1,
+    # "xmax":     3,
+    # "ymin":     10,
+    # "ymax":     180,
+    # "xtitle":   "WW leptons category",
+    "xtitle":   ["Not leptonic", "e^{+}e^{-}", "#mu^{+}#mu^{-}", "e-#mu / #mu-e"],
+    "extralab":   "WW leptons category",
 }

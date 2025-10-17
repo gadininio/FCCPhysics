@@ -142,24 +142,24 @@ Vec_rp resonanceBuilder_mass_recoil::resonanceBuilder_mass_recoil::operator()(Ve
 
 // build the Z resonance based on the available leptons. Returns the best lepton pair compatible with the Z mass and recoil at 125 GeV
 // technically, it returns a ReconstructedParticleData object with index 0 the di-lepton system, index and 2 the leptons of the pair
-struct categorizer {
+struct resonanceBuilder_mass_recoil_advanced {
     float m_resonance_mass;
     float m_recoil_mass;
     float chi2_recoil_frac;
     float ecm;
     bool m_use_MC_Kinematics;
-    categorizer(float arg_resonance_mass, float arg_recoil_mass, float arg_chi2_recoil_frac, float arg_ecm, bool arg_use_MC_Kinematics);
+    resonanceBuilder_mass_recoil_advanced(float arg_resonance_mass, float arg_recoil_mass, float arg_chi2_recoil_frac, float arg_ecm, bool arg_use_MC_Kinematics);
     Vec_rp operator()(Vec_rp muon_legs, Vec_rp electron_legs, Vec_i recind, Vec_i mcind, Vec_rp reco, Vec_mc mc, Vec_i parents, Vec_i daugthers) ;
     void buildResonances(const Vec_rp &legs, const Vec_i &recind, const Vec_i &mcind, const Vec_rp &reco, const Vec_mc &mc, Vec_rp &result, std::vector<std::vector<int>> &pairs);
 };
 
-categorizer::categorizer(float arg_resonance_mass, float arg_recoil_mass, float arg_chi2_recoil_frac, float arg_ecm, bool arg_use_MC_Kinematics) {
+resonanceBuilder_mass_recoil_advanced::resonanceBuilder_mass_recoil_advanced(float arg_resonance_mass, float arg_recoil_mass, float arg_chi2_recoil_frac, float arg_ecm, bool arg_use_MC_Kinematics) {
     m_resonance_mass = arg_resonance_mass, m_recoil_mass = arg_recoil_mass, chi2_recoil_frac = arg_chi2_recoil_frac, ecm = arg_ecm, m_use_MC_Kinematics = arg_use_MC_Kinematics;
 }
 
 // -----------------------------------------------
 // Build all opposite-charge resonance candidates
-void categorizer::buildResonances(const Vec_rp &legs, const Vec_i &recind, const Vec_i &mcind, const Vec_rp &reco, const Vec_mc &mc, Vec_rp &result, std::vector<std::vector<int>> &pairs) {
+void resonanceBuilder_mass_recoil_advanced::buildResonances(const Vec_rp &legs, const Vec_i &recind, const Vec_i &mcind, const Vec_rp &reco, const Vec_mc &mc, Vec_rp &result, std::vector<std::vector<int>> &pairs) {
 
     int n = legs.size();
     ROOT::VecOps::RVec<bool> v(n);
@@ -169,7 +169,7 @@ void categorizer::buildResonances(const Vec_rp &legs, const Vec_i &recind, const
         std::vector<int> pair;
         rp reso;
         reso.charge = 0;
-        reso.type = legs[0].type; // assume all legs are of the same type
+        reso.type = legs[0].type; // assume all legs are of the same type. From some reason, this doesn't work, hence the following line.
         TLorentzVector reso_lv;
 
         for (int i = 0; i < n; ++i) {
@@ -207,27 +207,37 @@ void categorizer::buildResonances(const Vec_rp &legs, const Vec_i &recind, const
     } while (std::next_permutation(v.begin(), v.end()));
 }
 
-Vec_rp categorizer::categorizer::operator()(Vec_rp legs_muons, Vec_rp legs_electrons, Vec_i recind, Vec_i mcind, Vec_rp reco, Vec_mc mc, Vec_i parents, Vec_i daugthers) {
+Vec_rp resonanceBuilder_mass_recoil_advanced::resonanceBuilder_mass_recoil_advanced::operator()(Vec_rp legs_muons, Vec_rp legs_electrons, Vec_i recind, Vec_i mcind, Vec_rp reco, Vec_mc mc, Vec_i parents, Vec_i daugthers) {
     Vec_rp result;
     std::vector<std::vector<int>> pairs; // for each permutation, add the indices of the muons
   
-    if(legs_muons.size() > 1)
+    // ensure legs have correct type
+    for(auto & p : legs_muons) p.type = 13;
+    for(auto & p : legs_electrons) p.type = 11;
+
+    if(legs_muons.size() > 1) {
+        // std::cout << "DEBUG: resonanceBuilder_mass_recoil_advanced: number of muon legs = " << legs_muons.size() << ", type = " << legs_muons[0].type << std::endl;
         buildResonances(legs_muons, recind, mcind, reco, mc, result, pairs);
-    else if(legs_electrons.size() > 1)
+        // std::cout << "DEBUG: resonanceBuilder_mass_recoil_advanced: number of resonance candidates after muons = " << result.size() << ", type = " << result[0].type << std::endl;
+    }
+    else if(legs_electrons.size() > 1) {
+        // std::cout << "DEBUG: resonanceBuilder_mass_recoil_advanced: number of electrons legs = " << legs_electrons.size() << ", type = " << legs_electrons[0].type << std::endl;
         buildResonances(legs_electrons, recind, mcind, reco, mc, result, pairs);
+        // std::cout << "DEBUG: resonanceBuilder_mass_recoil_advanced: number of resonance candidates after electrons = " << result.size() << ", type = " << result[0].type << std::endl;
+    }
     else {
         return Vec_rp(); // return empty list
-        // std::cout << "ERROR: categorizer, at least two leptons required." << std::endl;
+        // std::cout << "ERROR: resonanceBuilder_mass_recoil_advanced, at least two leptons required." << std::endl;
         // exit(1);
     }
 
     Vec_rp bestReso;
-    bestReso.reserve(3);
+    bestReso.reserve(5);
     std::vector<int> selected_indices;
 
     if(result.size() == 0) {
         return Vec_rp(); // return empty list
-        // std::cout << "ERROR: categorizer, no opposite-charge lepton pair found." << std::endl;
+        // std::cout << "ERROR: resonanceBuilder_mass_recoil_advanced, no opposite-charge lepton pair found." << std::endl;
         // exit(1);
     }
     else if(result.size() == 1) { // only one pair found
@@ -269,28 +279,33 @@ Vec_rp categorizer::categorizer::operator()(Vec_rp legs_muons, Vec_rp legs_elect
             selected_indices = pairs[idx_min];
         }
         else {
-            std::cout << "ERROR: categorizer, no mininum found." << std::endl;
+            std::cout << "ERROR: resonanceBuilder_mass_recoil_advanced, no mininum found." << std::endl;
             exit(1);
         }
     }
 
     // Add the two leptons of the selected pair to 'bestRepo' list that will be returned.
     rp l1, l2;
-    if(bestReso.at(0).type == 13) {
+    int resonance_type = std::abs(bestReso.at(0).type);
+    if(resonance_type == 13) {  // resonance is a muon pair
         l1 = legs_muons[selected_indices[0]];
         l2 = legs_muons[selected_indices[1]];
     }
-    else {
+    else if(resonance_type == 11) {  // resonance is an electron pair
         l1 = legs_electrons[selected_indices[0]];
         l2 = legs_electrons[selected_indices[1]];
+    }
+    else {
+        std::cout << "ERROR: resonanceBuilder_mass_recoil_advanced, unknown resonance type." << std::endl;
+        exit(1);
     }
     bestReso.emplace_back(l1);
     bestReso.emplace_back(l2);
 
     // Find the two other leptons not in the selected pair
-    if (bestReso.at(0).type == 13) {  // The resonance is a muon pair
+    if (resonance_type == 13) {  // The resonance is a muon pair
         for (size_t i = 0; i < legs_muons.size(); ++i) {
-            if (i != selected_indices[0] && i != selected_indices[1]) {  // add all muons not in the pair
+            if (i != selected_indices[0] && i != selected_indices[1]) {  // add all muons not in the pair (should be no such muons, but just in case)
                 bestReso.push_back(legs_muons[i]);
             }
         }
@@ -303,7 +318,7 @@ Vec_rp categorizer::categorizer::operator()(Vec_rp legs_muons, Vec_rp legs_elect
             bestReso.push_back(legs_muons[i]);
         }
     }
-    for (size_t i = 0; i < legs_electrons.size(); ++i) {  // add all electrons not in the pair
+    for (size_t i = 0; i < legs_electrons.size(); ++i) {  // add all electrons not in the pair (should be no such electrons, but just in case)
         if (i != selected_indices[0] && i != selected_indices[1]) {
             bestReso.push_back(legs_electrons[i]);
         }
@@ -318,6 +333,24 @@ Vec_rp categorizer::categorizer::operator()(Vec_rp legs_muons, Vec_rp legs_elect
 }
 
 
+// Get WW leptons vector, and return the WW leptons category: -1: not WW leptonic, 0: e+e-, 1: mu+mu-, 2: e-mu or mu-e
+int getWWleptonicCategory(Vec_rp in) {
+    if(in.size() < 2) return -1;
+    int n_e = 0;
+    int n_mu = 0;
+    for(auto & p : in) {
+        // std::cout << "getWWleptonicCategory: particle type = " << p.type << std::endl;
+        if(std::abs(p.type) == 11) n_e++;
+        else if(std::abs(p.type) == 13) n_mu++;
+    }
+    if(n_e == 2 && n_mu == 0) return 0;
+    else if(n_e == 0 && n_mu == 2) return 1;
+    else if(n_e + n_mu == 2) return 2;
+    return -1;
+}
+
+
+// Sort particles by descending pT
 Vec_rp sortByPt(Vec_rp in) {
     std::sort(in.begin(), in.end(), [](const auto& a, const auto& b) {
         const float ptA = std::hypot(a.momentum.x, a.momentum.y);

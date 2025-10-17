@@ -1,7 +1,7 @@
 
 import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))  # add parent dir
-import zh_hww_4l.plotter as plotter
+import zh_hww_4l.plots as plotter
 import ROOT
 import argparse
 
@@ -54,7 +54,8 @@ hists[signal_combined_name] = combine_signal_histograms(hists, signal_keys)
 proc_list = [signal_combined_name] + proc_list
 
 out_orig = sys.stdout
-with open(f"{'../zh_hww_4l/'+plotter.outdir}/cutFlow_combined.txt", 'w') as f:
+output_path = f"{'../zh_hww_4l/'+plotter.outdir.replace('ee', 'll').replace('mumu','ll')}/cutFlow_combined.txt"
+with open(output_path, 'w') as f:
     sys.stdout = f
     
     if add_perc:
@@ -79,7 +80,7 @@ with open(f"{'../zh_hww_4l/'+plotter.outdir}/cutFlow_combined.txt", 'w') as f:
             tmp = tmp2
             tmp2 = []
         row = ["Total", "", ""]
-        row += [f"{tmp[j]/tmp0[j]:.2%}" for j in range(len(tmp0))]
+        row += [f"{tmp[j]/tmp0[j]:.4%}" for j in range(len(tmp0))]
         print('\n'+formatted_row.format(*row))
         
     else:
@@ -99,4 +100,4 @@ with open(f"{'../zh_hww_4l/'+plotter.outdir}/cutFlow_combined.txt", 'w') as f:
             # f.write(formatted_row.format(*row) + '\n')
             
 sys.stdout = out_orig
-print(f"Cutflow table saved to {'../zh_hww_4l/'+plotter.outdir}/cutFlow_combined.txt")
+print(f"Cutflow table saved to {output_path}")
