@@ -1,6 +1,8 @@
 import ROOT
 
-flavor = 'ee'  # 'mumu', 'ee', 'll'
+fullrun = True
+flavor = 'll'  # 'mumu', 'ee', 'll'
+
 if flavor=='mumu':
     Z_leptons = '#mu^{+}#mu^{-}'
 if flavor=='ee':
@@ -15,9 +17,9 @@ ana_tex        = 'e^{+}e^{-}#rightarrow Z(' + Z_leptons + ')H, H#rightarrow WW*#
 delphesVersion = '3.4.2'
 energy         = 240.0
 collider       = 'FCC-ee'
-inputDir       = f"outputs/hists/"
+inputDir       = f"../../../outputs/higgs/zh_hww_4l/hists/{'full/' if fullrun else ''}"
 formats        = ['pdf']
-outdir         = f"outputs/plots/{flavor}/"
+outdir         = f"../../../outputs/higgs/zh_hww_4l/plots/{'full/' if fullrun else ''}{flavor}/"
 plotStatUnc    = True
 
 colors = {}

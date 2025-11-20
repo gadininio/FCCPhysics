@@ -41,10 +41,15 @@ scaleSig = cutflow_cfg['scaleSig'] if 'scaleSig' in cutflow_cfg else 1.
 cuts = cutflow_cfg['xtitle']
 
 # Load histogram from a ROOT file
+input = plotter.inputDir.replace('../','')
+input = '../../' + input
+output = plotter.outdir.replace('../','')
+output = '../../' + output
+
 hists = {}
 for sample_name in proc_list:
     sample_file = procs['signal'][sample_name] if sample_name in procs['signal'] else procs['backgrounds'][sample_name]
-    hists[sample_name] = load_histogram(os.path.join('../zh_hww_4l/'+plotter.inputDir, f"{sample_file}.root"))
+    hists[sample_name] = load_histogram(os.path.join(input, f"{sample_file}.root"))
     if sample_name in procs['signal'] and scaleSig != 1.:
         hists[sample_name].Scale(1./scaleSig) # undo signal scaling
 
@@ -54,7 +59,7 @@ hists[signal_combined_name] = combine_signal_histograms(hists, signal_keys)
 proc_list = [signal_combined_name] + proc_list
 
 out_orig = sys.stdout
-output_path = f"{'../zh_hww_4l/'+plotter.outdir.replace('ee', 'll').replace('mumu','ll')}/cutFlow_combined.txt"
+output_path = f"{output.replace('ee', 'll').replace('mumu','ll')}/cutFlow_combined.txt"
 with open(output_path, 'w') as f:
     sys.stdout = f
     

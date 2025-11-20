@@ -3,16 +3,16 @@ import ROOT
 flavor = "mumu" # mumu, ee
 
 intLumi        = 1.0 # assume histograms are scaled in previous step
-outputDir      = f"outputs/FCCee/higgs/mass-xsec/combine/{flavor}/"
+outputDir      = f"../../outputs/higgs/zh_hww_4l/combine/full/"
 mc_stats       = True
 rebin          = 10
 
 # get histograms from histmaker step
-#inputDir       = f"outputs/FCCee/higgs/mass-xsec/histmaker/{flavor}/"
+inputDir       = f"../../outputs/higgs/zh_hww_4l/hists/full/"
 
-# get histograms from final step, selection to be defined
-inputDir       = f"outputs/FCCee/higgs/mass-xsec/final_selection/{flavor}/"
-selection      = "sel3"
+# # get histograms from final step, selection to be defined
+# inputDir       = f"../../../outputs/higgs/zh_hww_4l/final_selection/{flavor}/"
+# selection      = "sel3"
 
 
 sig_procs = {'sig':['wzp6_ee_eeH_HWW_ecm240', 'wzp6_ee_mumuH_HWW_ecm240']}

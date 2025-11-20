@@ -1,20 +1,23 @@
 
-bkg_fraction = 0.05
+fraction = 0.05
+nchunks = 1
 debug = False
 fullrun = True
 
-if fullrun and not debug: bkg_fraction = 1
+if fullrun and not debug:
+    fraction = 1
+    nchunks = 50
 
 # list of processes (mandatory)
 processList_mumu = {
-    'p8_ee_ZZ_ecm240':{'fraction': bkg_fraction},
-    'p8_ee_WW_ecm240':{'fraction': bkg_fraction}, 
+    'p8_ee_ZZ_ecm240':{'fraction': fraction, 'chunks': nchunks},
+    'p8_ee_WW_ecm240':{'fraction': fraction, 'chunks': nchunks},
     'wzp6_ee_mumuH_HWW_ecm240':{'fraction': 1},
 }
 
 processList_ee = {
-    'p8_ee_ZZ_ecm240':{'fraction': bkg_fraction},
-    'p8_ee_WW_ecm240':{'fraction': bkg_fraction}, 
+    'p8_ee_ZZ_ecm240':{'fraction': fraction, 'chunks': nchunks},
+    'p8_ee_WW_ecm240':{'fraction': fraction, 'chunks': nchunks}, 
     'wzp6_ee_eeH_HWW_ecm240':{'fraction': 1},
 }
 
@@ -35,9 +38,10 @@ includePaths = ["../functions.h"]
 
 #Optional: output directory, default is local running directory
 output_fix = ""
-if debug: output_fix = "_debug"
-elif fullrun: output_fix = "_full"
-outputDir   = f"outputs/hists{output_fix}/"
+if debug: output_fix = "debug/"
+elif fullrun: output_fix = "full/"
+outputDir   = f"../../../outputs/higgs/zh_hww_4l/hists/{output_fix}/"
+
 
 # optional: ncpus, default is 4, -1 uses all cores available
 nCPUS       = -1

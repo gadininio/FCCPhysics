@@ -7,9 +7,14 @@ import pickle
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-i", "--input", type=str, default="outputs/FCCee/higgs/mva/bdt_model_example.pkl", help="Input pkl file")
-parser.add_argument("-o", "--outDir", type=str, default="outputs/FCCee/higgs/mva/plots_training", help="Output directory")
+parser.add_argument("-i", "--input", type=str, default="../../../outputs/higgs/zh_hww_4l/mva/bdt_model_example.pkl", help="Input pkl file")
+parser.add_argument("-o", "--outDir", type=str, default="../../../outputs/higgs/zh_hww_4l/mva/plots_training", help="Output directory")
+parser.add_argument("-l", "--loose", action='store_true', default=False, help="Process full dataset")
 args = parser.parse_args()
+
+if args.loose:
+    args.input.replace('mva', 'mva_loose')
+    args.outDir.replace('mva', 'mva_loose')
 
 
 def plot_roc():
@@ -34,7 +39,7 @@ def plot_roc():
     plt.title('Receiver Operating Characteristic (ROC) Curve')
     plt.legend()
     plt.grid()
-    plt.savefig(f"{outDir}/roc.png")
+    # plt.savefig(f"{outDir}/roc.png")
     plt.savefig(f"{outDir}/roc.pdf")
     plt.close()
 
@@ -61,9 +66,10 @@ def plot_score():
     plt.title('BDT Score Distribution')
     plt.legend()
     plt.grid()
-    plt.savefig(f"{outDir}/score.png")
+    # plt.savefig(f"{outDir}/score.png")
     plt.savefig(f"{outDir}/score.pdf")
     plt.close()
+
 
 def plot_importance():
 
@@ -82,7 +88,7 @@ def plot_importance():
     importance_df.plot(kind='barh', x='Variable', y='Importance', legend=None, ax=ax)
     ax.set_xlabel('BDT score')
     ax.set_title("BDT variable scores", fontsize=16)
-    plt.savefig(f"{outDir}/importance.png")
+    # plt.savefig(f"{outDir}/importance.png")
     plt.savefig(f"{outDir}/importance.pdf")
     plt.close()
 
@@ -90,6 +96,10 @@ def plot_importance():
 
 if __name__ == "__main__":
     outDir = args.outDir
+
+    # Create output directory if it doesn't exist
+    if not os.path.exists(outDir):
+        os.makedirs(outDir)
 
     res = pickle.load(open(args.input, "rb"))
     bdt = res['model']
