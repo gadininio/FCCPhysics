@@ -12,12 +12,16 @@ if fullrun and not debug:
 processList_mumu = {
     'p8_ee_ZZ_ecm240':{'fraction': fraction, 'chunks': nchunks},
     'p8_ee_WW_ecm240':{'fraction': fraction, 'chunks': nchunks},
+    'wzp6_ee_mumu_ecm240':{'fraction': fraction, 'chunks': nchunks},
+    # 'wzp6_ee_tautau_ecm240':{'fraction': fraction, 'chunks': nchunks},
     'wzp6_ee_mumuH_HWW_ecm240':{'fraction': 1},
 }
 
 processList_ee = {
     'p8_ee_ZZ_ecm240':{'fraction': fraction, 'chunks': nchunks},
     'p8_ee_WW_ecm240':{'fraction': fraction, 'chunks': nchunks}, 
+    'wzp6_ee_ee_Mee_30_150_ecm240':{'fraction': fraction, 'chunks': nchunks},
+    # 'wzp6_ee_tautau_ecm240':{'fraction': fraction, 'chunks': nchunks},
     'wzp6_ee_eeH_HWW_ecm240':{'fraction': 1},
 }
 
@@ -40,7 +44,7 @@ includePaths = ["../functions.h"]
 output_fix = ""
 if debug: output_fix = "debug/"
 elif fullrun: output_fix = "full/"
-outputDir   = f"../../../outputs/higgs/zh_hww_4l/hists/{output_fix}/"
+outputDir   = f"../../outputs/higgs/zh_hww_4l/hists/{output_fix}/"
 
 
 # optional: ncpus, default is 4, -1 uses all cores available
@@ -67,7 +71,9 @@ bins_count = (50, 0, 50)
 bins_charge = (10, -5, 5)
 bins_iso = (500, 0, 5)
 
-bins_recoil_final = (200, 120, 140) # 100 MeV bins
+# bins_recoil_final = (200, 120, 140) # 100 MeV bins
+bins_recoil_final = (2500, 0, 250) # 0.1 GeV bins
+
 
 
 # build_graph function that contains the analysis logic, cuts and histograms (mandatory)
@@ -96,7 +102,7 @@ def build_graph(df, dataset):
     df = df.Define("muons_all", "FCCAnalyses::ReconstructedParticle::get(Muon0, ReconstructedParticles)")
     df = df.Define("muons_all_p", "FCCAnalyses::ReconstructedParticle::get_p(muons_all)")
     
-    df = df.Define("muons", "FCCAnalyses::ReconstructedParticle::sel_p(10)(muons_all)")
+    df = df.Define("muons", "FCCAnalyses::ReconstructedParticle::sel_p(5)(muons_all)")
     df = df.Define("muons_p", "FCCAnalyses::ReconstructedParticle::get_p(muons)")
     df = df.Define("muons_theta", "FCCAnalyses::ReconstructedParticle::get_theta(muons)")
     df = df.Define("muons_phi", "FCCAnalyses::ReconstructedParticle::get_phi(muons)")
@@ -113,7 +119,7 @@ def build_graph(df, dataset):
     df = df.Define("electrons_all", "FCCAnalyses::ReconstructedParticle::get(Electron0, ReconstructedParticles)")
     df = df.Define("electrons_all_p", "FCCAnalyses::ReconstructedParticle::get_p(electrons_all)")
     
-    df = df.Define("electrons", "FCCAnalyses::ReconstructedParticle::sel_p(10)(electrons_all)")
+    df = df.Define("electrons", "FCCAnalyses::ReconstructedParticle::sel_p(5)(electrons_all)")
     df = df.Define("electrons_p", "FCCAnalyses::ReconstructedParticle::get_p(electrons)")
     df = df.Define("electrons_theta", "FCCAnalyses::ReconstructedParticle::get_theta(electrons)")
     df = df.Define("electrons_phi", "FCCAnalyses::ReconstructedParticle::get_phi(electrons)")
@@ -171,6 +177,14 @@ def build_graph(df, dataset):
 
 
     #########
+    ### CUT 3: at least one SF (same-flavor) pair
+    #########
+    df = df.Filter("(muons_no >= 2) || (electrons_no >= 2)")
+    df = df.Define("cut3", "3")
+    results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut3"))
+
+
+    #########
     ### CUT 3: leptons pT: leading muon pT [25, 80] GeV, subleading muon pT [15, 80] GeV, third muon pT [10,80] GeV, fourth muon pT [10,75] GeV
     #########
     df = df.Define("leptons0", "FCCAnalyses::ReconstructedParticle::merge(muons, electrons)")
@@ -191,8 +205,8 @@ def build_graph(df, dataset):
     df = df.Filter("lep1_p > 15 && lep1_p < 80")
     df = df.Filter("lep2_p > 10 && lep2_p < 80")
     df = df.Filter("lep3_p > 10 && lep3_p < 75")
-    df = df.Define("cut3", "3")
-    results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut3"))
+    df = df.Define("cut4", "4")
+    results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut4"))
 
 
     #########
@@ -210,7 +224,7 @@ def build_graph(df, dataset):
     # We then require that at least one pair was found (size>=5) to keep the event.
     df = df.Define("zbuilder_result", f"FCCAnalyses::ZHfunctions::resonanceBuilder_mass_recoil_advanced(91.2, 125, 0.4, 240, false)(muons, electrons, MCRecoAssociations0, MCRecoAssociations1, ReconstructedParticles, Particle, Particle0, Particle1)")
     df = df.Filter("zbuilder_result.size() >= 5") # make sure at least one pair was found (and additional two leptons)
-    
+
 
     #########
     ### CUT 4: Z mass window
@@ -218,9 +232,10 @@ def build_graph(df, dataset):
     df = df.Define("zll", "Vec_rp{zbuilder_result[0]}") # the Z
     df = df.Define("zll_m", "FCCAnalyses::ReconstructedParticle::get_mass(zll)[0]") # Z mass
     results.append(df.Histo1D(("zll_m_cut3", "", *bins_m_ll), "zll_m"))
-    df = df.Filter("zll_m > 86 && zll_m < 96")
-    df = df.Define("cut4", "4")
-    results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut4"))
+    # df = df.Filter("zll_m > 86 && zll_m < 96")
+    df = df.Filter("zll_m > 76 && zll_m < 106")
+    df = df.Define("cut5", "5")
+    results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut5"))
 
 
     #########
@@ -229,8 +244,8 @@ def build_graph(df, dataset):
     #########
     results.append(df.Histo1D(("zll_p_cut4", "", *bins_p_ll), "zll_p"))
     df = df.Filter("zll_p > 20 && zll_p < 70")
-    df = df.Define("cut5", "5")
-    results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut5"))
+    df = df.Define("cut6", "6")
+    results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut6"))
 
 
     #########
@@ -239,9 +254,9 @@ def build_graph(df, dataset):
     df = df.Define("zll_recoil", "FCCAnalyses::ReconstructedParticle::recoilBuilder(240)(zll)") # compute the recoil based on the reconstructed Z
     df = df.Define("zll_recoil_m", "FCCAnalyses::ReconstructedParticle::get_mass(zll_recoil)[0]") # recoil mass
     results.append(df.Histo1D(("zll_recoil_m_cut5", "", *bins_recoil), "zll_recoil_m")) # plot it before the cut
-    df = df.Filter("zll_recoil_m < 140 && zll_recoil_m > 120")
-    df = df.Define("cut6", "6")
-    results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut6"))
+    # df = df.Filter("zll_recoil_m < 140 && zll_recoil_m > 120")
+    # df = df.Define("cut7", "7")
+    # results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut6"))
 
 
     #########
@@ -324,10 +339,10 @@ def build_graph(df, dataset):
     ### CUT 10: WW system momentum
     #########  
     df = df.Define("WW_p", "WW_tlv.P()")
-    results.append(df.Histo1D(("WW_p_cut9", "", *bins_p_ll), "WW_p"))
-    df = df.Filter("WW_p > 25 && WW_p < 55")
-    df = df.Define("cut10", "10")
-    results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut10"))
+    # results.append(df.Histo1D(("WW_p_cut9", "", *bins_p_ll), "WW_p"))
+    # df = df.Filter("WW_p > 25 && WW_p < 55")
+    # df = df.Define("cut10", "10")
+    # results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut10"))
 
 
     ########################

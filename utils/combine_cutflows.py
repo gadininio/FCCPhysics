@@ -31,7 +31,7 @@ add_perc = args.add_perc
 # Define processes
 procs = {}
 procs['signal'] = {'Z(ee)H':'wzp6_ee_eeH_HWW_ecm240', 'Z(mumu)H':'wzp6_ee_mumuH_HWW_ecm240'}
-procs['backgrounds'] =  {'WW':'p8_ee_WW_ecm240', 'ZZ':'p8_ee_ZZ_ecm240'}
+procs['backgrounds'] =  {'WW':'p8_ee_WW_ecm240', 'ZZ':'p8_ee_ZZ_ecm240', 'Z':['wzp6_ee_ee_Mee_30_150_ecm240', 'wzp6_ee_mumu_ecm240']}
 signal_combined_name = 'Z(ll)H'
 
 # Extract cutflow configuration
@@ -49,7 +49,17 @@ output = '../../' + output
 hists = {}
 for sample_name in proc_list:
     sample_file = procs['signal'][sample_name] if sample_name in procs['signal'] else procs['backgrounds'][sample_name]
-    hists[sample_name] = load_histogram(os.path.join(input, f"{sample_file}.root"))
+    if(type(sample_file) == list):
+        # Combine multiple files for this background
+        hists[sample_name] = None
+        for sf in sample_file:
+            hist = load_histogram(os.path.join(input, f"{sf}.root"))
+            if hists[sample_name] is None:
+                hists[sample_name] = hist
+            else:
+                hists[sample_name].Add(hist)
+    else:
+        hists[sample_name] = load_histogram(os.path.join(input, f"{sample_file}.root"))
     if sample_name in procs['signal'] and scaleSig != 1.:
         hists[sample_name].Scale(1./scaleSig) # undo signal scaling
 
