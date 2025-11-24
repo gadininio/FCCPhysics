@@ -43,7 +43,13 @@ includePaths = ["../functions.h"]
 #Optional: output directory, default is local running directory
 output_fix = ""
 if debug: output_fix = "debug/"
-elif fullrun: output_fix = "full/"
+elif fullrun:
+    # add date-time stamp to output folder
+    from datetime import datetime
+    now = datetime.now()
+    dt_string = now.strftime("%Y%m%d_%H%M%S")
+    output_fix = f"full_{dt_string}/"
+    # output_fix = "full/"
 outputDir   = f"../../outputs/higgs/zh_hww_4l/hists/{output_fix}/"
 
 
@@ -149,6 +155,7 @@ def build_graph(df, dataset):
     # results.append(df.Histo1D(("electrons_iso_cut0", "", *bins_iso), "electrons_iso"))
 
 
+
     #########
     ### CUT 0: all events
     #########
@@ -161,13 +168,17 @@ def build_graph(df, dataset):
     #########
     # df = df.Filter(f"{leps}_no >= 1 && {leps}_sel_iso.size() > 0")
     # df = df.Filter(f"{leps}_no == 4")
-    df = df.Filter("muons_no + electrons_no == 4")
+    
+    df = df.Define("n_leptons", "muons_no + electrons_no")
+    results.append(df.Histo1D(("n_leptons_cut0", "", *bins_count), "n_leptons"))
+    
+    df = df.Filter("n_leptons == 4")
     df = df.Define("cut1", "1")
     results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut1"))
 
 
     #########
-    ### CUT 2: at least 2 opposite-sign (OS) leptons
+    ### CUT 2: at least 2 opposite-sign (OS) lepton pairs
     #########
     # df = df.Filter(f"{leps}_no >= 2 && abs(Sum({leps}_q)) < {leps}_q.size()")
     # df = df.Filter(f"abs(Sum({leps}_q)) <= {leps}_q.size() - 4")
@@ -177,7 +188,7 @@ def build_graph(df, dataset):
 
 
     #########
-    ### CUT 3: at least one SF (same-flavor) pair
+    ### CUT 3: at least one same-flavor (SF) lepton pair
     #########
     df = df.Filter("(muons_no >= 2) || (electrons_no >= 2)")
     df = df.Define("cut3", "3")
@@ -185,7 +196,7 @@ def build_graph(df, dataset):
 
 
     #########
-    ### CUT 3: leptons pT: leading muon pT [25, 80] GeV, subleading muon pT [15, 80] GeV, third muon pT [10,80] GeV, fourth muon pT [10,75] GeV
+    ### CUT 4: leptons p: leading muon p [25, 80] GeV, subleading muon p [15, 80] GeV, third muon p [10,80] GeV, fourth muon p [10,75] GeV
     #########
     df = df.Define("leptons0", "FCCAnalyses::ReconstructedParticle::merge(muons, electrons)")
     df = df.Define("leptons", "FCCAnalyses::ZHfunctions::sortByPt(leptons0)")
@@ -225,35 +236,128 @@ def build_graph(df, dataset):
     df = df.Define("zbuilder_result", f"FCCAnalyses::ZHfunctions::resonanceBuilder_mass_recoil_advanced(91.2, 125, 0.4, 240, false)(muons, electrons, MCRecoAssociations0, MCRecoAssociations1, ReconstructedParticles, Particle, Particle0, Particle1)")
     df = df.Filter("zbuilder_result.size() >= 5") # make sure at least one pair was found (and additional two leptons)
 
+    df = df.Define("zll", "Vec_rp{zbuilder_result[0]}") # the Z
+    df = df.Define("zll_tlv", "FCCAnalyses::ReconstructedParticle::get_tlv(zll, 0)")
+    df = df.Define("zll_m", "FCCAnalyses::ReconstructedParticle::get_mass(zll)[0]") # Z mass
+    df = df.Define("zll_p", "FCCAnalyses::ReconstructedParticle::get_p(zll)[0]") # momentum of the Z
+    df = df.Define("zll_theta", "FCCAnalyses::ReconstructedParticle::get_theta(zll)[0]") # momentum of the Z
+    df = df.Define("zll_phi", "FCCAnalyses::ReconstructedParticle::get_phi(zll)[0]") # momentum of the Z
+
+    results.append(df.Histo1D(("zll_m_cut4", "", *bins_m_ll), "zll_m"))
+    results.append(df.Histo1D(("zll_p_cut4", "", *bins_p_ll), "zll_p"))
+    results.append(df.Histo1D(("zll_theta_cut4", "", *bins_theta), "zll_theta"))
+    results.append(df.Histo1D(("zll_phi_cut4", "", *bins_phi), "zll_phi"))
+
+    ## Recoil mass
+    df = df.Define("zll_recoil", "FCCAnalyses::ReconstructedParticle::recoilBuilder(240)(zll)") # compute the recoil based on the reconstructed Z
+    df = df.Define("zll_recoil_m", "FCCAnalyses::ReconstructedParticle::get_mass(zll_recoil)[0]") # recoil mass
+    results.append(df.Histo1D(("zll_recoil_m_cut4", "", *bins_recoil), "zll_recoil_m")) # plot it before the cut
+
+    ## Study the Z-lepton candidates
+    df = df.Define("zll_leps", "Vec_rp{zbuilder_result[1],zbuilder_result[2]}") # Z-lepton candidates
+    df = df.Define("zll_leps_p", "FCCAnalyses::ReconstructedParticle::get_p(zll_leps)") # get the momentum of these 2 leptons
+    df = df.Define("zll_leps_theta", "FCCAnalyses::ReconstructedParticle::get_theta(zll_leps)") # get the theta of these 2 leptons
+    df = df.Define("zll_leps_phi", "FCCAnalyses::ReconstructedParticle::get_phi(zll_leps)") # get the phi of these 2 leptons
+    
+    df = df.Define("zll_lep0_p", "zll_leps_p[0]")
+    df = df.Define("zll_lep0_theta", "zll_leps_theta[0]")
+    df = df.Define("zll_lep0_phi", "zll_leps_phi[0]")
+    df = df.Define("zll_lep1_p", "zll_leps_p[1]")
+    df = df.Define("zll_lep1_theta", "zll_leps_theta[1]")
+    df = df.Define("zll_lep1_phi", "zll_leps_phi[1]")
+    results.append(df.Histo1D(("zll_lep0_p_cut4", "", *bins_p_mu), "zll_lep0_p"))
+    results.append(df.Histo1D(("zll_lep0_theta_cut4", "", *bins_theta), "zll_lep0_theta"))
+    results.append(df.Histo1D(("zll_lep0_phi_cut4", "", *bins_phi), "zll_lep0_phi"))
+    results.append(df.Histo1D(("zll_lep1_p_cut4", "", *bins_p_mu), "zll_lep1_p"))
+    results.append(df.Histo1D(("zll_lep1_theta_cut4", "", *bins_theta), "zll_lep1_theta"))
+    results.append(df.Histo1D(("zll_lep1_phi_cut4", "", *bins_phi), "zll_lep1_phi"))
+
+    df = df.Define("zll_lep0_tlv", "FCCAnalyses::ReconstructedParticle::get_tlv(zll_leps, 0)")
+    df = df.Define("zll_lep1_tlv", "FCCAnalyses::ReconstructedParticle::get_tlv(zll_leps, 1)")
+    df = df.Define("zll_leps_dR", "zll_lep0_tlv.DeltaR(zll_lep1_tlv)")
+    results.append(df.Histo1D(("zll_leps_dR_cut4", "", *bins_dR), "zll_leps_dR"))
+
+    df = df.Define("zll_leps_category", "FCCAnalyses::ZHfunctions::getDileptonCategory(zll_leps)")
+    results.append(df.Histo1D(("zll_leps_category_cut4", "", 4, -1, 3), "zll_leps_category"))
+
+    df = df.Define("zll_lep0_p_index", "FCCAnalyses::ZHfunctions::findIndex(zll_lep0_p, {lep0_p, lep1_p, lep2_p, lep3_p})")
+    df = df.Define("zll_lep1_p_index", "FCCAnalyses::ZHfunctions::findIndex(zll_lep1_p, {lep0_p, lep1_p, lep2_p, lep3_p})")
+    results.append(df.Histo1D(("zll_lep0_p_index_cut4", "", 5, -1, 4), "zll_lep0_p_index"))  # Which lepton is zll_lep0_p?
+    results.append(df.Histo1D(("zll_lep1_p_index_cut4", "", 5, -1, 4), "zll_lep1_p_index"))  # Which lepton is zll_lep1_p?
+    
+    ## Study the WW-lepton candidates
+    df = df.Define("WW_leps", "Vec_rp{zbuilder_result[3],zbuilder_result[4]}") # the leptons 
+    df = df.Define("WW_leps_p", "FCCAnalyses::ReconstructedParticle::get_p(WW_leps)")
+    df = df.Define("WW_leps_theta", "FCCAnalyses::ReconstructedParticle::get_theta(WW_leps)")
+    df = df.Define("WW_leps_phi", "FCCAnalyses::ReconstructedParticle::get_phi(WW_leps)")
+
+    df = df.Define("WW_lep0_p", "WW_leps_p[0]")
+    df = df.Define("WW_lep0_theta", "WW_leps_theta[0]")
+    df = df.Define("WW_lep0_phi", "WW_leps_phi[0]")
+    df = df.Define("WW_lep1_p", "WW_leps_p[1]")
+    df = df.Define("WW_lep1_theta", "WW_leps_theta[1]")
+    df = df.Define("WW_lep1_phi", "WW_leps_phi[1]")
+    results.append(df.Histo1D(("WW_lep0_p_cut4", "", *bins_p_mu), "WW_lep0_p"))
+    results.append(df.Histo1D(("WW_lep0_theta_cut4", "", *bins_theta), "WW_lep0_theta"))
+    results.append(df.Histo1D(("WW_lep0_phi_cut4", "", *bins_phi), "WW_lep0_phi"))
+    results.append(df.Histo1D(("WW_lep1_p_cut4", "", *bins_p_mu), "WW_lep1_p"))
+    results.append(df.Histo1D(("WW_lep1_theta_cut4", "", *bins_theta), "WW_lep1_theta"))
+    results.append(df.Histo1D(("WW_lep1_phi_cut4", "", *bins_phi), "WW_lep1_phi"))
+    
+    df = df.Define("WW_lep0_tlv", "FCCAnalyses::ReconstructedParticle::get_tlv(WW_leps, 0)")
+    df = df.Define("WW_lep1_tlv", "FCCAnalyses::ReconstructedParticle::get_tlv(WW_leps, 1)")
+    df = df.Define("WW_leps_dR", "WW_lep0_tlv.DeltaR(WW_lep1_tlv)")
+    results.append(df.Histo1D(("WW_leps_dR_cut4", "", *bins_dR), "WW_leps_dR"))
+
+    df = df.Define("WW_leps_category", "FCCAnalyses::ZHfunctions::getDileptonCategory(WW_leps)")
+    results.append(df.Histo1D(("WW_leps_category_cut4", "", 4, -1, 3), "WW_leps_category"))
+    
+    df = df.Define("WW_lep0_p_index", "FCCAnalyses::ZHfunctions::findIndex(WW_lep0_p, {lep0_p, lep1_p, lep2_p, lep3_p})")
+    df = df.Define("WW_lep1_p_index", "FCCAnalyses::ZHfunctions::findIndex(WW_lep1_p, {lep0_p, lep1_p, lep2_p, lep3_p})")
+    results.append(df.Histo1D(("WW_lep0_p_index_cut4", "", 5, -1, 4), "WW_lep0_p_index"))  # Which lepton is WW_lep0_p?
+    results.append(df.Histo1D(("WW_lep1_p_index_cut4", "", 5, -1, 4), "WW_lep1_p_index"))  # Which lepton is WW_lep1_p?    
+    
+    ## Build the WW system using the two leptons not coming from the Z and the missing energy vector
+    df = df.Define("missingEnergy_vec", "FCCAnalyses::ZHfunctions::missingEnergy(240., ReconstructedParticles)")
+    df = df.Define("missingEnergy_tlv", "FCCAnalyses::ReconstructedParticle::get_tlv(missingEnergy_vec, 0)")
+    df = df.Define("WW_tlv", "missingEnergy_tlv + WW_lep0_tlv + WW_lep1_tlv")
+    df = df.Define("WW_mass", "WW_tlv.M()")
+    df = df.Define("WW_p", "WW_tlv.P()")
+    df = df.Define("WW_theta", "WW_tlv.Theta()")
+    df = df.Define("WW_phi", "WW_tlv.Phi()")
+    results.append(df.Histo1D(("WW_mass_cut4", "", *bins_m_ll), "WW_mass"))
+    results.append(df.Histo1D(("WW_p_cut4", "", *bins_p_mu), "WW_p"))
+    results.append(df.Histo1D(("WW_theta_cut4", "", *bins_theta), "WW_theta"))
+    results.append(df.Histo1D(("WW_phi_cut4", "", *bins_phi), "WW_phi"))
+
+    # dR(Z, WW)
+    df = df.Define("zll_WW_dR", "WW_tlv.DeltaR(zll_tlv)")
+    results.append(df.Histo1D(("zll_WW_dR_cut4", "", *bins_dR), "zll_WW_dR"))
+
 
     #########
-    ### CUT 4: Z mass window
+    ### CUT 5: Z mass window
     #########
-    df = df.Define("zll", "Vec_rp{zbuilder_result[0]}") # the Z
-    df = df.Define("zll_m", "FCCAnalyses::ReconstructedParticle::get_mass(zll)[0]") # Z mass
-    results.append(df.Histo1D(("zll_m_cut3", "", *bins_m_ll), "zll_m"))
-    # df = df.Filter("zll_m > 86 && zll_m < 96")
+    # results.append(df.Histo1D(("zll_m_cut4", "", *bins_m_ll), "zll_m"))  # already done above
+    # df = df.Filter("zll_m > 86 && zll_m < 96")  # tighter cut - smaller significance
     df = df.Filter("zll_m > 76 && zll_m < 106")
     df = df.Define("cut5", "5")
     results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut5"))
 
 
     #########
-    ### CUT 5: Z momentum
-    df = df.Define("zll_p", "FCCAnalyses::ReconstructedParticle::get_p(zll)[0]") # momentum of the Z
+    ### CUT 6: Z momentum
     #########
-    results.append(df.Histo1D(("zll_p_cut4", "", *bins_p_ll), "zll_p"))
+    results.append(df.Histo1D(("zll_p_cut5", "", *bins_p_ll), "zll_p"))
     df = df.Filter("zll_p > 20 && zll_p < 70")
     df = df.Define("cut6", "6")
     results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut6"))
 
 
     #########
-    ### CUT 6: recoil mass window (reconstructed Higgs mass using the recoil method)
+    ### CUT *: recoil mass window (reconstructed Higgs mass using the recoil method)
     #########
-    df = df.Define("zll_recoil", "FCCAnalyses::ReconstructedParticle::recoilBuilder(240)(zll)") # compute the recoil based on the reconstructed Z
-    df = df.Define("zll_recoil_m", "FCCAnalyses::ReconstructedParticle::get_mass(zll_recoil)[0]") # recoil mass
-    results.append(df.Histo1D(("zll_recoil_m_cut5", "", *bins_recoil), "zll_recoil_m")) # plot it before the cut
+    results.append(df.Histo1D(("zll_recoil_m_cut6", "", *bins_recoil), "zll_recoil_m")) # plot it before the cut
     # df = df.Filter("zll_recoil_m < 140 && zll_recoil_m > 120")
     # df = df.Define("cut7", "7")
     # results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut6"))
@@ -262,7 +366,6 @@ def build_graph(df, dataset):
     #########
     ### CUT 7: cosThetaMiss
     #########  
-    df = df.Define("missingEnergy_vec", "FCCAnalyses::ZHfunctions::missingEnergy(240., ReconstructedParticles)")
     df = df.Define("cosTheta_miss", "FCCAnalyses::ZHfunctions::get_cosTheta_miss(missingEnergy_vec)")
     results.append(df.Histo1D(("cosThetaMiss_cut6", "", *bins_cosThetaMiss), "cosTheta_miss")) # plot it before the cut
     df = df.Filter("cosTheta_miss < 0.98")
@@ -281,54 +384,8 @@ def build_graph(df, dataset):
 
 
     #########
-    ### Further leptons study
-    #########  
-    
-    ## Studies with the two leptons coming from the Z
-    df = df.Define("zll_leps", "Vec_rp{zbuilder_result[1],zbuilder_result[2]}") # the leptons 
-    df = df.Define("zll_leps_p", "FCCAnalyses::ReconstructedParticle::get_p(zll_leps)") # get the momentum of the 2 leptons from the Z resonance
-    df = df.Define("zll_leps_p0", "zll_leps_p[0]") # the leptons 
-    df = df.Define("zll_leps_p1", "zll_leps_p[1]") # the leptons 
-    results.append(df.Histo1D(("zll_leps_p0_cut8", "", *bins_p_mu), "zll_leps_p0"))
-    results.append(df.Histo1D(("zll_leps_p1_cut8", "", *bins_p_mu), "zll_leps_p1"))
-
-    df = df.Define("zll_leps_p0_index", "FCCAnalyses::ZHfunctions::matchMuonIndex(zll_leps_p0, {lep0_p, lep1_p, lep2_p, lep3_p})")
-    df = df.Define("zll_leps_p1_index", "FCCAnalyses::ZHfunctions::matchMuonIndex(zll_leps_p1, {lep0_p, lep1_p, lep2_p, lep3_p})")
-    results.append(df.Histo1D(("zll_leps_p0_index_cut8", "", 5, -1, 4), "zll_leps_p0_index"))  # Which muon is zll_leps_p0?
-    results.append(df.Histo1D(("zll_leps_p1_index_cut8", "", 5, -1, 4), "zll_leps_p1_index"))  # Which muon is zll_leps_p1?
-
-    ## Additional studies with the two leptons coming from the WW
-    df = df.Define("WW_leps", "Vec_rp{zbuilder_result[3],zbuilder_result[4]}") # the leptons 
-    df = df.Define("WW_leps_p", "FCCAnalyses::ReconstructedParticle::get_p(WW_leps)")
-    # df = df.Define("WW_leps_theta", "FCCAnalyses::ReconstructedParticle::get_theta(WW_leps)")
-    # df = df.Define("WW_leps_phi", "FCCAnalyses::ReconstructedParticle::get_phi(WW_leps)")
-    # df = df.Define("WW_leps_q", "FCCAnalyses::ReconstructedParticle::get_charge(WW_leps)")
-    # df = df.Define("WW_leps_no", "FCCAnalyses::ReconstructedParticle::get_n(WW_leps)")
-    df = df.Define("WW_leps_category", "FCCAnalyses::ZHfunctions::getWWleptonicCategory(WW_leps)")
-    results.append(df.Histo1D(("WW_leps_category_cut8", "", 4, -1, 3), "WW_leps_category"))
-
-    df = df.Define("WW_leps_tlv0", "FCCAnalyses::ReconstructedParticle::get_tlv(WW_leps, 0)")
-    df = df.Define("WW_leps_tlv1", "FCCAnalyses::ReconstructedParticle::get_tlv(WW_leps, 1)")
-    df = df.Define("WW_leps_dR", "WW_leps_tlv0.DeltaR(WW_leps_tlv1)")
-    df = df.Define("WW_leps_p0", "WW_leps_p[0]")
-    df = df.Define("WW_leps_p1", "WW_leps_p[1]")
-    results.append(df.Histo1D(("WW_leps_p0_cut8", "", *bins_p_mu), "WW_leps_p0"))
-    results.append(df.Histo1D(("WW_leps_p1_cut8", "", *bins_p_mu), "WW_leps_p1"))
-    results.append(df.Histo1D(("WW_leps_dR_cut8", "", *bins_dR), "WW_leps_dR"))
-
-    ## Build the WW system using the two leptons not coming from the Z and the missing energy vector
-    df = df.Define("missingEnergy_tlv", "FCCAnalyses::ReconstructedParticle::get_tlv(missingEnergy_vec, 0)")
-    df = df.Define("WW_tlv", "missingEnergy_tlv + WW_leps_tlv0 + WW_leps_tlv1")
-    df = df.Define("WW_theta", "WW_tlv.Theta()")
-    df = df.Define("WW_phi", "WW_tlv.Phi()")
-    results.append(df.Histo1D(("WW_theta_cut8", "", *bins_theta), "WW_theta"))
-    results.append(df.Histo1D(("WW_phi_cut8", "", *bins_phi), "WW_phi"))
-
-
-    #########
     ### CUT 9: WW system mass window
     #########  
-    df = df.Define("WW_mass", "WW_tlv.M()")
     results.append(df.Histo1D(("WW_mass_cut8", "", *bins_m_ll), "WW_mass"))
     df = df.Filter("WW_mass > 80 && WW_mass < 135")
     df = df.Define("cut9", "9")
@@ -336,43 +393,79 @@ def build_graph(df, dataset):
 
 
     #########
-    ### CUT 10: WW system momentum
+    ### CUT *: WW system momentum
     #########  
-    df = df.Define("WW_p", "WW_tlv.P()")
     # results.append(df.Histo1D(("WW_p_cut9", "", *bins_p_ll), "WW_p"))
     # df = df.Filter("WW_p > 25 && WW_p < 55")
     # df = df.Define("cut10", "10")
     # results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut10"))
-
+    
+    
+    #########
+    ### CUT 10: dR(l_WW, l_WW)>0.25
+    #########  
+    results.append(df.Histo1D(("WW_leps_dR_cut9", "", *bins_dR), "WW_leps_dR"))
+    df = df.Filter("WW_leps_dR > 0.25")
+    df = df.Define("cut10", "10")
+    results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut10"))
+    
 
     ########################
     # Final histograms
     ########################
+    
+    # Leptons
     results.append(df.Histo1D(("lep0_p_final", "", *bins_p_mu), "lep0_p"))
     results.append(df.Histo1D(("lep1_p_final", "", *bins_p_mu), "lep1_p"))
     results.append(df.Histo1D(("lep2_p_final", "", *bins_p_mu), "lep2_p"))
     results.append(df.Histo1D(("lep3_p_final", "", *bins_p_mu), "lep3_p"))
+    results.append(df.Histo1D(("n_leptons_final", "", *bins_count), "n_leptons"))
     
+    # zll system
     results.append(df.Histo1D(("zll_m_final", "", *bins_m_ll), "zll_m"))
     results.append(df.Histo1D(("zll_recoil_m_final", "", *bins_recoil_final), "zll_recoil_m"))
     results.append(df.Histo1D(("zll_p_final", "", *bins_p_ll), "zll_p"))
-    results.append(df.Histo1D(("zll_leps_p0_final", "", *bins_p_mu), "zll_leps_p0"))
-    results.append(df.Histo1D(("zll_leps_p1_final", "", *bins_p_mu), "zll_leps_p1"))
+    results.append(df.Histo1D(("zll_theta_final", "", *bins_theta), "zll_theta"))
+    results.append(df.Histo1D(("zll_phi_final", "", *bins_phi), "zll_phi"))
 
-    results.append(df.Histo1D(("cosThetaMiss_final", "", *bins_cosThetaMiss), "cosTheta_miss"))
-    results.append(df.Histo1D(("missingEnergy_final", "", *bins_p_mu), "missingEnergy"))
+    # zll leptons
+    results.append(df.Histo1D(("zll_lep0_p_final", "", *bins_p_mu), "zll_lep0_p"))
+    results.append(df.Histo1D(("zll_lep0_theta_final", "", *bins_theta), "zll_lep0_theta"))
+    results.append(df.Histo1D(("zll_lep0_phi_final", "", *bins_phi), "zll_lep0_phi"))
+    results.append(df.Histo1D(("zll_lep0_p_index_final", "", 5, -1, 4), "zll_lep0_p_index"))  # Which muon is zll_lep0_p?
+    results.append(df.Histo1D(("zll_lep1_p_final", "", *bins_p_mu), "zll_lep1_p"))
+    results.append(df.Histo1D(("zll_lep1_theta_final", "", *bins_theta), "zll_lep1_theta"))
+    results.append(df.Histo1D(("zll_lep1_phi_final", "", *bins_phi), "zll_lep1_phi"))
+    results.append(df.Histo1D(("zll_lep1_p_index_final", "", 5, -1, 4), "zll_lep1_p_index"))  # Which muon is zll_lep1_p?
+    
+    results.append(df.Histo1D(("zll_leps_dR_final", "", *bins_dR), "zll_leps_dR"))
+    results.append(df.Histo1D(("zll_leps_category_final", "", 4, -1, 3), "zll_leps_category"))
 
+    # WW system
     results.append(df.Histo1D(("WW_mass_final", "", *bins_m_ll), "WW_mass"))
     results.append(df.Histo1D(("WW_p_final", "", *bins_p_ll), "WW_p"))
     results.append(df.Histo1D(("WW_theta_final", "", *bins_theta), "WW_theta"))
     results.append(df.Histo1D(("WW_phi_final", "", *bins_phi), "WW_phi"))
-    results.append(df.Histo1D(("WW_leps_p0_final", "", *bins_p_mu), "WW_leps_p0"))
-    results.append(df.Histo1D(("WW_leps_p1_final", "", *bins_p_mu), "WW_leps_p1"))
-    results.append(df.Histo1D(("WW_leps_dR_final", "", *bins_dR), "WW_leps_dR"))
-    
-    results.append(df.Histo1D(("zll_leps_p0_index_final", "", 5, -1, 4), "zll_leps_p0_index"))  # Which muon is zll_leps_p0?
-    results.append(df.Histo1D(("zll_leps_p1_index_final", "", 5, -1, 4), "zll_leps_p1_index"))  # Which muon is zll_leps_p1?
-    results.append(df.Histo1D(("WW_leps_category_final", "", 4, -1, 3), "WW_leps_category"))
 
+    # WW leptons
+    results.append(df.Histo1D(("WW_lep0_p_final", "", *bins_p_mu), "WW_lep0_p"))
+    results.append(df.Histo1D(("WW_lep0_theta_final", "", *bins_theta), "WW_lep0_theta"))
+    results.append(df.Histo1D(("WW_lep0_phi_final", "", *bins_phi), "WW_lep0_phi"))
+    results.append(df.Histo1D(("WW_lep0_p_index_final", "", 5, -1, 4), "WW_lep0_p_index"))  # Which muon is zll_lep0_p?
+    results.append(df.Histo1D(("WW_lep1_p_final", "", *bins_p_mu), "WW_lep1_p"))
+    results.append(df.Histo1D(("WW_lep1_theta_final", "", *bins_theta), "WW_lep1_theta"))
+    results.append(df.Histo1D(("WW_lep1_phi_final", "", *bins_phi), "WW_lep1_phi"))
+    results.append(df.Histo1D(("WW_lep1_p_index_final", "", 5, -1, 4), "WW_lep1_p_index"))  # Which muon is zll_lep1_p?
+
+    results.append(df.Histo1D(("WW_leps_dR_final", "", *bins_dR), "WW_leps_dR"))
+    results.append(df.Histo1D(("WW_leps_category_final", "", 4, -1, 3), "WW_leps_category"))
+    
+    # dR(Z, WW)
+    results.append(df.Histo1D(("zll_WW_dR_final", "", *bins_dR), "zll_WW_dR"))
+
+    # missing energy
+    results.append(df.Histo1D(("cosThetaMiss_final", "", *bins_cosThetaMiss), "cosTheta_miss"))
+    results.append(df.Histo1D(("missingEnergy_final", "", *bins_p_mu), "missingEnergy"))
+    
     return results, weightsum
 

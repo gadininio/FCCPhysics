@@ -333,8 +333,8 @@ Vec_rp resonanceBuilder_mass_recoil_advanced::resonanceBuilder_mass_recoil_advan
 }
 
 
-// Get WW leptons vector, and return the WW leptons category: -1: not WW leptonic, 0: e+e-, 1: mu+mu-, 2: e-mu or mu-e
-int getWWleptonicCategory(Vec_rp in) {
+// Get dilepton vector, and return the dilepton category: -1: not leptonic, 0: e+e-, 1: mu+mu-, 2: e-mu or mu-e
+int getDileptonCategory(Vec_rp in) {
     if(in.size() < 2) return -1;
     int n_e = 0;
     int n_mu = 0;
@@ -362,11 +362,9 @@ Vec_rp sortByPt(Vec_rp in) {
 
 
 // Return the index (0..3) of the muon whose momentum matches lepton_p
-int matchMuonIndex(float lepton_p,
-                    const std::vector<float>& muon_p_list,
-                    float tol = 1e-3) {
-    for (size_t i = 0; i < muon_p_list.size(); ++i) {
-        if (std::fabs(muon_p_list[i] - lepton_p) < tol) {
+int findIndex(float p, const std::vector<float>& p_list, float tol = 1e-3) {
+    for (size_t i = 0; i < p_list.size(); ++i) {
+        if (std::fabs(p_list[i] - p) < tol) {
             return static_cast<int>(i);
         }
     }

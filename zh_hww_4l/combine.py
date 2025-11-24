@@ -1,15 +1,19 @@
 import ROOT
 
 # flavor = "mumu" # mumu, ee
-is_full = True
+fullrun = True
+# date = '20251124_111307'
+date = '20251124_112545' # with dR(Z,WW)>0.25 cut
+
+path_full = f'full_{date}/' if date!='' else 'full/'
 
 intLumi        = 1.0 # assume histograms are scaled in previous step
-outputDir      = f"../../outputs/higgs/zh_hww_4l/combine/{'full/' if is_full else ''}/"
+outputDir      = f"../../outputs/higgs/zh_hww_4l/combine/{path_full if fullrun else ''}/"
 mc_stats       = True
 rebin          = 10
 
 # get histograms from histmaker step
-inputDir       = f"../../outputs/higgs/zh_hww_4l/hists/{'full/' if is_full else ''}/"
+inputDir       = f"../../outputs/higgs/zh_hww_4l/hists/{path_full if fullrun else ''}/"
 
 # # get histograms from final step, selection to be defined
 # inputDir       = f"../../../outputs/higgs/zh_hww_4l/final_selection/{flavor}/"
@@ -27,14 +31,14 @@ hist_names = ["zll_recoil_m_final"]
 
 systs = {}
 
-systs['bkg_norm'] = {
-    'type': 'lnN',
-    'value': 1.05,
-    'procs': ['bkg'],
-}
+# systs['bkg_norm'] = {
+#     'type': 'lnN',
+#     'value': 1.05,
+#     'procs': ['bkg'],
+# }
 
-systs['lumi'] = {
-    'type': 'lnN',
-    'value': 1.01,
-    'procs': '.*',
-}
+# systs['lumi'] = {
+#     'type': 'lnN',
+#     'value': 1.01,
+#     'procs': '.*',
+# }

@@ -82,6 +82,9 @@ with open(output_path, 'w') as f:
         tmp2 = []
         tmp0 = []
         for i,cut in enumerate(cuts):
+            
+            if cut == 'p_{l_{1}},p_{l_{2}},p_{l_{3}},p_{l_{4}}': cut = 'p_{l}'
+            
             s = hists[proc_list[0]].GetBinContent(i+1)
             s_plus_b = sum([hists[p].GetBinContent(i+1) for p in proc_list if p != signal_combined_name])
             significance = s/(s_plus_b**0.5) if s_plus_b > 0 else 0
