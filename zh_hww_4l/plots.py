@@ -6,7 +6,8 @@ fullrun = True
 # date = '20251124_112545' # n_leptons=4, with dR(Z,WW)>0.25 cut
 # date = '20251124_131704' # n_leptons>=4
 # date = '20251124_131805' # n_leptons>=4, with dR(Z,WW)>0.25 cut
-date = '20251124_150648' # n_leptons=4, with dR(Z,WW)>0.25 cut
+# date = '20251124_150648' # n_leptons=4, with dR(Z,WW)>0.25 cut
+date = '20251125_134522' # n_leptons=4, with dR(Z,WW)>0.25 cut, bug in resonanceBuilder_mass_recoil_advanced fixed
 
 if flavor=='mumu':
     Z_leptons = '#mu^{+}#mu^{-}'

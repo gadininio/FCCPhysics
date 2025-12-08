@@ -3,6 +3,7 @@ fraction = 0.05
 nchunks = 1
 debug = False
 fullrun = True
+apply_selections = False
 
 if fullrun and not debug:
     fraction = 1
@@ -48,7 +49,7 @@ elif fullrun:
     from datetime import datetime
     now = datetime.now()
     dt_string = now.strftime("%Y%m%d_%H%M%S")
-    output_fix = f"full_{dt_string}/"
+    output_fix = f"full_{'nosel_' if not apply_selections else ''}{dt_string}/"
     # output_fix = "full/"
 outputDir   = f"../../outputs/higgs/zh_hww_4l/hists/{output_fix}/"
 
@@ -212,10 +213,11 @@ def build_graph(df, dataset):
     results.append(df.Histo1D(("lep2_p_cut2", "", *bins_p_mu), "lep2_p"))
     results.append(df.Histo1D(("lep3_p_cut2", "", *bins_p_mu), "lep3_p"))
     
-    df = df.Filter("lep0_p > 25 && lep0_p < 80")
-    df = df.Filter("lep1_p > 15 && lep1_p < 80")
-    df = df.Filter("lep2_p > 10 && lep2_p < 80")
-    df = df.Filter("lep3_p > 10 && lep3_p < 75")
+    if apply_selections:
+        df = df.Filter("lep0_p > 25 && lep0_p < 80")
+        df = df.Filter("lep1_p > 15 && lep1_p < 80")
+        df = df.Filter("lep2_p > 10 && lep2_p < 80")
+        df = df.Filter("lep3_p > 10 && lep3_p < 75")
     df = df.Define("cut4", "4")
     results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut4"))
 
@@ -321,10 +323,10 @@ def build_graph(df, dataset):
     df = df.Define("missingEnergy_vec", "FCCAnalyses::ZHfunctions::missingEnergy(240., ReconstructedParticles)")
     df = df.Define("missingEnergy_tlv", "FCCAnalyses::ReconstructedParticle::get_tlv(missingEnergy_vec, 0)")
     df = df.Define("WW_tlv", "missingEnergy_tlv + WW_lep0_tlv + WW_lep1_tlv")
-    df = df.Define("WW_mass", "WW_tlv.M()")
     df = df.Define("WW_p", "WW_tlv.P()")
     df = df.Define("WW_theta", "WW_tlv.Theta()")
     df = df.Define("WW_phi", "WW_tlv.Phi()")
+    df = df.Define("WW_mass", "WW_tlv.M()")
     results.append(df.Histo1D(("WW_mass_cut4", "", *bins_m_ll), "WW_mass"))
     results.append(df.Histo1D(("WW_p_cut4", "", *bins_p_mu), "WW_p"))
     results.append(df.Histo1D(("WW_theta_cut4", "", *bins_theta), "WW_theta"))
@@ -339,8 +341,9 @@ def build_graph(df, dataset):
     ### CUT 5: Z mass window
     #########
     # results.append(df.Histo1D(("zll_m_cut4", "", *bins_m_ll), "zll_m"))  # already done above
-    # df = df.Filter("zll_m > 86 && zll_m < 96")  # tighter cut - smaller significance
-    df = df.Filter("zll_m > 76 && zll_m < 106")
+    if apply_selections:
+        # df = df.Filter("zll_m > 86 && zll_m < 96")  # tighter cut - smaller significance
+        df = df.Filter("zll_m > 76 && zll_m < 106")
     df = df.Define("cut5", "5")
     results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut5"))
 
@@ -349,7 +352,8 @@ def build_graph(df, dataset):
     ### CUT 6: Z momentum
     #########
     results.append(df.Histo1D(("zll_p_cut5", "", *bins_p_ll), "zll_p"))
-    df = df.Filter("zll_p > 20 && zll_p < 70")
+    if apply_selections:
+        df = df.Filter("zll_p > 20 && zll_p < 70")
     df = df.Define("cut6", "6")
     results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut6"))
 
@@ -368,7 +372,8 @@ def build_graph(df, dataset):
     #########  
     df = df.Define("cosTheta_miss", "FCCAnalyses::ZHfunctions::get_cosTheta_miss(missingEnergy_vec)")
     results.append(df.Histo1D(("cosThetaMiss_cut6", "", *bins_cosThetaMiss), "cosTheta_miss")) # plot it before the cut
-    df = df.Filter("cosTheta_miss < 0.98")
+    if apply_selections:
+        df = df.Filter("cosTheta_miss < 0.98")
     df = df.Define("cut7", "7")
     results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut7"))
 
@@ -378,7 +383,8 @@ def build_graph(df, dataset):
     #########  
     df = df.Define("missingEnergy", "FCCAnalyses::ZHfunctions::get_missing_energy(missingEnergy_vec)")
     results.append(df.Histo1D(("missingEnergy_cut7", "", *bins_p_mu), "missingEnergy")) # plot it before the cut
-    df = df.Filter("missingEnergy > 30 && missingEnergy < 110")
+    if apply_selections:
+        df = df.Filter("missingEnergy > 30 && missingEnergy < 110")
     df = df.Define("cut8", "8")
     results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut8"))
 
@@ -387,7 +393,8 @@ def build_graph(df, dataset):
     ### CUT 9: WW system mass window
     #########  
     results.append(df.Histo1D(("WW_mass_cut8", "", *bins_m_ll), "WW_mass"))
-    df = df.Filter("WW_mass > 80 && WW_mass < 135")
+    if apply_selections:
+        df = df.Filter("WW_mass > 80 && WW_mass < 135")
     df = df.Define("cut9", "9")
     results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut9"))
 
@@ -405,7 +412,8 @@ def build_graph(df, dataset):
     ### CUT 10: dR(l_WW, l_WW)>0.25
     #########  
     results.append(df.Histo1D(("WW_leps_dR_cut9", "", *bins_dR), "WW_leps_dR"))
-    df = df.Filter("WW_leps_dR > 0.25")
+    if apply_selections:
+        df = df.Filter("WW_leps_dR > 0.25")
     df = df.Define("cut10", "10")
     results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut10"))
     

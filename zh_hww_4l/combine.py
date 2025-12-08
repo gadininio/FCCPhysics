@@ -2,8 +2,12 @@ import ROOT
 
 # flavor = "mumu" # mumu, ee
 fullrun = True
-# date = '20251124_111307'
-date = '20251124_112545' # with dR(Z,WW)>0.25 cut
+# date = '20251124_111307' # n_leptons=4
+# date = '20251124_112545' # n_leptons=4, with dR(Z,WW)>0.25 cut
+# date = '20251124_131704' # n_leptons>=4
+# date = '20251124_131805' # n_leptons>=4, with dR(Z,WW)>0.25 cut
+# date = '20251124_150648' # n_leptons=4, with dR(Z,WW)>0.25 cut
+date = '20251125_134522' # n_leptons=4, with dR(Z,WW)>0.25 cut, bug in resonanceBuilder_mass_recoil_advanced fixed
 
 path_full = f'full_{date}/' if date!='' else 'full/'
 

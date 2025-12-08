@@ -220,16 +220,16 @@ Vec_rp resonanceBuilder_mass_recoil_advanced::resonanceBuilder_mass_recoil_advan
         buildResonances(legs_muons, recind, mcind, reco, mc, result, pairs);
         // std::cout << "DEBUG: resonanceBuilder_mass_recoil_advanced: number of resonance candidates after muons = " << result.size() << ", type = " << result[0].type << std::endl;
     }
-    else if(legs_electrons.size() > 1) {
+    if(legs_electrons.size() > 1) {  // GADI: I thing the "else" here is a bug, because in cases with 2e+2mu, only the muons will be consdered
         // std::cout << "DEBUG: resonanceBuilder_mass_recoil_advanced: number of electrons legs = " << legs_electrons.size() << ", type = " << legs_electrons[0].type << std::endl;
         buildResonances(legs_electrons, recind, mcind, reco, mc, result, pairs);
         // std::cout << "DEBUG: resonanceBuilder_mass_recoil_advanced: number of resonance candidates after electrons = " << result.size() << ", type = " << result[0].type << std::endl;
     }
-    else {
-        return Vec_rp(); // return empty list
-        // std::cout << "ERROR: resonanceBuilder_mass_recoil_advanced, at least two leptons required." << std::endl;
-        // exit(1);
-    }
+    // else {
+    //     return Vec_rp(); // return empty list
+    //     // std::cout << "ERROR: resonanceBuilder_mass_recoil_advanced, at least two leptons required." << std::endl;
+    //     // exit(1);
+    // }
 
     Vec_rp bestReso;
     bestReso.reserve(5);
@@ -242,7 +242,7 @@ Vec_rp resonanceBuilder_mass_recoil_advanced::resonanceBuilder_mass_recoil_advan
     }
     else if(result.size() == 1) { // only one pair found
         bestReso.push_back(result.at(0));
-        selected_indices = {0, 1};
+        selected_indices = {0, 1};  // GADI: check if that means only 2 leptons exist
     }
     else { // more than one pair found, select the best one
         int idx_min = -1;

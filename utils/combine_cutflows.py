@@ -24,9 +24,9 @@ def combine_signal_histograms(hists, signal_keys):
 
 # Parse command-line arguments
 parser = argparse.ArgumentParser(description="Combine cutflows and optionally add percentages.")
-parser.add_argument('--add-perc', '-a', action='store_true', help='Add percentage columns to the cutflow table', default=False)
+parser.add_argument('--simple', '-s', action='store_true', help='Do not add percentage columns to the cutflow table', default=False)
 args = parser.parse_args()
-add_perc = args.add_perc
+add_perc = not args.simple
 
 # Define processes
 procs = {}
@@ -70,20 +70,25 @@ proc_list = [signal_combined_name] + proc_list
 
 out_orig = sys.stdout
 output_path = f"{output.replace('ee', 'll').replace('mumu','ll')}/cutFlow_combined.txt"
+
+def fix_cut_name(cut):
+    return cut.replace('{','').replace('}','').replace('#geq','≥').replace('#leq','≤').replace('#Delta','Δ').replace('#theta','θ').replace('#phi','φ').replace('#eta','η').replace('#gamma','γ').replace('#tau','τ').replace('#mu','μ').replace('^+','').replace('^-','')
+
 with open(output_path, 'w') as f:
     sys.stdout = f
     
     if add_perc:
-        formatted_row = '{:<10} {:<26} {:<15} ' + ' '.join(['{:<21}']*len(proc_list))
+        formatted_row = '{:<10} {:<31} {:<15} ' + ' '.join(['{:<21}']*len(proc_list))
         print(formatted_row.format(*(["#", "Cut", "Significance"]+proc_list)))
-        print(formatted_row.format(*(["----------"]+["--------------------------"]+["---------------"]+["---------------------"]*len(proc_list))))
+        print(formatted_row.format(*(["----------"]+["-------------------------------"]+["---------------"]+["---------------------"]*len(proc_list))))
 
         tmp = []
         tmp2 = []
         tmp0 = []
         for i,cut in enumerate(cuts):
             
-            if cut == 'p_{l_{1}},p_{l_{2}},p_{l_{3}},p_{l_{4}}': cut = 'p_{l}'
+            # if cut == 'p_{l_{1}},p_{l_{2}},p_{l_{3}},p_{l_{4}}': cut = 'p_{l}'
+            cut = fix_cut_name(cut)
             
             s = hists[proc_list[0]].GetBinContent(i+1)
             s_plus_b = sum([hists[p].GetBinContent(i+1) for p in proc_list if p != signal_combined_name])
@@ -107,6 +112,7 @@ with open(output_path, 'w') as f:
         print(formatted_row.format(*(["----------"]+["--------------------------"]+["-------------"]*(len(proc_list)+1))))
         
         for i,cut in enumerate(cuts):
+            cut = fix_cut_name(cut)
             s = hists[proc_list[0]].GetBinContent(i+1)
             s_plus_b = sum([hists[p].GetBinContent(i+1) for p in proc_list if p != signal_combined_name])
             significance = s/(s_plus_b**0.5) if s_plus_b > 0 else 0
