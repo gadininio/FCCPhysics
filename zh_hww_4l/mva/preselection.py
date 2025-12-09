@@ -3,7 +3,7 @@ from addons.TMVAHelper.TMVAHelper import TMVAHelperXGB
 
 run = 'full' # 'local', 'debug', 'full', 'full+condor'
 is_loose = True 
-apply_selections = False
+apply_selections = True
 
 if run == 'debug':  # debug run
     print("Running in debug mode: only 1% of bkg and 20% of signal data, 1 chunk")
@@ -96,12 +96,12 @@ class RDFanalysis():
         ## define muons
         df = df.Alias("Muon0", "Muon#0.index")
         df = df.Define("muons_all", "FCCAnalyses::ReconstructedParticle::get(Muon0, ReconstructedParticles)")
-        df = df.Define("muons_all_p", "FCCAnalyses::ReconstructedParticle::get_p(muons_all)")
+        # df = df.Define("muons_all_p", "FCCAnalyses::ReconstructedParticle::get_p(muons_all)")
         
         df = df.Define("muons", "FCCAnalyses::ReconstructedParticle::sel_p(10)(muons_all)")
-        df = df.Define("muons_p", "FCCAnalyses::ReconstructedParticle::get_p(muons)")
-        df = df.Define("muons_theta", "FCCAnalyses::ReconstructedParticle::get_theta(muons)")
-        df = df.Define("muons_phi", "FCCAnalyses::ReconstructedParticle::get_phi(muons)")
+        # df = df.Define("muons_p", "FCCAnalyses::ReconstructedParticle::get_p(muons)")
+        # df = df.Define("muons_theta", "FCCAnalyses::ReconstructedParticle::get_theta(muons)")
+        # df = df.Define("muons_phi", "FCCAnalyses::ReconstructedParticle::get_phi(muons)")
         df = df.Define("muons_q", "FCCAnalyses::ReconstructedParticle::get_charge(muons)")
         df = df.Define("muons_no", "FCCAnalyses::ReconstructedParticle::get_n(muons)")
 
@@ -112,12 +112,12 @@ class RDFanalysis():
         ## define electrons
         df = df.Alias("Electron0", "Electron#0.index")
         df = df.Define("electrons_all", "FCCAnalyses::ReconstructedParticle::get(Electron0, ReconstructedParticles)")
-        df = df.Define("electrons_all_p", "FCCAnalyses::ReconstructedParticle::get_p(electrons_all)")
+        # df = df.Define("electrons_all_p", "FCCAnalyses::ReconstructedParticle::get_p(electrons_all)")
         
         df = df.Define("electrons", "FCCAnalyses::ReconstructedParticle::sel_p(10)(electrons_all)")
-        df = df.Define("electrons_p", "FCCAnalyses::ReconstructedParticle::get_p(electrons)")
-        df = df.Define("electrons_theta", "FCCAnalyses::ReconstructedParticle::get_theta(electrons)")
-        df = df.Define("electrons_phi", "FCCAnalyses::ReconstructedParticle::get_phi(electrons)")
+        # df = df.Define("electrons_p", "FCCAnalyses::ReconstructedParticle::get_p(electrons)")
+        # df = df.Define("electrons_theta", "FCCAnalyses::ReconstructedParticle::get_theta(electrons)")
+        # df = df.Define("electrons_phi", "FCCAnalyses::ReconstructedParticle::get_phi(electrons)")
         df = df.Define("electrons_q", "FCCAnalyses::ReconstructedParticle::get_charge(electrons)")
         df = df.Define("electrons_no", "FCCAnalyses::ReconstructedParticle::get_n(electrons)")
 
@@ -125,12 +125,13 @@ class RDFanalysis():
         # df = df.Define("electrons_iso", "FCCAnalyses::ZHfunctions::coneIsolation(0.01, 0.5)(electrons, ReconstructedParticles)")
         # df = df.Define("electrons_sel_iso", "FCCAnalyses::ZHfunctions::sel_iso(0.25)(electrons, electrons_iso)")
 
+
         #########
         ### CUT 1: exactly 4 leptons (add isolation later)
         #########
-        # df = df.Filter(f"{leps}_no >= 1 && {leps}_sel_iso.size() > 0")
-        # df = df.Filter(f"{leps}_no == 4")
-        df = df.Filter("muons_no + electrons_no == 4")
+        df = df.Define("n_leptons", "muons_no + electrons_no")
+        df = df.Filter("n_leptons == 4")
+
 
         #########
         ### CUT 2: at least 2 opposite-sign (OS) leptons
@@ -139,8 +140,15 @@ class RDFanalysis():
         # df = df.Filter(f"abs(Sum({leps}_q)) <= {leps}_q.size() - 4")
         df = df.Filter(f"abs(Sum(muons_q) + Sum(electrons_q)) <= muons_q.size() + electrons_q.size() - 4")
 
+
         #########
-        ### CUT 3: leptons pT: leading muon pT [25, 80] GeV, subleading muon pT [15, 80] GeV, third muon pT [10,80] GeV, fourth muon pT [10,75] GeV
+        ### CUT 3: at least one same-flavor (SF) lepton pair
+        #########
+        df = df.Filter("(muons_no >= 2) || (electrons_no >= 2)")
+
+
+        #########
+        ### CUT 4: leptons pT: leading muon pT [25, 80] GeV, subleading muon pT [15, 80] GeV, third muon pT [10,80] GeV, fourth muon pT [10,75] GeV
         #########
         df = df.Define("leptons0", "FCCAnalyses::ReconstructedParticle::merge(muons, electrons)")
         df = df.Define("leptons", "FCCAnalyses::ZHfunctions::sortByPt(leptons0)")
@@ -162,6 +170,7 @@ class RDFanalysis():
                 df = df.Filter("lep1_p > 15 && lep1_p < 80")
                 df = df.Filter("lep2_p > 10 && lep2_p < 80")
                 df = df.Filter("lep3_p > 10 && lep3_p < 75")
+
 
         #########
         ### Reconstruct the Z->ll candidate
@@ -230,32 +239,35 @@ class RDFanalysis():
         df = df.Define("WW_lep0_p_index", "FCCAnalyses::ZHfunctions::findIndex(WW_lep0_p, {lep0_p, lep1_p, lep2_p, lep3_p})")
         df = df.Define("WW_lep1_p_index", "FCCAnalyses::ZHfunctions::findIndex(WW_lep1_p, {lep0_p, lep1_p, lep2_p, lep3_p})")
                 
-        # Build the WW system using the two leptons not coming from the Z and the missing energy vector
+        ## Build the WW system using the two leptons not coming from the Z and the missing energy vector
         df = df.Define("missingEnergy_vec", "FCCAnalyses::ZHfunctions::missingEnergy(240., ReconstructedParticles)")
         df = df.Define("missingEnergy_tlv", "FCCAnalyses::ReconstructedParticle::get_tlv(missingEnergy_vec, 0)")
         df = df.Define("WW_tlv", "missingEnergy_tlv + WW_leps_tlv0 + WW_leps_tlv1")
+        df = df.Define("WW_mass", "WW_tlv.M()")
         df = df.Define("WW_p", "WW_tlv.P()")
         df = df.Define("WW_theta", "WW_tlv.Theta()")
         df = df.Define("WW_phi", "WW_tlv.Phi()")
-        df = df.Define("WW_mass", "WW_tlv.M()")
 
-        # dR(Z, WW)
+        ## dR(Z, WW)
         df = df.Define("zll_WW_dR", "WW_tlv.DeltaR(zll_tlv)")
         
+        
         #########
-        ### CUT 4: Z mass window
+        ### CUT 5: Z mass window
         #########
         if apply_selections:
-            df = df.Filter("zll_m > 86 && zll_m < 96")
+            df = df.Filter("zll_m > 76 && zll_m < 106")
+
 
         #########
-        ### CUT 5: Z momentum
+        ### CUT 6: Z momentum
         #########
         if apply_selections:
             df = df.Filter("zll_p > 20 && zll_p < 70")
 
+
         #########
-        ### CUT 6: recoil mass window (reconstructed Higgs mass using the recoil method)
+        ### CUT 7: recoil mass window (reconstructed Higgs mass using the recoil method)
         #########
         if apply_selections:
             if is_loose:
@@ -263,16 +275,18 @@ class RDFanalysis():
             else:
                 df = df.Filter("zll_recoil_m < 140 && zll_recoil_m > 120")
 
+
         #########
-        ### CUT 7: cosThetaMiss
+        ### CUT 8: cosThetaMiss
         #########  
         df = df.Define("miss_cosTheta", "FCCAnalyses::ZHfunctions::get_cosTheta_miss(missingEnergy_vec)")
         df = df.Define("miss_energy", "FCCAnalyses::ZHfunctions::get_missing_energy(missingEnergy_vec)")
         if apply_selections:
             df = df.Filter("miss_cosTheta < 0.98")
 
+
         #########
-        ### CUT 8: missingEnergy
+        ### CUT 9: missingEnergy
         #########  
         if apply_selections:
             if is_loose:
@@ -280,8 +294,9 @@ class RDFanalysis():
             else:
                 df = df.Filter("miss_energy > 30 && miss_energy < 110")
 
+
         #########
-        ### CUT 9: WW system mass window
+        ### CUT 10: WW system mass window
         #########
         if apply_selections:
             if is_loose:
@@ -289,13 +304,15 @@ class RDFanalysis():
             else:
                 df = df.Filter("WW_mass > 80 && WW_mass < 135")
 
+
         #########
         ### CUT *: WW system momentum
         #########
         # df = df.Filter("WW_p > 25 && WW_p < 55")
 
+
         #########
-        ### CUT 10: dR(l_WW, l_WW)>0.25
+        ### CUT 10: dR(l_WW, l_WW) > 0.25
         #########  
         if apply_selections:
             df = df.Filter("WW_leps_dR > 0.25")
@@ -307,51 +324,9 @@ class RDFanalysis():
 
         return df
 
+
     # define output branches to be saved
     def output():
-        # branchList = [
-        #     # electrons
-        #     "electrons_p",
-        #     "electrons_theta",
-        #     "electrons_phi",
-        #     "electrons_q",
-        #     "electrons_no",
-            
-        #     # muons
-        #     "muons_p",
-        #     "muons_theta",
-        #     "muons_phi",
-        #     "muons_q",
-        #     "muons_no",
-            
-        #     # zll
-        #     "zll_m",
-        #     "zll_p",
-        #     "zll_recoil_m",
-        #     "zll_leps_p",
-        #     "zll_leps_p0_index",
-        #     "zll_leps_p1_index",
-            
-        #     # WW leptons
-        #     "WW_leps_p",
-        #     "WW_leps_theta",
-        #     "WW_leps_phi",
-        #     "WW_leps_q",
-        #     "WW_leps_no",
-        #     "WW_leps_dR",
-            
-        #     # WW system
-        #     "WW_mass",
-        #     "WW_p",
-        #     "WW_theta",
-        #     "WW_phi",
-            
-        #     # missing energy
-        #     "miss_cosTheta",
-        #     "miss_energy",
-            
-        #     "ww_leptonic",
-        # ]
         
         branchList = [
             # leptons
@@ -359,6 +334,8 @@ class RDFanalysis():
             "lep1_p",
             "lep2_p",
             "lep3_p",
+            "muons_no",
+            "electrons_no",
             
             # Z->ll system
             "zll_m",
@@ -396,8 +373,8 @@ class RDFanalysis():
             # WW system
             "WW_mass",
             "WW_p",
-            "WW_phi",
             "WW_theta",
+            "WW_phi",
 
             # dR(Z, WW)
             "zll_WW_dR",

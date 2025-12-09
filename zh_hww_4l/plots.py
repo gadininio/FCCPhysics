@@ -350,7 +350,7 @@ hists["zll_recoil_m_cut4"] = {
     "xmin":     110,
     "xmax":     150,
     "ymin":     0,
-    "ymax":     900,
+    "ymax":     1050,
     "xtitle":   "m_{rec} [GeV]",
     "ytitle":   "Events / 100 MeV",
     "extralab": "Before selections",
@@ -407,7 +407,7 @@ hists["zll_lep0_theta_cut4"] = {
     "xmin":     0,
     "xmax":     5,
     # "ymin":     10,
-    "ymax":     5300,
+    "ymax":     5500,
     "xtitle":   "#theta_{l_{1}^{Z}}",
     "ytitle":   "Events ",
     "extralab": "Before selections",
@@ -586,7 +586,7 @@ hists["zll_leps_category_final"] = {
     # "xmin":     -1,
     # "xmax":     3,
     # "ymin":     10,
-    # "ymax":     180,
+    "ymax":     770,
     # "xtitle":   "WW* leptons category",
     "xtitle":   ["Not leptonic", "e^{+}e^{-}", "#mu^{+}#mu^{-}", "e-#mu / #mu-e"],
     "extralab":   "Z-lepton candidates category",
@@ -601,9 +601,9 @@ hists["zll_lep0_p_index_cut4"] = {
     # "xmax":     100,
     # "ymin":     10,
     "ymax":     28e3,
-    # "xtitle":   "Lepton index for leading Z->ll lepton (zll_leps[0])",
-    "xtitle":   ["Not found", "l_{1}", "l_{2}", "l_{3}", "l_{4}"],
-    "extralab":   "Lepton index for leading Z#rightarrowll lepton (l_{1}^{Z}), before selections",
+    # "xtitle":   ["Not found", "l_{1}", "l_{2}", "l_{3}", "l_{4}"],
+    "xtitle":   ["Not found", "1", "2", "3", "4"],
+    "extralab":   "Lepton index for l_{1}^{Z}, before selections",
 }
 
 hists["zll_lep0_p_index_final"] = {
@@ -614,10 +614,10 @@ hists["zll_lep0_p_index_final"] = {
     # "xmin":     0,
     # "xmax":     100,
     # "ymin":     10,
-    "ymax":     1100,
-    # "xtitle":   "Lepton index for leading Z->ll lepton (zll_leps[0])",
-    "xtitle":   ["Not found", "l_{1}", "l_{2}", "l_{3}", "l_{4}"],
-    "extralab":   "Lepton index for leading Z#rightarrowll lepton (l_{1}^{Z})",
+    "ymax":     1300,
+    # "xtitle":   ["Not found", "l_{1}", "l_{2}", "l_{3}", "l_{4}"],
+    "xtitle":   ["Not found", "1", "2", "3", "4"],
+    "extralab":   "Lepton index for l_{1}^{Z}",
 }
 
 hists["zll_lep1_p_index_cut4"] = {
@@ -629,9 +629,9 @@ hists["zll_lep1_p_index_cut4"] = {
     # "xmax":     100,
     # "ymin":     10,
     "ymax":     24e3,
-    # "xtitle":   "Lepton index for leading Z->ll lepton (zll_leps[0])",
-    "xtitle":   ["Not found", "l_{1}", "l_{2}", "l_{3}", "l_{4}"],
-    "extralab":   "Lepton index for subleading Z#rightarrowll lepton (l_{2}^{Z}), before selections",
+    # "xtitle":   ["Not found", "l_{1}", "l_{2}", "l_{3}", "l_{4}"],
+    "xtitle":   ["Not found", "1", "2", "3", "4"],
+    "extralab":   "Lepton index for l_{2}^{Z}, before selections",
 }
 
 hists["zll_lep1_p_index_final"] = {
@@ -642,10 +642,10 @@ hists["zll_lep1_p_index_final"] = {
     # "xmin":     0,
     # "xmax":     100,
     # "ymin":     10,
-    "ymax":     650,
-    # "xtitle":   "Lepton index for leading Z->ll lepton (zll_leps[0])",
-    "xtitle":   ["Not found", "l_{1}", "l_{2}", "l_{3}", "l_{4}"],
-    "extralab":   "Lepton index for subleading Z#rightarrowll lepton (l_{2}^{Z})",
+    "ymax":     720,
+    # "xtitle":   ["Not found", "l_{1}", "l_{2}", "l_{3}", "l_{4}"],
+    "xtitle":   ["Not found", "1", "2", "3", "4"],
+    "extralab":   "Lepton index for l_{2}^{Z}",
 }
 
 # WW
@@ -741,7 +741,7 @@ hists["WW_lep1_p_cut4"] = {
     "xmin":     0,
     "xmax":     100,
     # "ymin":     10,
-    "ymax":     5500,
+    "ymax":     6100,
     "xtitle":   "p_{l_{2}^{WW*}} [GeV]",
     "ytitle":   "Events ",
     "extralab": "Before selections",
@@ -867,7 +867,7 @@ hists["WW_leps_category_cut4"] = {
     # "xmin":     -1,
     # "xmax":     3,
     # "ymin":     10,
-    "ymax":     36000,
+    "ymax":     27000,
     # "xtitle":   "WW* leptons category",
     "xtitle":   ["Not leptonic", "e^{+}e^{-}", "#mu^{+}#mu^{-}", "e-#mu / #mu-e"],
     "extralab":   "WW*-lepton candidates category, before selections",
@@ -896,8 +896,8 @@ hists["WW_lep0_p_index_cut4"] = {
     # "xmax":     100,
     # "ymin":     10,
     "ymax":     23000,
-    # "xtitle":   "Lepton index for leading Z->ll lepton (zll_leps[0])",
-    "xtitle":   ["Not found", "l_{1}", "l_{2}", "l_{3}", "l_{4}"],
+    # "xtitle":   ["Not found", "l_{1}", "l_{2}", "l_{3}", "l_{4}"],
+    "xtitle":   ["Not found", "1", "2", "3", "4"],
     "extralab":   "Lepton index for l_{1}^{WW*}, before selections",
 }
 
@@ -910,8 +910,8 @@ hists["WW_lep0_p_index_final"] = {
     # "xmax":     100,
     # "ymin":     10,
     # "ymax":     1100,
-    # "xtitle":   "Lepton index for leading Z->ll lepton (zll_leps[0])",
-    "xtitle":   ["Not found", "l_{1}", "l_{2}", "l_{3}", "l_{4}"],
+    # "xtitle":   ["Not found", "l_{1}", "l_{2}", "l_{3}", "l_{4}"],
+    "xtitle":   ["Not found", "1", "2", "3", "4"],
     "extralab":   "Lepton index for l_{1}^{WW*}",
 }
 
@@ -924,8 +924,8 @@ hists["WW_lep1_p_index_cut4"] = {
     # "xmax":     100,
     # "ymin":     10,
     # "ymax":     1100,
-    # "xtitle":   "Lepton index for leading Z->ll lepton (zll_leps[0])",
-    "xtitle":   ["Not found", "l_{1}", "l_{2}", "l_{3}", "l_{4}"],
+    # "xtitle":   ["Not found", "l_{1}", "l_{2}", "l_{3}", "l_{4}"],
+    "xtitle":   ["Not found", "1", "2", "3", "4"],
     "extralab":   "Lepton index for l_{2}^{WW*}, before selections",
 }
 
@@ -938,8 +938,8 @@ hists["WW_lep1_p_index_final"] = {
     # "xmax":     100,
     # "ymin":     10,
     # "ymax":     1100,
-    # "xtitle":   "Lepton index for leading Z->ll lepton (zll_leps[0])",
-    "xtitle":   ["Not found", "l_{1}", "l_{2}", "l_{3}", "l_{4}"],
+    # "xtitle":   ["Not found", "l_{1}", "l_{2}", "l_{3}", "l_{4}"],
+    "xtitle":   ["Not found", "1", "2", "3", "4"],
     "extralab":   "Lepton index for l_{2}^{WW*}",
 }
 
@@ -994,7 +994,7 @@ hists["WW_p_cut4"] = {
     "xmax":     100,
     # "ymin":     10,
     # "ymax":     100000,
-    "xtitle":   "p_{WW*}",
+    "xtitle":   "p_{WW*} [GeV]",
     "ytitle":   "Events ",
     "extralab": "Before selections",
 }
@@ -1008,7 +1008,7 @@ hists["WW_p_final"] = {
     "xmax":     100,
     # "ymin":     10,
     # "ymax":     100000,
-    "xtitle":   "p_{WW*}",
+    "xtitle":   "p_{WW*} [GeV]",
     "ytitle":   "Events ",
     # "extralab": "Before cos(#theta_{miss}) cut",
 }

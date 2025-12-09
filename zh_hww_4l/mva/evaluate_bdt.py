@@ -1,3 +1,8 @@
+
+'''
+Run evaluation plots for a trained BDT model, after using train_bdt.py to train it.
+'''
+
 import sys, os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -13,8 +18,8 @@ parser.add_argument("-l", "--loose", action='store_true', default=False, help="P
 args = parser.parse_args()
 
 if args.loose:
-    args.input.replace('mva', 'mva_loose')
-    args.outDir.replace('mva', 'mva_loose')
+    args.input = args.input.replace('mva', 'mva_loose')
+    args.outDir = args.outDir.replace('mva', 'mva_loose')
 
 
 def plot_roc():
@@ -34,9 +39,11 @@ def plot_roc():
     plt.plot(train_fpr, train_tpr, color='blue', label=f"Training ROC (AUC = {train_roc_auc:.2f})")
     plt.plot(test_fpr, test_tpr, color='red', label=f"Testing ROC (AUC = {test_roc_auc:.2f})")
     plt.plot([0, 1], [0, 1], linestyle='--', color='gray', label='Random Guess')
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('Receiver Operating Characteristic (ROC) Curve')
+    # plt.xlabel('False Positive Rate')
+    # plt.ylabel('True Positive Rate')
+    plt.xlabel('Background efficiency')
+    plt.ylabel('Signal efficiency')
+    # plt.title('Receiver Operating Characteristic (ROC) Curve')
     plt.legend()
     plt.grid()
     # plt.savefig(f"{outDir}/roc.png")
@@ -61,9 +68,9 @@ def plot_score():
     plt.hist(train_background_scores, bins=50, range=(0, 1), histtype='step', label='Training Background', color='red', density=True)
     plt.hist(test_signal_scores, bins=50, range=(0, 1), histtype='step', label='Testing Signal', color='blue', linestyle='dashed', density=True)
     plt.hist(test_background_scores, bins=50, range=(0, 1), histtype='step', label='Testing Background', color='red', linestyle='dashed', density=True)
-    plt.xlabel('BDT Score')
-    plt.ylabel('Number of Events (normalized)')
-    plt.title('BDT Score Distribution')
+    plt.xlabel('BDT score')
+    plt.ylabel('Number of events (normalized)')
+    # plt.title('BDT Score Distribution')
     plt.legend()
     plt.grid()
     # plt.savefig(f"{outDir}/score.png")
@@ -87,7 +94,7 @@ def plot_importance():
     importance_df = pd.DataFrame({'Variable': sorted_vars, 'Importance': sorted_values})
     importance_df.plot(kind='barh', x='Variable', y='Importance', legend=None, ax=ax)
     ax.set_xlabel('BDT score')
-    ax.set_title("BDT variable scores", fontsize=16)
+    # ax.set_title("BDT variable scores", fontsize=16)
     # plt.savefig(f"{outDir}/importance.png")
     plt.savefig(f"{outDir}/importance.pdf")
     plt.close()

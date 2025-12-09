@@ -3,7 +3,7 @@
 is_loose = True
 
 #Input directory where the files produced at the pre-selection level are
-inputDir = f'../../../outputs/higgs/zh_hww_4l/mva{"_loose" if is_loose else ""}/preselection_with_bdt/full/
+inputDir = f'../../../outputs/higgs/zh_hww_4l/mva{"_loose" if is_loose else ""}/preselection_with_bdt/full/'
 
 #Input directory where the files produced at the pre-selection level are
 #Optional: output directory, default is local running directory
@@ -31,7 +31,7 @@ saveTabular = True
 ###Dictionnay of the list of cuts. The key is the name of the selection that will be added to the output file
 cutList = {
     "sel0": "1==1",
-    "sel1": "mva_score[0] > 0.5",
+    "sel1": "mva_score > 0.5",
 }
 
 
