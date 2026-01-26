@@ -9,8 +9,8 @@
  *  root -l -b -q 'skim.C("input.root", "skim.root", "lep_pt>20", "events")'
  * 
  * Examples:
- *  root -l -b -q 'skim.C("../../outputs/higgs/zh_hww_4l/mva_loose/preselection/full/wzp6_ee_eeH_HWW_ecm240_inc.root", "../../outputs/higgs/zh_hww_4l/mva_loose/preselection/full/wzp6_ee_eeH_HWW_ecm240.root")'
- *  root -l -b -q 'skim.C("../../outputs/higgs/zh_hww_4l/mva_loose/preselection/full/wzp6_ee_mumuH_HWW_ecm240_inc.root", "../../outputs/higgs/zh_hww_4l/mva_loose/preselection/full/wzp6_ee_mumuH_HWW_ecm240.root")'
+ *  root -l -b -q 'skim.C("../../outputs/higgs/zh_hww_4l/mva_loose/preselection/full/wzp6_ee_eeH_HWW_ecm240.root", "../../outputs/higgs/zh_hww_4l/mva_loose/preselection/full/wzp6_ee_eeH_HWW_ecm240_inc.root")'
+ *  root -l -b -q 'skim.C("../../outputs/higgs/zh_hww_4l/mva_loose/preselection/full/wzp6_ee_mumuH_HWW_ecm240.root", "../../outputs/higgs/zh_hww_4l/mva_loose/preselection/full/wzp6_ee_mumuH_HWW_ecm240_inc.root")'
  *  
  * Parameters:
  * infile   : input ROOT file name

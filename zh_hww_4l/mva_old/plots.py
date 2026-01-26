@@ -20,7 +20,7 @@ plotStatUnc    = True
 
 
 variables = ['zll_recoil_m', 'zll_recoil_m_final', 'zll_m', 'zll_p', 'mva_score']
-rebin = [1, 1, 1, 1, 5] # uniform rebin per variable (optional)
+rebin = [1, 1] # uniform rebin per variable (optional)
 
 ###Dictonnary with the analysis name as a key, and the list of selections to be plotted for this analysis. The name of the selections should be the same than in the final selection
 selections = {}
@@ -37,7 +37,7 @@ colors['ZZ'] = ROOT.kGreen+2
 
 
 plots = {}
-plots['ZH'] = {'signal':{'ZH':['wzp6_ee_eeH_HWW_llnunu_ecm240', 'wzp6_ee_mumuH_HWW_llnunu_ecm240']},
+plots['ZH'] = {'signal':{'ZH':['wzp6_ee_eeH_HWW_ecm240', 'wzp6_ee_mumuH_HWW_ecm240']},
                'backgrounds':{'WW':['p8_ee_WW_ecm240'], 'ZZ':['p8_ee_ZZ_ecm240']}
            }
 

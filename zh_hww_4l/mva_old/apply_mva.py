@@ -89,8 +89,8 @@ def apply_bdt(in_file, out_file):
     print("MVA scores added to ", in_file, " and new ROOT file created ", out_file)
 
 
-apply_bdt(f"{input_path}/wzp6_ee_eeH_HWW_llnunu_ecm240.root", f"{output_path}/wzp6_ee_eeH_HWW_llnunu_ecm240.root")
-apply_bdt(f"{input_path}/wzp6_ee_mumuH_HWW_llnunu_ecm240.root", f"{output_path}/wzp6_ee_mumuH_HWW_llnunu_ecm240.root")
+apply_bdt(f"{input_path}/wzp6_ee_eeH_HWW_ecm240.root", f"{output_path}/wzp6_ee_eeH_HWW_ecm240.root")
+apply_bdt(f"{input_path}/wzp6_ee_mumuH_HWW_ecm240.root", f"{output_path}/wzp6_ee_mumuH_HWW_ecm240.root")
 apply_bdt(f"{input_path}/p8_ee_WW_ecm240.root", f"{output_path}/p8_ee_WW_ecm240.root")
 apply_bdt(f"{input_path}/p8_ee_ZZ_ecm240.root", f"{output_path}/p8_ee_ZZ_ecm240.root")
 

@@ -1,10 +1,4 @@
 
-"""
-Train a Boosted Decision Tree (BDT) model using XGBoost for the ZH->llWW->4l analysis.
-Run:
-    python3 train_bdt.py
-"""
-
 import uproot
 import pandas as pd
 import xgboost as xgb
@@ -14,8 +8,6 @@ import ROOT
 import pickle
 
 is_loose = True
-use_full = True
-use_training = True  # should be True for training on the dedicated training samples
 
 ROOT.gROOT.SetBatch(True)
 # e.g. https://root.cern/doc/master/tmva101__Training_8py.html
@@ -49,41 +41,21 @@ variables = [
 ]
 weight_sf = 1e9
 outputs_path = f'../../../outputs/higgs/zh_hww_4l/mva{"_loose" if is_loose else ""}/'
+sig_ee_df = load_process(f"{outputs_path}/preselection/full/wzp6_ee_eeH_HWW_ecm240.root", variables, weight_sf=weight_sf, target=1)
+sig_mumu_df = load_process(f"{outputs_path}/preselection/full/wzp6_ee_mumuH_HWW_ecm240.root", variables, weight_sf=weight_sf, target=1)
+bkg_WW_df = load_process(f"{outputs_path}/preselection/full/p8_ee_WW_ecm240.root", variables, weight_sf=weight_sf, target=0)
+bkg_ZZ_df = load_process(f"{outputs_path}/preselection/full/p8_ee_ZZ_ecm240.root", variables, weight_sf=weight_sf, target=0)
 
-# define samples to be used for training/testing
-if use_training:
-    print("Using training samples")
-    sample_list = [
-        {'name': 'wzp6_ee_eeH_HWW_llnunu_ecm240', 'target': 1},
-        {'name': 'wzp6_ee_mumuH_HWW_llnunu_ecm240', 'target': 1},
-        # {'name': 'p8_ee_WW_ecm240', 'target': 0},
-        {'name': 'p8_ee_ZZ_llX_ecm240', 'target': 0},
-        {'name': 'p8_ee_ZZ_tautauX_ecm240', 'target': 0},
-    ]
-else:
-    print("Using full samples")
-    sample_list = [
-        {'name': 'wzp6_ee_eeH_HWW_llnunu_ecm240', 'target': 1},
-        {'name': 'wzp6_ee_mumuH_HWW_llnunu_ecm240', 'target': 1},
-        {'name': 'p8_ee_WW_ecm240', 'target': 0},
-        {'name': 'p8_ee_ZZ_ecm240', 'target': 0},
-    ]
 
-# Load signal and background dataframes
-df_list = []
-for sample in sample_list:
-    print(f"Loading sample: {sample['name']}")
-    fIn = f"{outputs_path}/preselection/{'full/' if use_full else ''}{'training/' if use_training else ''}{sample['name']}.root"
-    df = load_process(fIn, variables, weight_sf=weight_sf, target=sample['target'])
-    df_list.append(df)
-    
 # Concatenate the dataframes into a single dataframe
-data = pd.concat(df_list, ignore_index=True)
+data = pd.concat([sig_ee_df, sig_mumu_df, bkg_WW_df, bkg_ZZ_df], ignore_index=True)
+
 
 # split data in train/test events
 train_data, test_data, train_labels, test_labels, train_weights, test_weights  = train_test_split(
     data[variables], data['target'], data['weight'], test_size=0.2, random_state=42
 )
+
 
 # conversion to numpy needed to have default feature_names (fN), needed for conversion to TMVA
 train_data = train_data.to_numpy()

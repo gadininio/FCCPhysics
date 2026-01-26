@@ -43,5 +43,3 @@ histoList = {
     "zll_recoil_m":{"cols": ["zll_recoil_m"], "title": "Recoil (GeV)", "bins": [(250,0,250)]},
     "zll_recoil_m_final":{"cols": ["zll_recoil_m"], "title": "Recoil (GeV)", "bins": [(200,120,140)]},
 }
-
-# add all variables to plot here!

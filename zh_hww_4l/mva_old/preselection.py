@@ -2,9 +2,7 @@
 from addons.TMVAHelper.TMVAHelper import TMVAHelperXGB
 
 run = 'full' # 'local', 'debug', 'full', 'full+condor'
-is_training = False
 is_loose = True 
-apply_preselections = True
 apply_selections = True
 
 if run == 'debug':  # debug run
@@ -38,48 +36,29 @@ else:  # local run
 
 
 # list of processes (mandatory)
-if is_training:
-    processList_mumu = {
-        'p8_ee_ZZ_llX_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        'p8_ee_ZZ_tautauX_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        # 'p8_ee_WW_ee_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        # 'p8_ee_WW_mumu_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        'p8_ee_WW_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        'wzp6_ee_mumuH_HWW_llnunu_ecm240':{'fraction': 1},
-    }
+processList_mumu = {
+    'p8_ee_ZZ_llX_ecm240':{'fraction': fraction, 'chunks': nchunks},
+    'p8_ee_ZZ_tautauX_ecm240':{'fraction': fraction, 'chunks': nchunks},
+    # 'p8_ee_WW_ee_ecm240':{'fraction': fraction, 'chunks': nchunks},
+    # 'p8_ee_WW_mumu_ecm240':{'fraction': fraction, 'chunks': nchunks},
+    'p8_ee_WW_ecm240':{'fraction': fraction, 'chunks': nchunks},
+    'wzp6_ee_mumuH_HWW_llnunu_ecm240':{'fraction': 1},
+}
 
-    processList_ee = {
-        'p8_ee_ZZ_llX_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        'p8_ee_ZZ_tautauX_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        # 'p8_ee_WW_ee_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        # 'p8_ee_WW_mumu_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        'p8_ee_WW_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        'wzp6_ee_eeH_HWW_llnunu_ecm240':{'fraction': 1},
-    }
-    
-    # Production tag when running over EDM4Hep centrally produced events, this points to the yaml files for getting sample statistics (mandatory)
-    prodTag     = "FCCee/winter2023_training/IDEA/"
-    
-else:
-    processList_mumu = {
-        'p8_ee_ZZ_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        'p8_ee_WW_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        'wzp6_ee_mumuH_HWW_llnunu_ecm240':{'fraction': 1},
-        # 'wzp6_ee_mumuH_HWW_ecm240':{'fraction': 1},
-    }
-
-    processList_ee = {
-        'p8_ee_ZZ_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        'p8_ee_WW_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        'wzp6_ee_eeH_HWW_llnunu_ecm240':{'fraction': 1},
-        # 'wzp6_ee_eeH_HWW_ecm240':{'fraction': 1},
-    }
-
-    # Production tag when running over EDM4Hep centrally produced events, this points to the yaml files for getting sample statistics (mandatory)
-    prodTag     = "FCCee/winter2023/IDEA/"
-
+processList_ee = {
+    'p8_ee_ZZ_llX_ecm240':{'fraction': fraction, 'chunks': nchunks},
+    'p8_ee_ZZ_tautauX_ecm240':{'fraction': fraction, 'chunks': nchunks},
+    # 'p8_ee_WW_ee_ecm240':{'fraction': fraction, 'chunks': nchunks},
+    # 'p8_ee_WW_mumu_ecm240':{'fraction': fraction, 'chunks': nchunks},
+    'p8_ee_WW_ecm240':{'fraction': fraction, 'chunks': nchunks},
+    'wzp6_ee_eeH_HWW_llnunu_ecm240':{'fraction': 1},
+}
 
 processList = {'wzp6_ee_mumuH_HWW_llnunu_ecm240':{'fraction': 0.2}} if debug else processList_mumu | processList_ee
+
+
+# Production tag when running over EDM4Hep centrally produced events, this points to the yaml files for getting sample statistics (mandatory)
+prodTag     = "FCCee/winter2023/IDEA/"
 
 # Link to the dictonary that contains all the cross section informations etc... (mandatory)
 procDict = "FCCee_procDict_winter2023_IDEA.json"
@@ -90,8 +69,8 @@ includePaths = ["../../functions.h"]
 # Output directory
 output_fix = ""
 if debug: output_fix = "debug/"
-elif fullrun: output_fix = f"full{'_nopresel' if not apply_preselections else ''}{'_nosel' if not apply_selections else ''}/"
-outputDir   = f"../../../outputs/higgs/zh_hww_4l/mva{'_loose' if is_loose else ''}/preselection/{output_fix}/{'training/' if is_training else ''}"
+elif fullrun: output_fix = f"full{'_nosel' if not apply_selections else ''}/"
+outputDir   = f"../../../outputs/higgs/zh_hww_4l/mva{'_loose' if is_loose else ''}/preselection/{output_fix}/"
 
 
 # Multithreading: -1 means using all cores
@@ -157,8 +136,7 @@ class RDFanalysis():
         ### CUT 1: exactly 4 leptons (add isolation later)
         #########
         df = df.Define("n_leptons", "muons_no + electrons_no")
-        if apply_preselections:
-            df = df.Filter("n_leptons == 4")
+        df = df.Filter("n_leptons == 4")
 
 
         #########
@@ -166,15 +144,13 @@ class RDFanalysis():
         #########
         # df = df.Filter(f"{leps}_no >= 2 && abs(Sum({leps}_q)) < {leps}_q.size()")
         # df = df.Filter(f"abs(Sum({leps}_q)) <= {leps}_q.size() - 4")
-        if apply_preselections:
-            df = df.Filter(f"abs(Sum(muons_q) + Sum(electrons_q)) <= muons_q.size() + electrons_q.size() - 4")
+        df = df.Filter(f"abs(Sum(muons_q) + Sum(electrons_q)) <= muons_q.size() + electrons_q.size() - 4")
 
 
         #########
         ### CUT 3: at least one same-flavor (SF) lepton pair
         #########
-        if apply_preselections:
-            df = df.Filter("(muons_no >= 2) || (electrons_no >= 2)")
+        df = df.Filter("(muons_no >= 2) || (electrons_no >= 2)")
 
 
         #########
@@ -212,8 +188,7 @@ class RDFanalysis():
         # If no pair is found, the returned vector is empty.
         # We then require that at least one pair was found (size>=5) to keep the event.
         df = df.Define("zbuilder_result", f"FCCAnalyses::ZHfunctions::resonanceBuilder_mass_recoil_advanced(91.2, 125, 0.4, 240, false)(muons, electrons, MCRecoAssociations0, MCRecoAssociations1, ReconstructedParticles, Particle, Particle0, Particle1)")
-        if apply_selections:
-            df = df.Filter("zbuilder_result.size() >= 5") # make sure at least one pair was found (and additional two leptons)
+        df = df.Filter("zbuilder_result.size() >= 5") # make sure at least one pair was found (and additional two leptons)
         
         df = df.Define("zll", "Vec_rp{zbuilder_result[0]}") # the Z
         df = df.Define("zll_tlv", "FCCAnalyses::ReconstructedParticle::get_tlv(zll, 0)")

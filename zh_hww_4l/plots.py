@@ -7,7 +7,8 @@ fullrun = True
 # date = '20251124_131704' # n_leptons>=4
 # date = '20251124_131805' # n_leptons>=4, with dR(Z,WW)>0.25 cut
 # date = '20251124_150648' # n_leptons=4, with dR(Z,WW)>0.25 cut
-date = '20251125_134522' # n_leptons=4, with dR(Z,WW)>0.25 cut, bug in resonanceBuilder_mass_recoil_advanced fixed
+# date = '20251125_134522' # n_leptons=4, with dR(Z,WW)>0.25 cut, bug in resonanceBuilder_mass_recoil_advanced fixed
+date = 'loose_20260126_112336' # loose cuts used as preselections for mva analysis
 
 if flavor=='mumu':
     Z_leptons = '#mu^{+}#mu^{-}'
@@ -39,9 +40,10 @@ colors['Z'] = ROOT.kOrange+1
 
 procs = {}
 if flavor=='ll':
-    procs['signal'] = {'ZH':['wzp6_ee_eeH_HWW_ecm240', 'wzp6_ee_mumuH_HWW_ecm240']}
+    procs['signal'] = {'ZH':['wzp6_ee_mumuH_HWW_llnunu_ecm240', 'wzp6_ee_eeH_HWW_llnunu_ecm240']}
 else:
-    procs['signal'] = {'ZH':[f'wzp6_ee_{flavor}H_HWW_ecm240']}
+    procs['signal'] = {'ZH':[f'wzp6_ee_{flavor}H_HWW_llnunu_ecm240']}
+# procs['backgrounds'] =  {'WW':['p8_ee_WW_ee_ecm240', 'p8_ee_WW_mumu_ecm240'], 'ZZ':['p8_ee_ZZ_ecm240'], 'Z':['wzp6_ee_ee_Mee_30_150_ecm240', 'wzp6_ee_mumu_ecm240']}
 procs['backgrounds'] =  {'WW':['p8_ee_WW_ecm240'], 'ZZ':['p8_ee_ZZ_ecm240'], 'Z':['wzp6_ee_ee_Mee_30_150_ecm240', 'wzp6_ee_mumu_ecm240']}
 # procs['backgrounds'] =  {}
 
@@ -53,26 +55,23 @@ legend['ZZ'] = 'ZZ'
 legend['Z'] = 'Z#rightarrowll'
 
 
+if 'loose' in date:
+    cutflow_xaxis = ["All events", "4 leptons", "2 OS pairs", "#geq1 SF pair", "p_{l_{1}},p_{l_{2}},p_{l_{3}},p_{l_{4}}", "76 < m_{l^{+}l^{-}} < 106", "20 < p_{l^{+}l^{-}} < 70", "120 < m_{rec} < 145", "|cos#theta_{miss}| < 0.98", "20 < E_{miss} < 120", "60 < m_{WW*} < 135", "#DeltaR(l_{WW*,1}, l_{WW*,2})>0.25"]
+else:
+    cutflow_xaxis = ["All events", "4 leptons", "2 OS pairs", "#geq1 SF pair", "p_{l_{1}},p_{l_{2}},p_{l_{3}},p_{l_{4}}", "76 < m_{l^{+}l^{-}} < 106", "20 < p_{l^{+}l^{-}} < 70", "120 < m_{rec} < 140", "|cos#theta_{miss}| < 0.98", "30 < E_{miss} < 110", "80 < m_{WW*} < 135", "#DeltaR(l_{WW*,1}, l_{WW*,2})>0.25"]
+
 
 hists = {}
-
 
 hists["cutFlow"] = {
     "output":   "cutFlow",
     "logy":     True,
     "stack":    False,
     "xmin":     0,
-    "xmax":     11,
+    "xmax":     len(cutflow_xaxis),
     "ymin":     0.1,
     "ymax":     1e12,
-    # "xtitle":   ["All events", "#geq 1 #mu^{#pm} + ISO", "#geq 2 #mu^{#pm} + OS", "86 < m_{#mu^{+}#mu^{#minus}} < 96", "20 < p_{#mu^{+}#mu^{#minus}} < 70", "|cos#theta_{miss}| < 0.98", "120 < m_{rec} < 140", "#geq 4 l^{#pm}", "#geq 4 ISO l^{#pm}", "2 OS l^{#pm} pairs"],
-    # "xtitle":   ["All events", "4 leptons", "2 OS pairs", "Leptons p_{l}", "86 < m_{l^{+}l^{-}} < 96", "20 < p_{l^{+}l^{-}} < 70", "120 < m_{rec} < 140", "|cos#theta_{miss}| < 0.98", "30 < E_{miss} < 110", "80 < m_{WW*} < 135", "25 < p_{WW*} < 55"],
-    
-    # "xtitle":   ["All events", "4 leptons", "2 OS pairs", "#geq1 SF pair", "p_{l_{1}},p_{l_{2}},p_{l_{3}},p_{l_{4}}", "76 < m_{l^{+}l^{-}} < 106", "20 < p_{l^{+}l^{-}} < 70", "|cos#theta_{miss}| < 0.98", "30 < E_{miss} < 110", "80 < m_{WW*} < 135"],
-
-    "xtitle":   ["All events", "4 leptons", "2 OS pairs", "#geq1 SF pair", "p_{l_{1}},p_{l_{2}},p_{l_{3}},p_{l_{4}}", "76 < m_{l^{+}l^{-}} < 106", "20 < p_{l^{+}l^{-}} < 70", "|cos#theta_{miss}| < 0.98", "30 < E_{miss} < 110", "80 < m_{WW*} < 135", "#DeltaR(l_{WW*,1}, l_{WW*,2})>0.25"],
-
-    # , "#theta_{WW*} < 2.5", "#phi_{WW*} < 2.5"],
+    "xtitle":   cutflow_xaxis,
     "ytitle":   "Events ",
     "scaleSig": 1,
     "dumpTable": True,
