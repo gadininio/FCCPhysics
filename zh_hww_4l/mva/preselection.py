@@ -2,10 +2,13 @@
 from addons.TMVAHelper.TMVAHelper import TMVAHelperXGB
 
 run = 'full' # 'local', 'debug', 'full', 'full+condor'
-is_training = False
+ecm = '240'  # '240' or '365'
+is_training = True
 is_loose = True 
 apply_preselections = True
 apply_selections = True
+
+print(f"Training mode: {is_training}, Loose selections: {is_loose}, Apply preselections: {apply_preselections}, Apply selections: {apply_selections}")
 
 if run == 'debug':  # debug run
     print("Running in debug mode: only 1% of bkg and 20% of signal data, 1 chunk")
@@ -40,21 +43,21 @@ else:  # local run
 # list of processes (mandatory)
 if is_training:
     processList_mumu = {
-        'p8_ee_ZZ_llX_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        'p8_ee_ZZ_tautauX_ecm240':{'fraction': fraction, 'chunks': nchunks},
+        # 'p8_ee_ZZ_llX_ecm240':{'fraction': fraction, 'chunks': nchunks},
+        # 'p8_ee_ZZ_tautauX_ecm240':{'fraction': fraction, 'chunks': nchunks},
         # 'p8_ee_WW_ee_ecm240':{'fraction': fraction, 'chunks': nchunks},
         # 'p8_ee_WW_mumu_ecm240':{'fraction': fraction, 'chunks': nchunks},
         'p8_ee_WW_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        'wzp6_ee_mumuH_HWW_llnunu_ecm240':{'fraction': 1},
+        # 'wzp6_ee_mumuH_HWW_llnunu_ecm240':{'fraction': 1},  #
     }
 
     processList_ee = {
-        'p8_ee_ZZ_llX_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        'p8_ee_ZZ_tautauX_ecm240':{'fraction': fraction, 'chunks': nchunks},
+        # 'p8_ee_ZZ_llX_ecm240':{'fraction': fraction, 'chunks': nchunks},
+        # 'p8_ee_ZZ_tautauX_ecm240':{'fraction': fraction, 'chunks': nchunks},
         # 'p8_ee_WW_ee_ecm240':{'fraction': fraction, 'chunks': nchunks},
         # 'p8_ee_WW_mumu_ecm240':{'fraction': fraction, 'chunks': nchunks},
         'p8_ee_WW_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        'wzp6_ee_eeH_HWW_llnunu_ecm240':{'fraction': 1},
+        # 'wzp6_ee_eeH_HWW_llnunu_ecm240':{'fraction': 1},
     }
     
     # Production tag when running over EDM4Hep centrally produced events, this points to the yaml files for getting sample statistics (mandatory)
@@ -91,7 +94,7 @@ includePaths = ["../../functions.h"]
 output_fix = ""
 if debug: output_fix = "debug/"
 elif fullrun: output_fix = f"full{'_nopresel' if not apply_preselections else ''}{'_nosel' if not apply_selections else ''}/"
-outputDir   = f"../../../outputs/higgs/zh_hww_4l/mva{'_loose' if is_loose else ''}/preselection/{output_fix}/{'training/' if is_training else ''}"
+outputDir   = f"../../../outputs/higgs/zh_hww_4l/mva{'_loose' if is_loose else ''}/ecm{ecm}/preselection/{output_fix}/{'training/' if is_training else ''}"
 
 
 # Multithreading: -1 means using all cores
@@ -350,7 +353,7 @@ class RDFanalysis():
             
             
         if doInference:
-            tmva_helper = TMVAHelperXGB("../../../outputs/higgs/zh_hww_4l/mva/bdt_model_example.root", "bdt_model") # read the XGBoost training
+            tmva_helper = TMVAHelperXGB(f"../../../outputs/higgs/zh_hww_4l/mva{'_loose' if is_loose else ''}/ecm{ecm}/bdt_model_example.root", "bdt_model") # read the XGBoost training
             df = tmva_helper.run_inference(df, col_name="mva_score") # by default, makes a new column mva_score
 
         return df

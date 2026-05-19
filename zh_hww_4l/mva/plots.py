@@ -1,6 +1,7 @@
 import ROOT
 
 is_loose = True
+ecm = '240'  # '240' or '365'
 
 # global parameters
 intLumi        = 1.
@@ -9,9 +10,9 @@ ana_tex        = 'e^{+}e^{-}#rightarrow Z(l^{+}l^{-}) H#left[W(l#nu)W(l#nu)#righ
 delphesVersion = '3.4.2'
 energy         = 240.0
 collider       = 'FCC-ee'
-inputDir       = f'../../../outputs/higgs/zh_hww_4l/mva{"_loose" if is_loose else ""}/final_selection/full/'
+inputDir       = f'../../../outputs/higgs/zh_hww_4l/mva{"_loose" if is_loose else ""}/ecm{ecm}/final_selection/full/'
 formats        = ['pdf']
-outdir         = f'../../../outputs/higgs/zh_hww_4l/mva{"_loose" if is_loose else ""}/plots/'
+outdir         = f'../../../outputs/higgs/zh_hww_4l/mva{"_loose" if is_loose else ""}/ecm{ecm}/plots/'
 yaxis          = ['lin','log']
 stacksig       = ['nostack']
 plotStatUnc    = True
@@ -37,9 +38,15 @@ colors['ZZ'] = ROOT.kGreen+2
 
 
 plots = {}
+# plots['ZH'] = {'signal':{'ZH':['wzp6_ee_eeH_HWW_llnunu_ecm240', 'wzp6_ee_mumuH_HWW_llnunu_ecm240']},
+#                'backgrounds':{'WW':['p8_ee_WW_ecm240'], 'ZZ':['p8_ee_ZZ_ecm240']}
+#            }
 plots['ZH'] = {'signal':{'ZH':['wzp6_ee_eeH_HWW_llnunu_ecm240', 'wzp6_ee_mumuH_HWW_llnunu_ecm240']},
-               'backgrounds':{'WW':['p8_ee_WW_ecm240'], 'ZZ':['p8_ee_ZZ_ecm240']}
+               'backgrounds':{'WW':['p8_ee_WW_ee_ecm240', 'p8_ee_WW_mumu_ecm240'], 'ZZ':['p8_ee_ZZ_ecm240']}
            }
+# plots['ZH'] = {'signal':{},
+#                'backgrounds':{'WW':['p8_ee_WW_ecm240']}
+#            }
 
 legend = {}
 legend['ZH'] = 'ZH'

@@ -2,6 +2,8 @@ import ROOT
 
 flavor = 'll'  # 'mumu', 'ee', 'll'
 fullrun = True
+ecm = '240'  # 240 or 365
+
 # date = '20251124_111307' # n_leptons=4
 # date = '20251124_112545' # n_leptons=4, with dR(Z,WW)>0.25 cut
 # date = '20251124_131704' # n_leptons>=4
@@ -27,9 +29,9 @@ ana_tex        = 'e^{+}e^{-}#rightarrow Z(' + Z_leptons + ') H#left[W(l#nu)W(l#n
 delphesVersion = '3.4.2'
 energy         = 240.0
 collider       = 'FCC-ee'
-inputDir       = f"../../outputs/higgs/zh_hww_4l/hists/{path_full if fullrun else ''}"
+inputDir       = f"../../outputs/higgs/zh_hww_4l/histmaker/ecm{ecm}/hists/{path_full if fullrun else ''}"
 formats        = ['pdf']
-outdir         = f"../../outputs/higgs/zh_hww_4l/plots/{path_full if fullrun else ''}/{flavor}/"
+outdir         = f"../../outputs/higgs/zh_hww_4l/histmaker/ecm{ecm}/plots/{path_full if fullrun else ''}/{flavor}/"
 plotStatUnc    = True
 
 colors = {}

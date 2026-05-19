@@ -1,7 +1,13 @@
 
+# Commands
+
 Run in the following order:
 
     1. preselection.py      --> fccanalysis run preselection.py
+    
+        Set is_loose to True. 
+        Run twice: set is_training to False and then to True.
+        Copy the WW_ee and WW_mumu training samples together with the standard samples, as they are not used for the training but are used fitting.
 
     2. utils/skim.C         --> 
     
@@ -12,14 +18,14 @@ Run in the following order:
             mv wzp6_ee_eeH_HWW_ecm240.root wzp6_ee_eeH_HWW_ecm240_inc.root
             mv wzp6_ee_mumuH_HWW_ecm240.root wzp6_ee_mumuH_HWW_ecm240_inc.root
 
-        and run the skimmer:
+        and run the skimmer to keep only true leptonic-WW signal events:
             root -l -b -q 'skim.C("../../outputs/higgs/zh_hww_4l/mva_loose/preselection/full/wzp6_ee_eeH_HWW_llnunu_ecm240_inc.root", "../../outputs/higgs/zh_hww_4l/mva_loose/preselection/full/wzp6_ee_eeH_HWW_llnunu_ecm240.root")'
             root -l -b -q 'skim.C("../../outputs/higgs/zh_hww_4l/mva_loose/preselection/full/wzp6_ee_mumuH_HWW_llnunu_ecm240_inc.root", "../../outputs/higgs/zh_hww_4l/mva_loose/preselection/full/wzp6_ee_mumuH_HWW_llnunu_ecm240.root")'
 
             root -l -b -q 'skim.C("../../outputs/higgs/zh_hww_4l/mva_loose/preselection/full/training/wzp6_ee_eeH_HWW_llnunu_ecm240_inc.root", "../../outputs/higgs/zh_hww_4l/mva_loose/preselection/full/training/wzp6_ee_eeH_HWW_llnunu_ecm240.root")'
             root -l -b -q 'skim.C("../../outputs/higgs/zh_hww_4l/mva_loose/preselection/full/training/wzp6_ee_mumuH_HWW_llnunu_ecm240_inc.root", "../../outputs/higgs/zh_hww_4l/mva_loose/preselection/full/training/wzp6_ee_mumuH_HWW_llnunu_ecm240.root")'
 
-        Old:
+        Old (the rooteventselector doesn't copy other objects in the root file other than the tree):
 
             After running preselection.py, we need to apply the ww_leptonic cut on signal samples:
 
@@ -47,3 +53,7 @@ Run in the following order:
             cd /afs/cern.ch/work/g/gino/private/FCC-ee/outputs/higgs/zh_hww_4l/mva_loose/combine/full/sel0
             singularity exec /eos/project/f/fccsw-web/www/analysis/auxiliary/combine-standalone_v9.2.1.sif bash -c '/afs/cern.ch/work/g/gino/private/FCC-ee/outputs/higgs/zh_hww_4l/mva_loose/combine/full/sel0; text2workspace.py datacard.txt -o ws.root; combine -M MultiDimFit -v 10 --rMin 0.9 --rMax 1.1 --setParameters r=1 ws.root'
 
+
+# Plots style
+
+Copy `util/do_plots.py` to `FCCAnalyses/install/python/do_plots.py` (after compilation) or to `FCCAnalyses/python/do_plots.py` (before compilation).

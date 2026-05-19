@@ -5,6 +5,7 @@ debug = False
 fullrun = True
 apply_selections = True
 is_loose = True 
+ecm = '240'  # 240 or 365
 
 if fullrun and not debug:
     fraction = 1
@@ -12,23 +13,23 @@ if fullrun and not debug:
 
 # list of processes (mandatory)
 processList_mumu = {
-    'p8_ee_ZZ_ecm240':{'fraction': fraction, 'chunks': nchunks},
+    # 'p8_ee_ZZ_ecm240':{'fraction': fraction, 'chunks': nchunks},
     # 'p8_ee_WW_ee_ecm240':{'fraction': fraction, 'chunks': nchunks},
-    # 'p8_ee_WW_mumu_ecm240':{'fraction': fraction, 'chunks': nchunks},
-    'p8_ee_WW_ecm240':{'fraction': fraction, 'chunks': nchunks},
-    'wzp6_ee_mumu_ecm240':{'fraction': fraction, 'chunks': nchunks},
-    'wzp6_ee_tautau_ecm240':{'fraction': fraction, 'chunks': nchunks},
-    'wzp6_ee_mumuH_HWW_llnunu_ecm240':{'fraction': 1},
+    'p8_ee_WW_mumu_ecm240':{'fraction': fraction, 'chunks': nchunks},
+    # 'p8_ee_WW_ecm240':{'fraction': fraction, 'chunks': nchunks},
+    # 'wzp6_ee_mumu_ecm240':{'fraction': fraction, 'chunks': nchunks},
+    # 'wzp6_ee_tautau_ecm240':{'fraction': fraction, 'chunks': nchunks},
+    # 'wzp6_ee_mumuH_HWW_llnunu_ecm240':{'fraction': 1},
 }
 
 processList_ee = {
-    'p8_ee_ZZ_ecm240':{'fraction': fraction, 'chunks': nchunks},
+    # 'p8_ee_ZZ_ecm240':{'fraction': fraction, 'chunks': nchunks},
     # 'p8_ee_WW_ee_ecm240':{'fraction': fraction, 'chunks': nchunks},
     # 'p8_ee_WW_mumu_ecm240':{'fraction': fraction, 'chunks': nchunks},
-    'p8_ee_WW_ecm240':{'fraction': fraction, 'chunks': nchunks},
-    'wzp6_ee_ee_Mee_30_150_ecm240':{'fraction': fraction, 'chunks': nchunks},
-    'wzp6_ee_tautau_ecm240':{'fraction': fraction, 'chunks': nchunks},
-    'wzp6_ee_eeH_HWW_llnunu_ecm240':{'fraction': 1},
+    # 'p8_ee_WW_ecm240':{'fraction': fraction, 'chunks': nchunks},
+    # 'wzp6_ee_ee_Mee_30_150_ecm240':{'fraction': fraction, 'chunks': nchunks},
+    # 'wzp6_ee_tautau_ecm240':{'fraction': fraction, 'chunks': nchunks},
+    # 'wzp6_ee_eeH_HWW_llnunu_ecm240':{'fraction': 1},
 }
 
 processList = {'wzp6_ee_mumuH_HWW_llnunu_ecm240':{'fraction': 0.2}} if debug else processList_mumu | processList_ee
@@ -56,7 +57,7 @@ elif fullrun:
     dt_string = now.strftime("%Y%m%d_%H%M%S")
     output_fix = f"full_{'nosel_' if not apply_selections else ''}{'loose_' if is_loose else ''}{dt_string}/"
     # output_fix = "full/"
-outputDir   = f"../../outputs/higgs/zh_hww_4l/hists/{output_fix}/"
+outputDir   = f"../../outputs/higgs/zh_hww_4l/histmaker/ecm{ecm}/hists/{output_fix}/"
 
 
 # optional: ncpus, default is 4, -1 uses all cores available

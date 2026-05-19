@@ -2,6 +2,8 @@ import ROOT
 
 # flavor = "mumu" # mumu, ee
 fullrun = True
+ecm = '240'  # 240 or 365
+
 # date = '20251124_111307' # n_leptons=4
 # date = '20251124_112545' # n_leptons=4, with dR(Z,WW)>0.25 cut
 # date = '20251124_131704' # n_leptons>=4
@@ -12,15 +14,15 @@ date = '20251125_134522' # n_leptons=4, with dR(Z,WW)>0.25 cut, bug in resonance
 path_full = f'full_{date}/' if date!='' else 'full/'
 
 intLumi        = 1.0 # assume histograms are scaled in previous step
-outputDir      = f"../../outputs/higgs/zh_hww_4l/combine/{path_full if fullrun else ''}/"
+outputDir      = f"../../outputs/higgs/zh_hww_4l/histmaker/ecm{ecm}/combine/{path_full if fullrun else ''}/"
 mc_stats       = True
 rebin          = 10
 
 # get histograms from histmaker step
-inputDir       = f"../../outputs/higgs/zh_hww_4l/hists/{path_full if fullrun else ''}/"
+inputDir       = f"../../outputs/higgs/zh_hww_4l/histmaker/ecm{ecm}/hists/{path_full if fullrun else ''}/"
 
 # # get histograms from final step, selection to be defined
-# inputDir       = f"../../../outputs/higgs/zh_hww_4l/final_selection/{flavor}/"
+# inputDir       = f"../../../outputs/higgs/zh_hww_4l/histmaker/ecm{ecm}/final_selection/{flavor}/"
 # selection      = "sel3"
 
 

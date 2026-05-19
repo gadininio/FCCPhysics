@@ -13,11 +13,12 @@ import ROOT
 
 # Parse command line arguments
 parser = argparse.ArgumentParser()
-# parser.add_argument("-m", "--model", type=str, default="../../../outputs/higgs/zh_hww_4l/mva/bdt_model_example.pkl", help="Input pkl file")
-# parser.add_argument("-i", "--input", type=str, default="../../../outputs/higgs/zh_hww_4l/mva/bdt_model_example.pkl", help="Input pkl file")
-# parser.add_argument("-o", "--outDir", type=str, default="../../../outputs/higgs/zh_hww_4l/mva/plots_training", help="Output directory")
+# parser.add_argument("-m", "--model", type=str, default="../../../outputs/higgs/zh_hww_4l/mva/ecm240/bdt_model_example.pkl", help="Input pkl file")
+# parser.add_argument("-i", "--input", type=str, default="../../../outputs/higgs/zh_hww_4l/mva/ecm240/bdt_model_example.pkl", help="Input pkl file")
+# parser.add_argument("-o", "--outDir", type=str, default="../../../outputs/higgs/zh_hww_4l/mva/ecm240/plots_training", help="Output directory")
 parser.add_argument("-f", "--full", action='store_true', default=False, help="Process full dataset")
 parser.add_argument("-l", "--loose", action='store_true', default=False, help="Process full dataset")
+parser.add_argument("-e", "--ecm", default='240', help="Center-of-mass energy (240 or 365)", choices=['240', '365'])
 args = parser.parse_args()
 
 
@@ -26,17 +27,14 @@ args = parser.parse_args()
 #     parser.outDir.replace('mva', 'mva_loose')
 
 
-model_path = f'../../../outputs/higgs/zh_hww_4l/mva{"_loose" if args.loose else ""}/bdt_model_example.pkl'
-input_path = f'../../../outputs/higgs/zh_hww_4l/mva{"_loose" if args.loose else ""}/preselection/{"full/" if args.full else ""}'
-output_path = f'../../../outputs/higgs/zh_hww_4l/mva{"_loose" if args.loose else ""}/preselection_with_bdt/{"full/" if args.full else ""}'
-
-# Create output directory if it doesn't exist
-import os
-if not os.path.exists(output_path):
-    os.makedirs(output_path)
+model_path = f'../../../outputs/higgs/zh_hww_4l/mva{"_loose" if args.loose else ""}/ecm{args.ecm}/bdt_model_example.pkl'
+input_path = f'../../../outputs/higgs/zh_hww_4l/mva{"_loose" if args.loose else ""}/ecm{args.ecm}/preselection/{"full/" if args.full else ""}'
+output_path = f'../../../outputs/higgs/zh_hww_4l/mva{"_loose" if args.loose else ""}/ecm{args.ecm}/preselection_with_bdt/{"full/" if args.full else ""}'
 
 
 def apply_bdt(in_file, out_file):
+    
+    print(f"Applying BDT to {in_file}...")
     
     # --- Step 1: create tree with uproot ---
     # Load preselection ROOT TTree
@@ -54,11 +52,6 @@ def apply_bdt(in_file, out_file):
         "miss_cosTheta", "miss_energy"  # missing energy
     ]
     df = tree.arrays(features, library="pd")
-
-    # Load model
-    with open(model_path, "rb") as f:
-        clf = pickle.load(f)
-        model = clf['model']
 
     # Compute MVA score
     scores = model.predict_proba(df[features])[:, 1]  # for binary classifier
@@ -85,13 +78,27 @@ def apply_bdt(in_file, out_file):
     fout_root.Close()
     fin.Close()
     
+    print(f"MVA scores added to {in_file} and new ROOT file created {out_file}")
+
+
+if "__main__" == __name__:
     
-    print("MVA scores added to ", in_file, " and new ROOT file created ", out_file)
+    # Create output directory if it doesn't exist
+    import os
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
 
+    # Load model
+    print('Loading BDT model from', model_path)
+    with open(model_path, "rb") as f:
+        clf = pickle.load(f)
+        model = clf['model']
+    
+    apply_bdt(f"{input_path}/wzp6_ee_eeH_HWW_llnunu_ecm240.root", f"{output_path}/wzp6_ee_eeH_HWW_llnunu_ecm240.root")
+    apply_bdt(f"{input_path}/wzp6_ee_mumuH_HWW_llnunu_ecm240.root", f"{output_path}/wzp6_ee_mumuH_HWW_llnunu_ecm240.root")
+    # apply_bdt(f"{input_path}/p8_ee_WW_ecm240.root", f"{output_path}/p8_ee_WW_ecm240.root")
+    apply_bdt(f"{input_path}/p8_ee_WW_ee_ecm240.root", f"{output_path}/p8_ee_WW_ee_ecm240.root")
+    apply_bdt(f"{input_path}/p8_ee_WW_mumu_ecm240.root", f"{output_path}/p8_ee_WW_mumu_ecm240.root")
+    apply_bdt(f"{input_path}/p8_ee_ZZ_ecm240.root", f"{output_path}/p8_ee_ZZ_ecm240.root")
 
-apply_bdt(f"{input_path}/wzp6_ee_eeH_HWW_llnunu_ecm240.root", f"{output_path}/wzp6_ee_eeH_HWW_llnunu_ecm240.root")
-apply_bdt(f"{input_path}/wzp6_ee_mumuH_HWW_llnunu_ecm240.root", f"{output_path}/wzp6_ee_mumuH_HWW_llnunu_ecm240.root")
-apply_bdt(f"{input_path}/p8_ee_WW_ecm240.root", f"{output_path}/p8_ee_WW_ecm240.root")
-apply_bdt(f"{input_path}/p8_ee_ZZ_ecm240.root", f"{output_path}/p8_ee_ZZ_ecm240.root")
-
-print("All done!")
+    print("All done!")
