@@ -1,18 +1,28 @@
 
+'''
+This script applies a set of cuts. The cuts are applied sequentially, and can be toggled on/off using the apply_preselections (4 leptons and 2 OF SF pairs) and apply_selections (all other cuts) flags. The looser cuts (set with the is_loose flag) are designed to reduce the background while keeping a high signal efficiency to maintain enough stat for training and fit. The output of this script is ntuples containing the preselected events in which can be used for training a BDT (using is_training flag) or for making histograms.
+
+Run with:
+run=debug ecm=365 training=True presel=True sel=True loose=True fccanalysis run preselection.py
+
+'''
+
+
 from addons.TMVAHelper.TMVAHelper import TMVAHelperXGB
+import os
 
-run = 'full' # 'local', 'debug', 'full', 'full+condor'
-ecm = '240'  # '240' or '365'
-is_training = True
-is_loose = True 
-apply_preselections = True
-apply_selections = True
+run = os.environ.get("run", "full")  # 'local', 'debug', 'full', 'full+condor'
+ecm = os.environ.get("ecm", "240")  # '240' or '365'
+is_training = os.environ.get("training", "False").lower() in ("true", "1")
+apply_preselections = os.environ.get("presel", "True").lower() in ("true", "1")
+apply_selections = os.environ.get("sel", "True").lower() in ("true", "1")
+is_loose = os.environ.get("loose", "True").lower() in ("true", "1")
 
-print(f"Training mode: {is_training}, Loose selections: {is_loose}, Apply preselections: {apply_preselections}, Apply selections: {apply_selections}")
+print(f"Run type: {run}, ECM: {ecm} GeV, Training mode: {is_training}, Apply preselections: {apply_preselections}, Apply selections: {apply_selections}, Loose selections: {is_loose}")
 
 if run == 'debug':  # debug run
-    print("Running in debug mode: only 1% of bkg and 20% of signal data, 1 chunk")
-    fraction = 0.01
+    print("Running in debug mode: only 0.5% of bkg, 100% of signal data, 1 chunk")
+    fraction = 0.005
     nchunks = 1
     condorize = False
     debug = True
@@ -32,8 +42,8 @@ elif run == 'full+condor':  # full run with condor
     debug = False
     fullrun = True
 else:  # local run
-    print("Running in local mode: only 5% of bkg and 100% of signal data, 1 chunk")
-    fraction = 0.05
+    print("Running in local mode: only 20% of bkg and 100% of signal data, 1 chunk")
+    fraction = 0.2
     nchunks = 1
     condorize = False
     debug = False
@@ -43,21 +53,21 @@ else:  # local run
 # list of processes (mandatory)
 if is_training:
     processList_mumu = {
-        # 'p8_ee_ZZ_llX_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        # 'p8_ee_ZZ_tautauX_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        # 'p8_ee_WW_ee_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        # 'p8_ee_WW_mumu_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        'p8_ee_WW_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        # 'wzp6_ee_mumuH_HWW_llnunu_ecm240':{'fraction': 1},  #
+        f'p8_ee_ZZ_llX_ecm{ecm}':{'fraction': fraction, 'chunks': nchunks},
+        f'p8_ee_ZZ_tautauX_ecm{ecm}':{'fraction': fraction, 'chunks': nchunks},
+        f'p8_ee_WW_ee_ecm{ecm}':{'fraction': fraction, 'chunks': nchunks},
+        f'p8_ee_WW_mumu_ecm{ecm}':{'fraction': fraction, 'chunks': nchunks},
+        f'p8_ee_WW_ecm{ecm}':{'fraction': fraction, 'chunks': nchunks},
+        f'wzp6_ee_mumuH_HWW_{"llnunu_" if ecm=="240" else ""}ecm{ecm}':{'fraction': 1},  #
     }
 
     processList_ee = {
-        # 'p8_ee_ZZ_llX_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        # 'p8_ee_ZZ_tautauX_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        # 'p8_ee_WW_ee_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        # 'p8_ee_WW_mumu_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        'p8_ee_WW_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        # 'wzp6_ee_eeH_HWW_llnunu_ecm240':{'fraction': 1},
+        f'p8_ee_ZZ_llX_ecm{ecm}':{'fraction': fraction, 'chunks': nchunks},
+        f'p8_ee_ZZ_tautauX_ecm{ecm}':{'fraction': fraction, 'chunks': nchunks},
+        f'p8_ee_WW_ee_ecm{ecm}':{'fraction': fraction, 'chunks': nchunks},
+        f'p8_ee_WW_mumu_ecm{ecm}':{'fraction': fraction, 'chunks': nchunks},
+        f'p8_ee_WW_ecm{ecm}':{'fraction': fraction, 'chunks': nchunks},
+        f'wzp6_ee_eeH_HWW_{"llnunu_" if ecm=="240" else ""}ecm{ecm}':{'fraction': 1},
     }
     
     # Production tag when running over EDM4Hep centrally produced events, this points to the yaml files for getting sample statistics (mandatory)
@@ -65,24 +75,29 @@ if is_training:
     
 else:
     processList_mumu = {
-        'p8_ee_ZZ_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        'p8_ee_WW_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        'wzp6_ee_mumuH_HWW_llnunu_ecm240':{'fraction': 1},
-        # 'wzp6_ee_mumuH_HWW_ecm240':{'fraction': 1},
+        f'p8_ee_ZZ_ecm{ecm}':{'fraction': fraction, 'chunks': nchunks},
+        f'p8_ee_WW_ecm{ecm}':{'fraction': fraction, 'chunks': nchunks},
+        f'wzp6_ee_mumuH_HWW_{"llnunu_" if ecm=="240" else ""}ecm{ecm}':{'fraction': 1},
     }
 
     processList_ee = {
-        'p8_ee_ZZ_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        'p8_ee_WW_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        'wzp6_ee_eeH_HWW_llnunu_ecm240':{'fraction': 1},
-        # 'wzp6_ee_eeH_HWW_ecm240':{'fraction': 1},
+        f'p8_ee_ZZ_ecm{ecm}':{'fraction': fraction, 'chunks': nchunks},
+        f'p8_ee_WW_ecm{ecm}':{'fraction': fraction, 'chunks': nchunks},
+        f'wzp6_ee_eeH_HWW_{"llnunu_" if ecm=="240" else ""}ecm{ecm}':{'fraction': 1},
     }
+    
+    if ecm == '365':
+        processList_mumu['p8_ee_tt_ecm365'] = {'fraction': fraction, 'chunks': nchunks}
+        processList_mumu['p8_ee_WW_mumu_ecm365'] = {'fraction': fraction, 'chunks': nchunks}
+        processList_ee['p8_ee_WW_ee_ecm365'] = {'fraction': fraction, 'chunks': nchunks}
 
     # Production tag when running over EDM4Hep centrally produced events, this points to the yaml files for getting sample statistics (mandatory)
     prodTag     = "FCCee/winter2023/IDEA/"
 
 
-processList = {'wzp6_ee_mumuH_HWW_llnunu_ecm240':{'fraction': 0.2}} if debug else processList_mumu | processList_ee
+# processList = {f'wzp6_ee_mumuH_HWW_{"llnunu_" if ecm=="240" else ""}ecm{ecm}':{'fraction': 0.2}} if debug else processList_mumu | processList_ee
+processList = processList_mumu | processList_ee
+
 
 # Link to the dictonary that contains all the cross section informations etc... (mandatory)
 procDict = "FCCee_procDict_winter2023_IDEA.json"
@@ -193,16 +208,28 @@ class RDFanalysis():
         df = df.Define("lep3_p", "leptons_p[3]")
         
         if apply_selections:
-            if is_loose:
-                df = df.Filter("lep0_p > 20 && lep0_p < 85")
-                df = df.Filter("lep1_p > 10 && lep1_p < 80")
-                df = df.Filter("lep2_p > 10 && lep2_p < 80")
-                df = df.Filter("lep3_p > 10 && lep3_p < 75")
-            else:
-                df = df.Filter("lep0_p > 25 && lep0_p < 80")
-                df = df.Filter("lep1_p > 15 && lep1_p < 80")
-                df = df.Filter("lep2_p > 10 && lep2_p < 80")
-                df = df.Filter("lep3_p > 10 && lep3_p < 75")
+            if ecm == '240':
+                if is_loose:
+                    df = df.Filter("lep0_p > 20 && lep0_p < 85")
+                    df = df.Filter("lep1_p > 10 && lep1_p < 80")
+                    df = df.Filter("lep2_p > 10 && lep2_p < 80")
+                    df = df.Filter("lep3_p > 10 && lep3_p < 75")
+                else:
+                    df = df.Filter("lep0_p > 25 && lep0_p < 80")
+                    df = df.Filter("lep1_p > 15 && lep1_p < 80")
+                    df = df.Filter("lep2_p > 10 && lep2_p < 80")
+                    df = df.Filter("lep3_p > 10 && lep3_p < 75")
+            elif ecm == '365':
+                if is_loose:
+                    df = df.Filter("lep0_p > 70 && lep0_p < 155")
+                    df = df.Filter("lep1_p > 25 && lep1_p < 105")
+                    df = df.Filter("lep2_p > 15 && lep2_p < 80")
+                    df = df.Filter("lep3_p > 5 && lep3_p < 65")
+                else:
+                    df = df.Filter("lep0_p > 70 && lep0_p < 155")
+                    df = df.Filter("lep1_p > 25 && lep1_p < 105")
+                    df = df.Filter("lep2_p > 15 && lep2_p < 80")
+                    df = df.Filter("lep3_p > 5 && lep3_p < 65")
 
 
         #########
@@ -214,7 +241,7 @@ class RDFanalysis():
         # Technically, it returns a ReconstructedParticleData object with index 0 the Z->ll di-lepton system, index 1 and 2 the leptons of the pair, and index 3 and 4 the other two leptons.
         # If no pair is found, the returned vector is empty.
         # We then require that at least one pair was found (size>=5) to keep the event.
-        df = df.Define("zbuilder_result", f"FCCAnalyses::ZHfunctions::resonanceBuilder_mass_recoil_advanced(91.2, 125, 0.4, 240, false)(muons, electrons, MCRecoAssociations0, MCRecoAssociations1, ReconstructedParticles, Particle, Particle0, Particle1)")
+        df = df.Define("zbuilder_result", f"FCCAnalyses::ZHfunctions::resonanceBuilder_mass_recoil_advanced(91.2, 125, 0.4, {ecm}, false)(muons, electrons, MCRecoAssociations0, MCRecoAssociations1, ReconstructedParticles, Particle, Particle0, Particle1)")
         if apply_selections:
             df = df.Filter("zbuilder_result.size() >= 5") # make sure at least one pair was found (and additional two leptons)
         
@@ -226,7 +253,7 @@ class RDFanalysis():
         df = df.Define("zll_phi", "FCCAnalyses::ReconstructedParticle::get_phi(zll)[0]") # momentum of the Z
     
         ## Recoil mass
-        df = df.Define("zll_recoil", "FCCAnalyses::ReconstructedParticle::recoilBuilder(240)(zll)") # compute the recoil based on the reconstructed Z
+        df = df.Define("zll_recoil", f"FCCAnalyses::ReconstructedParticle::recoilBuilder({ecm})(zll)") # compute the recoil based on the reconstructed Z
         df = df.Define("zll_recoil_m", "FCCAnalyses::ReconstructedParticle::get_mass(zll_recoil)[0]") # recoil mass
         
         ## Study the Z-lepton candidates
@@ -297,17 +324,27 @@ class RDFanalysis():
         ### CUT 6: Z momentum
         #########
         if apply_selections:
-            df = df.Filter("zll_p > 20 && zll_p < 70")
+            if ecm == '240':
+                df = df.Filter("zll_p > 20 && zll_p < 70")
+            elif ecm == '365':
+                if is_loose:
+                    df = df.Filter("zll_p > 35 && zll_p < 155")
+                else:
+                    df = df.Filter("zll_p > 140 && zll_p < 150")
 
 
         #########
         ### CUT 7: recoil mass window (reconstructed Higgs mass using the recoil method)
         #########
         if apply_selections:
-            if is_loose:
-                df = df.Filter("zll_recoil_m < 145 && zll_recoil_m > 120")
-            else:
-                df = df.Filter("zll_recoil_m < 140 && zll_recoil_m > 120")
+            if ecm == '240':
+                if is_loose:
+                    df = df.Filter("zll_recoil_m < 145 && zll_recoil_m > 120")
+                else:
+                    df = df.Filter("zll_recoil_m < 140 && zll_recoil_m > 120")
+            elif ecm == '365':
+                if is_loose:
+                    df = df.Filter("zll_recoil_m < 145 && zll_recoil_m > 120")
 
 
         #########
@@ -323,33 +360,51 @@ class RDFanalysis():
         ### CUT 9: missingEnergy
         #########  
         if apply_selections:
-            if is_loose:
-                df = df.Filter("miss_energy > 20 && miss_energy < 120")
-            else:
-                df = df.Filter("miss_energy > 30 && miss_energy < 110")
+            if ecm == '240':
+                if is_loose:
+                    df = df.Filter("miss_energy > 20 && miss_energy < 120")
+                else:
+                    df = df.Filter("miss_energy > 30 && miss_energy < 110")
+            elif ecm == '365':
+                if is_loose:
+                    df = df.Filter("miss_energy < 60")
+                else:
+                    df = df.Filter("miss_energy < 50")
 
 
         #########
         ### CUT 10: WW system mass window
         #########
         if apply_selections:
-            if is_loose:
-                df = df.Filter("WW_mass > 60 && WW_mass < 135")
-            else:
-                df = df.Filter("WW_mass > 80 && WW_mass < 135")
+            if ecm == '240':
+                if is_loose:
+                    df = df.Filter("WW_mass > 60 && WW_mass < 135")
+                else:
+                    df = df.Filter("WW_mass > 80 && WW_mass < 135")
+            elif ecm == '365':
+                if is_loose:
+                    df = df.Filter("WW_mass > 35 && WW_mass < 130")
+                else:
+                    df = df.Filter("WW_mass > 95 && WW_mass < 125")
 
 
         #########
-        ### CUT *: WW system momentum
+        ### CUT 11: WW system momentum
         #########
-        # df = df.Filter("WW_p > 25 && WW_p < 55")
+        if apply_selections:
+            if ecm == '365':
+                if is_loose:
+                    df = df.Filter("WW_p > 100 && WW_p < 150")
+                else:
+                    df = df.Filter("WW_p > 130 && WW_p < 150")
 
 
         #########
-        ### CUT 10: dR(l_WW, l_WW) > 0.25
+        ### CUT 12: dR(l_WW, l_WW) > 0.25
         #########  
         if apply_selections:
-            df = df.Filter("WW_leps_dR > 0.25")
+            if ecm == '240':
+                df = df.Filter("WW_leps_dR > 0.25")
             
             
         if doInference:

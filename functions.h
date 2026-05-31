@@ -499,6 +499,10 @@ float get_missing_energy(Vec_rp met){
 }
 
 // checks if the WW system decays leptonically (e or mu)
+// The function takes two inputs:
+//  - mc: the collection of truth-level generated particles
+//  - ind: an array of indices used to correctly map parent particles to their daughters in the data structure
+// See https://gemini.google.com/share/59f126ef3498.
 bool is_ww_leptonic(Vec_mc mc, Vec_i ind) {
    int l1 = 0;
    int l2 = 0;
@@ -510,8 +514,10 @@ bool is_ww_leptonic(Vec_mc mc, Vec_i ind) {
             int de = p.daughters_end;
             for(int k=ds; k<de; k++) {
                 int pdg = abs(mc[ind[k]].PDG);
+                
+                // ignore self radiation (intermediate W bosons), e.g., W1 -> W2 + y with W2 -> lv, W2 is ignored in the inner loop and y will fail the following condition. But W2 will be correctly identified as the parent W in the outer loop, and the lepton will be correctly identified as its daughter.
                 if(pdg == 24) continue;
-                //std::cout << "W " << pdg << endl;
+
                 if(pdg == 11 or pdg == 13) {  // e or mu
                     if(l1 == 0) l1 = pdg;
                     else l2 = pdg;

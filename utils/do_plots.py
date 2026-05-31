@@ -344,8 +344,9 @@ def runPlots(config: dict[str, Any],
          f'{config["int_lumi_label"]}'
 
     if 'ee' in script_module.collider:
-        lt = 'FCC-ee Simulation (Delphes)'
-        rt = f'#sqrt{{s}} = {script_module.energy:.1f} GeV,   ' \
+        # lt = 'FCC-ee IDEA Simulation (Delphes)'
+        lt = 'FCC-ee #font[42]{IDEA Simulation (Delphes)}'
+        rt = f'#sqrt{{s}} = {script_module.energy:g} GeV,   ' \
              f'{config["int_lumi_label"]}'
 
     customLabel = ""
@@ -516,8 +517,9 @@ def runPlotsHistmaker(config: dict[str, Any],
     rt = f'#sqrt{{s}} = {param.energy:.1f} TeV,   L = {intLumi}'
 
     if 'ee' in param.collider:
-        lt = 'FCC-ee Simulation (Delphes)'
-        rt = f'#sqrt{{s}} = {param.energy:.1f} GeV,   {intLumi}'
+        # lt = 'FCC-ee IDEA Simulation (Delphes)'
+        lt = 'FCC-ee #font[42]{IDEA Simulation (Delphes)}'
+        rt = f'#sqrt{{s}} = {param.energy:g} GeV,   {intLumi}'
 
     customLabel = ""
     try:
@@ -740,25 +742,31 @@ def drawStack(config, name, ylabel, legend, leftText, rightText, formats,
         legend2.Draw()
 
     latex = ROOT.TLatex()
+    
+    ## draw title
     latex.SetNDC()
-    latex.SetTextAlign(31)
-    latex.SetTextSize(0.035)
+    # latex.SetTextAlign(31)
+    latex.SetTextAlign(11)
+    latex.SetTextSize(0.03)
+    # text = '#it{' + leftText + '}'
+    text = leftText
+    # latex.DrawLatex(0.92, 0.91, text)
+    latex.DrawLatex(0.14, 0.91, text)
 
-    text = '#it{' + leftText + '}'
-    latex.DrawLatex(0.92, 0.91, text)
+    y_shift = 0.03
 
     text = '#it{'+customLabel+'}'
     latex.SetTextAlign(12)
     latex.SetNDC(ROOT.kTRUE)
     latex.SetTextSize(0.035)
-    latex.DrawLatex(0.18, 0.85, text)
+    latex.DrawLatex(0.18, 0.85+y_shift, text)
 
-    # --- `IDEA detector`` label ---
-    latex.SetTextAlign(12)
-    latex.SetNDC(ROOT.kTRUE)
-    latex.SetTextSize(0.035)
-    latex.DrawLatex(0.18, 0.86, '#font[62]{IDEA detector}')
-    # ------------------------------
+    # # --- `IDEA detector`` label ---
+    # latex.SetTextAlign(12)
+    # latex.SetNDC(ROOT.kTRUE)
+    # latex.SetTextSize(0.035)
+    # latex.DrawLatex(0.18, 0.86, '#font[62]{IDEA detector}')
+    # # ------------------------------
 
     rightText = re.split(",", rightText)
     # text = '#bf{#it{' + rightText[0] + '}}'
@@ -767,35 +775,35 @@ def drawStack(config, name, ylabel, legend, leftText, rightText, formats,
     latex.SetTextAlign(12)
     latex.SetNDC(ROOT.kTRUE)
     latex.SetTextSize(0.035)
-    latex.DrawLatex(0.18, 0.81, text)
+    latex.DrawLatex(0.18, 0.81+y_shift, text)
 
     rightText[1] = rightText[1].replace("   ", "")
     # text = '#bf{#it{' + rightText[1] + '}}'
     text = '#font[42]{' + rightText[1] + '}'
     latex.SetTextSize(0.035)
-    latex.DrawLatex(0.18, 0.76, text)
+    latex.DrawLatex(0.18, 0.76+y_shift, text)
 
     # text = '#bf{#it{' + ana_tex + '}}'
     text = '#font[42]{' + ana_tex + '}'
     latex.SetTextSize(0.035)
-    latex.DrawLatex(0.18, 0.71, text)
+    latex.DrawLatex(0.18, 0.71+y_shift, text)
 
     # text = '#bf{#it{' + extralab + '}}'
     text = '#font[42]{' + extralab + '}'
     latex.SetTextSize(0.025)
-    latex.DrawLatex(0.18, 0.66, text)
+    latex.DrawLatex(0.18, 0.66+y_shift, text)
 
     if config['scale_sig'] != 1.0:
         text = '#bf{#it{Signal Scaling = ' + f'{config["scale_sig"]:.3g}' + \
                '}}'
         latex.SetTextSize(0.025)
-        latex.DrawLatex(0.18, 0.63, text)
+        latex.DrawLatex(0.18, 0.63+y_shift, text)
 
     if config['scale_bkg'] != 1.0:
         text = '#bf{#it{Background Scaling = ' + \
                 f'{config["scale_bkg"]:.3g}' + '}}'
         latex.SetTextSize(0.025)
-        latex.DrawLatex(0.18, 0.63, text)
+        latex.DrawLatex(0.18, 0.63+y_shift, text)
 
     canvas.RedrawAxis()
     canvas.GetFrame().SetBorderSize(12)

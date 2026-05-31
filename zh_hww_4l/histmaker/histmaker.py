@@ -1,38 +1,81 @@
 
-fraction = 0.05
-nchunks = 1
-debug = False
-fullrun = True
-apply_selections = True
-is_loose = True 
-ecm = '240'  # 240 or 365
+'''
+Run this script with the command:
+    ecm=365 sel=false fccanalysis run histmaker.py
+    ecm=365 sel=true loose=true fccanalysis run histmaker.py
+    ecm=365 sel=true loose=false fccanalysis run histmaker.py
+
+Full run:
+    ecm=365 sel=true loose=false fullrun=true fccanalysis run histmaker.py
+    
+'''
+
+
+# fraction = 0.2
+# nchunks = 1
+# debug = False
+# fullrun = False
+# apply_selections = True
+# is_loose = True 
+
+import os
+fraction = float(os.environ.get("fraction", 0.2))
+nchunks = int(os.environ.get("nchunks", 1))
+debug = os.environ.get("debug", "False").lower() in ("true", "1")
+fullrun = os.environ.get("fullrun", "False").lower() in ("true", "1")
+apply_selections = os.environ.get("sel", "True").lower() in ("true", "1")
+is_loose = os.environ.get("loose", "True").lower() in ("true", "1")
+ecm = os.environ.get("ecm", "240")
+
+print(f"Running with ecm={ecm} GeV, apply_selections={apply_selections}, is_loose={is_loose}, debug={debug}, fullrun={fullrun}")
 
 if fullrun and not debug:
     fraction = 1
     nchunks = 50
 
 # list of processes (mandatory)
-processList_mumu = {
-    # 'p8_ee_ZZ_ecm240':{'fraction': fraction, 'chunks': nchunks},
-    # 'p8_ee_WW_ee_ecm240':{'fraction': fraction, 'chunks': nchunks},
-    'p8_ee_WW_mumu_ecm240':{'fraction': fraction, 'chunks': nchunks},
-    # 'p8_ee_WW_ecm240':{'fraction': fraction, 'chunks': nchunks},
-    # 'wzp6_ee_mumu_ecm240':{'fraction': fraction, 'chunks': nchunks},
-    # 'wzp6_ee_tautau_ecm240':{'fraction': fraction, 'chunks': nchunks},
-    # 'wzp6_ee_mumuH_HWW_llnunu_ecm240':{'fraction': 1},
-}
+if ecm == '240':
+    processList_mumu = {
+        'p8_ee_ZZ_ecm240':{'fraction': fraction, 'chunks': nchunks},
+        'p8_ee_WW_ecm240':{'fraction': fraction, 'chunks': nchunks},
+        # 'wzp6_ee_mumu_ecm240':{'fraction': fraction, 'chunks': nchunks},
+        # 'wzp6_ee_tautau_ecm240':{'fraction': fraction, 'chunks': nchunks},
+        'wzp6_ee_mumuH_HWW_llnunu_ecm240':{'fraction': 1},
+    }
 
-processList_ee = {
-    # 'p8_ee_ZZ_ecm240':{'fraction': fraction, 'chunks': nchunks},
-    # 'p8_ee_WW_ee_ecm240':{'fraction': fraction, 'chunks': nchunks},
-    # 'p8_ee_WW_mumu_ecm240':{'fraction': fraction, 'chunks': nchunks},
-    # 'p8_ee_WW_ecm240':{'fraction': fraction, 'chunks': nchunks},
-    # 'wzp6_ee_ee_Mee_30_150_ecm240':{'fraction': fraction, 'chunks': nchunks},
-    # 'wzp6_ee_tautau_ecm240':{'fraction': fraction, 'chunks': nchunks},
-    # 'wzp6_ee_eeH_HWW_llnunu_ecm240':{'fraction': 1},
-}
+    processList_ee = {
+        'p8_ee_ZZ_ecm240':{'fraction': fraction, 'chunks': nchunks},
+        'p8_ee_WW_ecm240':{'fraction': fraction, 'chunks': nchunks},
+        # 'wzp6_ee_ee_Mee_30_150_ecm240':{'fraction': fraction, 'chunks': nchunks},
+        # 'wzp6_ee_tautau_ecm240':{'fraction': fraction, 'chunks': nchunks},
+        'wzp6_ee_eeH_HWW_llnunu_ecm240':{'fraction': 1},
+    }
 
-processList = {'wzp6_ee_mumuH_HWW_llnunu_ecm240':{'fraction': 0.2}} if debug else processList_mumu | processList_ee
+elif ecm == '365':
+    processList_mumu = {
+        'p8_ee_tt_ecm365':{'fraction': fraction, 'chunks': nchunks},
+        'p8_ee_ZZ_ecm365':{'fraction': fraction, 'chunks': nchunks},
+        # 'p8_ee_WW_ee_ecm365':{'fraction': fraction, 'chunks': nchunks},
+        # 'p8_ee_WW_mumu_ecm365':{'fraction': fraction, 'chunks': nchunks},
+        'p8_ee_WW_ecm365':{'fraction': fraction, 'chunks': nchunks},
+        # 'wzp6_ee_mumu_ecm365':{'fraction': fraction, 'chunks': nchunks},
+        # 'wzp6_ee_tautau_ecm365':{'fraction': fraction, 'chunks': nchunks},
+        'wzp6_ee_mumuH_HWW_ecm365':{'fraction': 1},
+    }
+
+    processList_ee = {
+        'p8_ee_tt_ecm365':{'fraction': fraction, 'chunks': nchunks},
+        'p8_ee_ZZ_ecm365':{'fraction': fraction, 'chunks': nchunks},
+        # 'p8_ee_WW_ee_ecm365':{'fraction': fraction, 'chunks': nchunks},
+        # 'p8_ee_WW_mumu_ecm365':{'fraction': fraction, 'chunks': nchunks},
+        'p8_ee_WW_ecm365':{'fraction': fraction, 'chunks': nchunks},
+        # 'wzp6_ee_ee_Mee_30_150_ecm365':{'fraction': fraction, 'chunks': nchunks},
+        # 'wzp6_ee_tautau_ecm365':{'fraction': fraction, 'chunks': nchunks},
+        'wzp6_ee_eeH_HWW_ecm365':{'fraction': 1},
+    }
+
+processList = {f'wzp6_ee_mumuH_HWW_ecm{ecm}':{'fraction': 0.2}} if debug else processList_mumu | processList_ee
+
 
 # Production tag when running over EDM4Hep centrally produced events, this points to the yaml files for getting sample statistics (mandatory)
 prodTag     = "FCCee/winter2023/IDEA/"
@@ -41,7 +84,7 @@ prodTag     = "FCCee/winter2023/IDEA/"
 procDict = "FCCee_procDict_winter2023_IDEA.json"
 
 # additional/custom C++ functions, defined in header files (optional)
-includePaths = ["../functions.h"]
+includePaths = ["../../functions.h"]
 
 # Define the input dir (optional)
 #inputDir    = "outputs/FCCee/higgs/mH-recoil/mumu/stage1"
@@ -50,14 +93,17 @@ includePaths = ["../functions.h"]
 #Optional: output directory, default is local running directory
 output_fix = ""
 if debug: output_fix = "debug/"
-elif fullrun:
+else:
     # add date-time stamp to output folder
     from datetime import datetime
     now = datetime.now()
     dt_string = now.strftime("%Y%m%d_%H%M%S")
-    output_fix = f"full_{'nosel_' if not apply_selections else ''}{'loose_' if is_loose else ''}{dt_string}/"
-    # output_fix = "full/"
-outputDir   = f"../../outputs/higgs/zh_hww_4l/histmaker/ecm{ecm}/hists/{output_fix}/"
+    dt_string = ''
+    output_fix = f"{'full_' if fullrun else ''}{'nosel_' if not apply_selections else ('loose_' if is_loose else 'tight_')}{dt_string}/"
+    # if last charachter is '_', remove it
+    if output_fix.endswith('_'):
+        output_fix = output_fix[:-1]
+outputDir   = f"../../../outputs/higgs/zh_hww_4l/histmaker/ecm{ecm}/hists/{output_fix}/"
 
 
 # optional: ncpus, default is 4, -1 uses all cores available
@@ -65,14 +111,16 @@ nCPUS       = -1
 
 # scale the histograms with the cross-section and integrated luminosity
 doScale = True
-intLumi = 10800000.0 # 10.8 /ab for 240 GeV
+intLumi = 10.8e6 if ecm == '240' else 3e6  # 10.8 /ab for 240 GeV, 3 /ab for 365 GeV
 
+n_bins = int(ecm) + 10
 
 # define some binning for various histograms
-bins_p_mu = (250, 0, 250) # 100 MeV bins
-bins_m_ll = (250, 0, 250) # 100 MeV bins
-bins_p_ll = (250, 0, 250) # 100 MeV bins
-bins_recoil = (250, 0, 250) # 1 GeV bins
+bins_p_mu = (n_bins, 0, n_bins) # 100 MeV bins
+bins_m_ll = (n_bins, 0, n_bins) # 100 MeV bins
+bins_m_ll_large = (n_bins*2, 0, n_bins*2) # 100 MeV bins
+bins_p_ll = (n_bins, 0, n_bins) # 100 MeV bins
+bins_recoil = (n_bins, 0, n_bins) # 1 GeV bins
 bins_cosThetaMiss = (10000, 0, 1)
 
 bins_theta = (500, -5, 5)
@@ -85,7 +133,7 @@ bins_charge = (10, -5, 5)
 bins_iso = (500, 0, 5)
 
 # bins_recoil_final = (200, 120, 140) # 100 MeV bins
-bins_recoil_final = (2500, 0, 250) # 0.1 GeV bins
+bins_recoil_final = (n_bins*10, 0, n_bins) # 0.1 GeV bins
 
 
 
@@ -106,7 +154,8 @@ def build_graph(df, dataset):
 
     # For signal events, keep only fully-leptonic WW decays (truth-level selection)
     # if "wzp6_ee_eeH_HWW_ecm240" in dataset or "wzp6_ee_mumuH_HWW_ecm240" in dataset:
-    if "wzp6_ee_eeH_HWW_llnunu_ecm240" in dataset or "wzp6_ee_mumuH_HWW_llnunu_ecm240" in dataset:
+    if f"wzp6_ee_eeH_HWW" in dataset or f"wzp6_ee_mumuH_HWW" in dataset:
+        print(f"Applying truth-level fully-leptonic WW decays cut on {dataset}")
         df = df.Define("ww_leptonic", "FCCAnalyses::ZHfunctions::is_ww_leptonic(Particle, Particle1)")
         df = df.Filter("ww_leptonic")
 
@@ -221,16 +270,36 @@ def build_graph(df, dataset):
     results.append(df.Histo1D(("lep3_p_cut2", "", *bins_p_mu), "lep3_p"))
     
     if apply_selections:
-        if is_loose:
-            df = df.Filter("lep0_p > 20 && lep0_p < 85")
-            df = df.Filter("lep1_p > 10 && lep1_p < 80")
-            df = df.Filter("lep2_p > 10 && lep2_p < 80")
-            df = df.Filter("lep3_p > 10 && lep3_p < 75")
-        else:
-            df = df.Filter("lep0_p > 25 && lep0_p < 80")
-            df = df.Filter("lep1_p > 15 && lep1_p < 80")
-            df = df.Filter("lep2_p > 10 && lep2_p < 80")
-            df = df.Filter("lep3_p > 10 && lep3_p < 75")
+        if ecm == '240':
+            if is_loose:
+                df = df.Filter("lep0_p > 20 && lep0_p < 85")
+                df = df.Filter("lep1_p > 10 && lep1_p < 80")
+                df = df.Filter("lep2_p > 10 && lep2_p < 80")
+                df = df.Filter("lep3_p > 10 && lep3_p < 75")
+            else:
+                df = df.Filter("lep0_p > 25 && lep0_p < 80")
+                df = df.Filter("lep1_p > 15 && lep1_p < 80")
+                df = df.Filter("lep2_p > 10 && lep2_p < 80")
+                df = df.Filter("lep3_p > 10 && lep3_p < 75")
+        elif ecm == '365':
+            if is_loose:
+                results.append(df.Histo1D(("lep0_p_cut2a", "", *bins_p_mu), "lep0_p"))
+                df = df.Filter("lep0_p > 70 && lep0_p < 155")
+                results.append(df.Histo1D(("lep1_p_cut2b", "", *bins_p_mu), "lep1_p"))
+                df = df.Filter("lep1_p > 25 && lep1_p < 105")
+                results.append(df.Histo1D(("lep2_p_cut2c", "", *bins_p_mu), "lep2_p"))
+                df = df.Filter("lep2_p > 15 && lep2_p < 80")
+                results.append(df.Histo1D(("lep3_p_cut2d", "", *bins_p_mu), "lep3_p"))
+                df = df.Filter("lep3_p > 5 && lep3_p < 65")
+            else:
+                results.append(df.Histo1D(("lep0_p_cut2a", "", *bins_p_mu), "lep0_p"))
+                df = df.Filter("lep0_p > 70 && lep0_p < 155")
+                results.append(df.Histo1D(("lep1_p_cut2b", "", *bins_p_mu), "lep1_p"))
+                df = df.Filter("lep1_p > 25 && lep1_p < 105")
+                results.append(df.Histo1D(("lep2_p_cut2c", "", *bins_p_mu), "lep2_p"))
+                df = df.Filter("lep2_p > 15 && lep2_p < 80")
+                results.append(df.Histo1D(("lep3_p_cut2d", "", *bins_p_mu), "lep3_p"))
+                df = df.Filter("lep3_p > 5 && lep3_p < 65")
     df = df.Define("cut4", "4")
     results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut4"))
 
@@ -248,7 +317,7 @@ def build_graph(df, dataset):
     # Technically, it returns a ReconstructedParticleData object with index 0 the Z->ll di-lepton system, index 1 and 2 the leptons of the pair, and index 3 and 4 the other two leptons.
     # If no pair is found, the returned vector is empty.
     # We then require that at least one pair was found (size>=5) to keep the event.
-    df = df.Define("zbuilder_result", f"FCCAnalyses::ZHfunctions::resonanceBuilder_mass_recoil_advanced(91.2, 125, 0.4, 240, false)(muons, electrons, MCRecoAssociations0, MCRecoAssociations1, ReconstructedParticles, Particle, Particle0, Particle1)")
+    df = df.Define("zbuilder_result", f"FCCAnalyses::ZHfunctions::resonanceBuilder_mass_recoil_advanced(91.2, 125, 0.4, {ecm}, false)(muons, electrons, MCRecoAssociations0, MCRecoAssociations1, ReconstructedParticles, Particle, Particle0, Particle1)")
     df = df.Filter("zbuilder_result.size() >= 5") # make sure at least one pair was found (and additional two leptons)
 
     df = df.Define("zll", "Vec_rp{zbuilder_result[0]}") # the Z
@@ -258,13 +327,13 @@ def build_graph(df, dataset):
     df = df.Define("zll_theta", "FCCAnalyses::ReconstructedParticle::get_theta(zll)[0]") # momentum of the Z
     df = df.Define("zll_phi", "FCCAnalyses::ReconstructedParticle::get_phi(zll)[0]") # momentum of the Z
 
-    results.append(df.Histo1D(("zll_m_cut4", "", *bins_m_ll), "zll_m"))
+    # results.append(df.Histo1D(("zll_m_cut4", "", *bins_m_ll), "zll_m"))
     results.append(df.Histo1D(("zll_p_cut4", "", *bins_p_ll), "zll_p"))
     results.append(df.Histo1D(("zll_theta_cut4", "", *bins_theta), "zll_theta"))
     results.append(df.Histo1D(("zll_phi_cut4", "", *bins_phi), "zll_phi"))
 
     ## Recoil mass
-    df = df.Define("zll_recoil", "FCCAnalyses::ReconstructedParticle::recoilBuilder(240)(zll)") # compute the recoil based on the reconstructed Z
+    df = df.Define("zll_recoil", f"FCCAnalyses::ReconstructedParticle::recoilBuilder({ecm})(zll)") # compute the recoil based on the reconstructed Z
     df = df.Define("zll_recoil_m", "FCCAnalyses::ReconstructedParticle::get_mass(zll_recoil)[0]") # recoil mass
     results.append(df.Histo1D(("zll_recoil_m_cut4", "", *bins_recoil), "zll_recoil_m")) # plot it before the cut
 
@@ -333,14 +402,14 @@ def build_graph(df, dataset):
     results.append(df.Histo1D(("WW_lep1_p_index_cut4", "", 5, -1, 4), "WW_lep1_p_index"))  # Which lepton is WW_lep1_p?    
     
     ## Build the WW system using the two leptons not coming from the Z and the missing energy vector
-    df = df.Define("missingEnergy_vec", "FCCAnalyses::ZHfunctions::missingEnergy(240., ReconstructedParticles)")
+    df = df.Define("missingEnergy_vec", f"FCCAnalyses::ZHfunctions::missingEnergy({ecm}, ReconstructedParticles)")
     df = df.Define("missingEnergy_tlv", "FCCAnalyses::ReconstructedParticle::get_tlv(missingEnergy_vec, 0)")
     df = df.Define("WW_tlv", "missingEnergy_tlv + WW_lep0_tlv + WW_lep1_tlv")
     df = df.Define("WW_p", "WW_tlv.P()")
     df = df.Define("WW_theta", "WW_tlv.Theta()")
     df = df.Define("WW_phi", "WW_tlv.Phi()")
     df = df.Define("WW_mass", "WW_tlv.M()")
-    results.append(df.Histo1D(("WW_mass_cut4", "", *bins_m_ll), "WW_mass"))
+    results.append(df.Histo1D(("WW_mass_cut4", "", *bins_m_ll_large), "WW_mass"))
     results.append(df.Histo1D(("WW_p_cut4", "", *bins_p_mu), "WW_p"))
     results.append(df.Histo1D(("WW_theta_cut4", "", *bins_theta), "WW_theta"))
     results.append(df.Histo1D(("WW_phi_cut4", "", *bins_phi), "WW_phi"))
@@ -353,10 +422,13 @@ def build_graph(df, dataset):
     #########
     ### CUT 5: Z mass window
     #########
-    # results.append(df.Histo1D(("zll_m_cut4", "", *bins_m_ll), "zll_m"))  # already done above
+    results.append(df.Histo1D(("zll_m_cut4", "", *bins_m_ll), "zll_m"))  # already done above
     if apply_selections:
-        # df = df.Filter("zll_m > 86 && zll_m < 96")  # tighter cut - smaller significance
-        df = df.Filter("zll_m > 76 && zll_m < 106")
+        if ecm == '240':
+            # df = df.Filter("zll_m > 86 && zll_m < 96")  # tighter cut - smaller significance
+            df = df.Filter("zll_m > 76 && zll_m < 106")
+        elif ecm == '365':
+            df = df.Filter("zll_m > 76 && zll_m < 106")
     df = df.Define("cut5", "5")
     results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut5"))
 
@@ -366,7 +438,13 @@ def build_graph(df, dataset):
     #########
     results.append(df.Histo1D(("zll_p_cut5", "", *bins_p_ll), "zll_p"))
     if apply_selections:
-        df = df.Filter("zll_p > 20 && zll_p < 70")
+        if ecm == '240':
+            df = df.Filter("zll_p > 20 && zll_p < 70")
+        elif ecm == '365':
+            if is_loose:
+                df = df.Filter("zll_p > 35 && zll_p < 155")
+            else:
+                df = df.Filter("zll_p > 140 && zll_p < 150")
     df = df.Define("cut6", "6")
     results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut6"))
 
@@ -376,10 +454,17 @@ def build_graph(df, dataset):
     #########
     results.append(df.Histo1D(("zll_recoil_m_cut6", "", *bins_recoil), "zll_recoil_m")) # plot it before the cut
     if apply_selections:
-        if is_loose:
-            df = df.Filter("zll_recoil_m < 145 && zll_recoil_m > 120")
-        else:
-            df = df.Filter("zll_recoil_m < 140 && zll_recoil_m > 120")    # df = df.Define("cut7", "7")
+        if ecm == '240':
+            if is_loose:
+                df = df.Filter("zll_recoil_m < 145 && zll_recoil_m > 120")
+            else:
+                df = df.Filter("zll_recoil_m < 140 && zll_recoil_m > 120")
+        elif ecm == '365':
+            if is_loose:
+                df = df.Filter("zll_recoil_m < 145 && zll_recoil_m > 120")
+            else:
+                # pass  # don't apply recoil mass cut for 365 GeV tight selection, as this variable will be used for the fit.
+                df = df.Filter("zll_recoil_m < 140 && zll_recoil_m > 120")
     df = df.Define("cut7", "7")
     results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut7"))
 
@@ -388,7 +473,7 @@ def build_graph(df, dataset):
     ### CUT 7: cosThetaMiss
     #########  
     df = df.Define("cosTheta_miss", "FCCAnalyses::ZHfunctions::get_cosTheta_miss(missingEnergy_vec)")
-    results.append(df.Histo1D(("cosThetaMiss_cut6", "", *bins_cosThetaMiss), "cosTheta_miss")) # plot it before the cut
+    results.append(df.Histo1D(("cosThetaMiss_cut7", "", *bins_cosThetaMiss), "cosTheta_miss")) # plot it before the cut
     if apply_selections:
         df = df.Filter("cosTheta_miss < 0.98")
     df = df.Define("cut8", "8")
@@ -399,12 +484,18 @@ def build_graph(df, dataset):
     ### CUT 8: missingEnergy
     #########  
     df = df.Define("missingEnergy", "FCCAnalyses::ZHfunctions::get_missing_energy(missingEnergy_vec)")
-    results.append(df.Histo1D(("missingEnergy_cut7", "", *bins_p_mu), "missingEnergy")) # plot it before the cut
+    results.append(df.Histo1D(("missingEnergy_cut8", "", *bins_p_mu), "missingEnergy")) # plot it before the cut
     if apply_selections:
-        if is_loose:
-            df = df.Filter("missingEnergy > 20 && missingEnergy < 120")
-        else:
-            df = df.Filter("missingEnergy > 30 && missingEnergy < 110")
+        if ecm == '240':
+            if is_loose:
+                df = df.Filter("missingEnergy > 20 && missingEnergy < 120")
+            else:
+                df = df.Filter("missingEnergy > 30 && missingEnergy < 110")
+        elif ecm == '365':
+            if is_loose:
+                df = df.Filter("missingEnergy > 20 && missingEnergy < 170")
+            else:
+                df = df.Filter("missingEnergy > 30 && missingEnergy < 160")
     df = df.Define("cut9", "9")
     results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut9"))
 
@@ -412,12 +503,18 @@ def build_graph(df, dataset):
     #########
     ### CUT 9: WW system mass window
     #########  
-    results.append(df.Histo1D(("WW_mass_cut8", "", *bins_m_ll), "WW_mass"))
+    results.append(df.Histo1D(("WW_mass_cut9", "", *bins_m_ll_large), "WW_mass"))
     if apply_selections:
-        if is_loose:
-            df = df.Filter("WW_mass > 60 && WW_mass < 135")
-        else:
-            df = df.Filter("WW_mass > 80 && WW_mass < 135")
+        if ecm == '240':
+            if is_loose:
+                df = df.Filter("WW_mass > 60 && WW_mass < 135")
+            else:
+                df = df.Filter("WW_mass > 80 && WW_mass < 135")
+        elif ecm == '365':
+            if is_loose:
+                df = df.Filter("WW_mass > 50")
+            else:
+                df = df.Filter("WW_mass > 80 && WW_mass < 130")
     df = df.Define("cut10", "10")
     results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut10"))
 
@@ -425,21 +522,45 @@ def build_graph(df, dataset):
     #########
     ### CUT *: WW system momentum
     #########  
-    # results.append(df.Histo1D(("WW_p_cut9", "", *bins_p_ll), "WW_p"))
-    # df = df.Filter("WW_p > 25 && WW_p < 55")
-    # df = df.Define("cut10", "10")
-    # results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut10"))
+    results.append(df.Histo1D(("WW_p_cut10", "", *bins_p_ll), "WW_p"))
+    if apply_selections:
+        if ecm == '365':
+            if is_loose:
+                df = df.Filter("WW_p > 100 && WW_p < 150")
+            else:
+                df = df.Filter("WW_p > 120 && WW_p < 150")
+            df = df.Define("cut11", "11")
+            results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut11"))
     
     
     #########
-    ### CUT 10: dR(l_WW, l_WW)>0.25
+    ### CUT 10: dR(l_WW, l_WW)
     #########  
     results.append(df.Histo1D(("WW_leps_dR_cut9", "", *bins_dR), "WW_leps_dR"))
     if apply_selections:
-        df = df.Filter("WW_leps_dR > 0.25")
-    df = df.Define("cut11", "11")
-    results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut11"))
+        if ecm == '240':
+            df = df.Filter("WW_leps_dR > 0.25")
+            df = df.Define("cut11", "11")
+            results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut11"))
+        elif ecm == '365':
+            if is_loose:
+                df = df.Filter("WW_leps_dR > 0.1 && WW_leps_dR < 4.0")
+            else:
+                df = df.Filter("WW_leps_dR > 0.1")
+            df = df.Define("cut12", "12")
+            results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut12"))
+
     
+    # #########
+    # ### CUT 11: dR(WW, ZZ)>0.25
+    # #########  
+    # results.append(df.Histo1D(("zll_WW_dR_cut10", "", *bins_dR), "zll_WW_dR"))
+    # if apply_selections:
+    #     if ecm == '365':
+    #         df = df.Filter("zll_WW_dR > 3.0 && zll_WW_dR < 4.0")
+    #         df = df.Define("cut13", "13")
+    #         results.append(df.Histo1D(("cutFlow", "", *bins_count), "cut13"))
+
 
     ########################
     # Final histograms
@@ -473,7 +594,7 @@ def build_graph(df, dataset):
     results.append(df.Histo1D(("zll_leps_category_final", "", 4, -1, 3), "zll_leps_category"))
 
     # WW system
-    results.append(df.Histo1D(("WW_mass_final", "", *bins_m_ll), "WW_mass"))
+    results.append(df.Histo1D(("WW_mass_final", "", *bins_m_ll_large), "WW_mass"))
     results.append(df.Histo1D(("WW_p_final", "", *bins_p_ll), "WW_p"))
     results.append(df.Histo1D(("WW_theta_final", "", *bins_theta), "WW_theta"))
     results.append(df.Histo1D(("WW_phi_final", "", *bins_phi), "WW_phi"))

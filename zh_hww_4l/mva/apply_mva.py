@@ -18,7 +18,7 @@ parser = argparse.ArgumentParser()
 # parser.add_argument("-o", "--outDir", type=str, default="../../../outputs/higgs/zh_hww_4l/mva/ecm240/plots_training", help="Output directory")
 parser.add_argument("-f", "--full", action='store_true', default=False, help="Process full dataset")
 parser.add_argument("-l", "--loose", action='store_true', default=False, help="Process full dataset")
-parser.add_argument("-e", "--ecm", default='240', help="Center-of-mass energy (240 or 365)", choices=['240', '365'])
+parser.add_argument("-e", "--ecm", default='240', type=str, help="Center-of-mass energy (240 or 365)", choices=['240', '365'])
 args = parser.parse_args()
 
 

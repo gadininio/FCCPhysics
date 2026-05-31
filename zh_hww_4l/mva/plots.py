@@ -3,12 +3,14 @@ import ROOT
 is_loose = True
 ecm = '240'  # '240' or '365'
 
+lumi = "10.8" if ecm == '240' else "3"
+
 # global parameters
 intLumi        = 1.
-intLumiLabel   = "L = 10.8 ab^{-1}"
+intLumiLabel   = f"L = {lumi} ab^{{-1}}"
 ana_tex        = 'e^{+}e^{-}#rightarrow Z(l^{+}l^{-}) H#left[W(l#nu)W(l#nu)#right]'
 delphesVersion = '3.4.2'
-energy         = 240.0
+energy         = int(ecm)
 collider       = 'FCC-ee'
 inputDir       = f'../../../outputs/higgs/zh_hww_4l/mva{"_loose" if is_loose else ""}/ecm{ecm}/final_selection/full/'
 formats        = ['pdf']

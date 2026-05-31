@@ -1,0 +1,24 @@
+{
+  "signal_combined_name": "Z(ll)H",
+  "scaleSig": 1.0,
+  "cuts": [
+    "N_{leptons} \\geq 2",
+    "p_{T}^{min} > 10",
+    "M_{inv} \\in [80, 100]",
+    "MET < 40"
+  ],
+  "processes": {
+    "signal": {
+      "Z(ee)H": "wzp6_ee_eeH_HWW_llnunu_ecm240",
+      "Z(mumu)H": "wzp6_ee_mumuH_HWW_llnunu_ecm240"
+    },
+    "backgrounds": {
+      "WW": "p8_ee_WW_ecm240",
+      "ZZ": "p8_ee_ZZ_ecm240",
+      "Z": [
+        "wzp6_ee_ee_Mee_30_150_ecm240", 
+        "wzp6_ee_mumu_ecm240"
+      ]
+    }
+  }
+}

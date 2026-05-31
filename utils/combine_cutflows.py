@@ -1,11 +1,12 @@
 
 import os, sys
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))  # add parent dir
-import zh_hww_4l.plots as plotter
+sys.path.append(os.path.dirname(os.path.dirname(__file__)) + '/zh_hww_4l/histmaker/')  # add parent dir
 import ROOT
 import argparse
+import math
 
 def load_histogram(file_path, hist_name='cutFlow'):
+    # print(f"Loading histogram '{hist_name}' from file: {file_path}")
     file = ROOT.TFile.Open(file_path)
     if not file or file.IsZombie():
         raise RuntimeError(f"Cannot open file: {file_path}")
@@ -16,22 +17,37 @@ def load_histogram(file_path, hist_name='cutFlow'):
     file.Close()
     return hist
 
-def combine_signal_histograms(hists, signal_keys):
-    combined = hists[signal_keys[0]].Clone("signal_combined")
-    for key in signal_keys[1:]:
+def combine_histograms(hists, hist_keys, combined_name='signal_combined'):
+    combined = hists[hist_keys[0]].Clone(combined_name)
+    for key in hist_keys[1:]:
         combined.Add(hists[key])
     return combined
 
 # Parse command-line arguments
 parser = argparse.ArgumentParser(description="Combine cutflows and optionally add percentages.")
 parser.add_argument('--simple', '-s', action='store_true', help='Do not add percentage columns to the cutflow table', default=False)
+parser.add_argument('--ecm', '-ecm', type=str, help='Do not add percentage columns to the cutflow table', default='245', choices=['240', '365'])
+parser.add_argument('--use_asimov_significance', '-as', action='store_true', help='Use simple S/sqrt(S+B) significance instead of Asimov formula', default=False)
 args = parser.parse_args()
 add_perc = not args.simple
+ecm = args.ecm
+asimov = args.use_asimov_significance
+
+if ecm == '240':
+    import plots as plotter
+elif ecm == '365':
+    import plots_ecm365 as plotter
 
 # Define processes
 procs = {}
-procs['signal'] = {'Z(ee)H':'wzp6_ee_eeH_HWW_ecm240', 'Z(mumu)H':'wzp6_ee_mumuH_HWW_ecm240'}
-procs['backgrounds'] =  {'WW':'p8_ee_WW_ecm240', 'ZZ':'p8_ee_ZZ_ecm240', 'Z':['wzp6_ee_ee_Mee_30_150_ecm240', 'wzp6_ee_mumu_ecm240']}
+if ecm == '240':
+    procs['signal'] = {f'Z(ee)H':f'wzp6_ee_eeH_HWW_llnunu_ecm{ecm}', 'Z(mumu)H':f'wzp6_ee_mumuH_HWW_llnunu_ecm{ecm}'}
+    # procs['backgrounds'] =  {'WW':f'p8_ee_WW_ecm{ecm}', 'ZZ':f'p8_ee_ZZ_ecm{ecm}', 'Z':[f'wzp6_ee_ee_Mee_30_150_ecm{ecm}', f'wzp6_ee_mumu_ecm{ecm}']}
+    procs['backgrounds'] =  {'WW':f'p8_ee_WW_ecm{ecm}', 'ZZ':f'p8_ee_ZZ_ecm{ecm}'}
+if ecm == '365':
+    procs['signal'] = {f'Z(ee)H':f'wzp6_ee_eeH_HWW_ecm{ecm}', 'Z(mumu)H':f'wzp6_ee_mumuH_HWW_ecm{ecm}'}
+    procs['backgrounds'] =  {'WW':f'p8_ee_WW_ecm{ecm}', 'ZZ':f'p8_ee_ZZ_ecm{ecm}', 'tt':f'p8_ee_tt_ecm{ecm}'}
+    
 signal_combined_name = 'Z(ll)H'
 
 # Extract cutflow configuration
@@ -45,6 +61,10 @@ input = plotter.inputDir.replace('../','')
 input = '../../' + input
 output = plotter.outdir.replace('../','')
 output = '../../' + output
+
+if input.endswith('/'): input = input[:-1]
+
+print(f"Loading histograms from {input}...")
 
 hists = {}
 for sample_name in proc_list:
@@ -65,8 +85,12 @@ for sample_name in proc_list:
 
 # Combine signal histograms into one
 signal_keys = list(procs['signal'].keys())
-hists[signal_combined_name] = combine_signal_histograms(hists, signal_keys)
+hists[signal_combined_name] = combine_histograms(hists, signal_keys, combined_name='combined_signal')
 proc_list = [signal_combined_name] + proc_list
+
+# Combine background histograms into one for total background
+background_keys = list(procs['backgrounds'].keys())
+h_tot_bkg = combine_histograms(hists, background_keys, combined_name='total_bkg')
 
 out_orig = sys.stdout
 output_path = f"{output.replace('ee', 'll').replace('mumu','ll')}/cutFlow_combined.txt"
@@ -92,7 +116,13 @@ with open(output_path, 'w') as f:
             
             s = hists[proc_list[0]].GetBinContent(i+1)
             s_plus_b = sum([hists[p].GetBinContent(i+1) for p in proc_list if p != signal_combined_name])
-            significance = s/(s_plus_b**0.5) if s_plus_b > 0 else 0
+            b = h_tot_bkg.GetBinContent(i+1)
+            
+            if asimov:
+                significance = math.sqrt( 2*((s+b)*math.log(1+s/b) - s) ) if b > 0 else 0  # Asimov significance
+            else:
+                significance = s/(s_plus_b**0.5) if s_plus_b > 0 else 0
+            
             row = ["Cut %d"%i, cut, "%.3f"%significance]
             for j,sample_name in enumerate(proc_list):
                 yield_ = hists[sample_name].GetBinContent(i+1)
@@ -115,7 +145,13 @@ with open(output_path, 'w') as f:
             cut = fix_cut_name(cut)
             s = hists[proc_list[0]].GetBinContent(i+1)
             s_plus_b = sum([hists[p].GetBinContent(i+1) for p in proc_list if p != signal_combined_name])
-            significance = s/(s_plus_b**0.5) if s_plus_b > 0 else 0
+            b = h_tot_bkg.GetBinContent(i+1)
+            
+            if asimov:
+                significance = math.sqrt( 2*((s+b)*math.log(1+s/b) - s) ) if b > 0 else 0  # Asimov significance
+            else:
+                significance = s/(s_plus_b**0.5) if s_plus_b > 0 else 0
+            
             row = ["Cut %d"%i, cut, "%.3f"%significance]
             for j,sample_name in enumerate(proc_list):
                 yield_ = hists[sample_name].GetBinContent(i+1)
@@ -124,4 +160,5 @@ with open(output_path, 'w') as f:
             # f.write(formatted_row.format(*row) + '\n')
             
 sys.stdout = out_orig
+print(f"Significance formula used: {'Asimov formula' if asimov else 'S/sqrt(S+B)'}")
 print(f"Cutflow table saved to {output_path}")

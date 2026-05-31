@@ -27,6 +27,8 @@ args = parser.parse_args()
 is_loose = True
 use_full = True
 use_training = True  # should be True for training on the dedicated training samples
+ecm = args.ecm
+
 
 ROOT.gROOT.SetBatch(True)
 # e.g. https://root.cern/doc/master/tmva101__Training_8py.html
@@ -59,7 +61,7 @@ variables = [
     "miss_cosTheta", "miss_energy"  # missing energy
 ]
 weight_sf = 1e9
-outputs_path = f'../../../outputs/higgs/zh_hww_4l/mva{"_loose" if is_loose else ""}/ecm{args.ecm}/'
+outputs_path = f'../../../outputs/higgs/zh_hww_4l/mva{"_loose" if is_loose else ""}/ecm{ecm}/'
 
 # Define samples to be used for training/testing
 if use_training:
@@ -148,7 +150,7 @@ bdt.fit(train_data, train_labels, verbose=True, eval_set=eval_set, sample_weight
 
 # Export model (to ROOT and pkl)
 print("Export model")
-fOutName = f"{outputs_path}/bdt_model_example.root"
+fOutName = f"{outputs_path}/bdt_model_ecm{ecm}.root"
 ROOT.TMVA.Experimental.SaveXGBoost(bdt, "bdt_model", fOutName, num_inputs=len(variables))
 
 # Append the input variable names to the same ROOT file
@@ -157,9 +159,11 @@ for var in variables:
      variables_.Add(ROOT.TObjString(var))
 fOut = ROOT.TFile(fOutName, "UPDATE")
 fOut.WriteObject(variables_, "variables")
+print(f"Saved model to {fOutName}")
 
 # Save everything (mode, data, variable names) as pickle for evaluation and plotting (see evaluate_bdt.py)
 print("Export pickle")
+pkl_output_name = fOutName.replace(".root", ".pkl")
 save = {}
 save['model'] = bdt
 save['train_data'] = train_data
@@ -169,4 +173,7 @@ save['train_labels'] = train_labels
 save['val_labels'] = val_labels
 save['test_labels'] = test_labels
 save['variables'] = variables
-pickle.dump(save, open(f"{outputs_path}/bdt_model_example.pkl", "wb"))
+pickle.dump(save, open(pkl_output_name, "wb"))
+print(f"Saved model and data to {pkl_output_name}")
+
+os.system(f"python3 evaluate_bdt.py --ecm {ecm} --input {pkl_output_name} --outDir {outputs_path}/plots_training")

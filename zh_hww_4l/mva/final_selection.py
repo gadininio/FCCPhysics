@@ -25,7 +25,7 @@ doTree = False
 
 # scale the histograms with the cross-section and integrated luminosity
 doScale = True
-intLumi = 10800000.0 # 10.8 /ab for 240 GeV
+intLumi = 10.8e6 if ecm == '240' else 3e6  # 10.8 /ab for 240 GeV, 3 /ab for 365 GeV
 
 saveTabular = True
 
