@@ -1,6 +1,10 @@
 
 '''
 Use a trained BDT model to compute MVA scores and add them to ROOT files.
+
+Run with:
+    python3 apply_mva.py -e 240 -s loose_full
+    python3 apply_mva.py -e 365 -s loose_full
 '''
 
 import uproot
@@ -11,25 +15,48 @@ import argparse
 import ROOT
 
 
+
+
 # Parse command line arguments
 parser = argparse.ArgumentParser()
 # parser.add_argument("-m", "--model", type=str, default="../../../outputs/higgs/zh_hww_4l/mva/ecm240/bdt_model_example.pkl", help="Input pkl file")
 # parser.add_argument("-i", "--input", type=str, default="../../../outputs/higgs/zh_hww_4l/mva/ecm240/bdt_model_example.pkl", help="Input pkl file")
 # parser.add_argument("-o", "--outDir", type=str, default="../../../outputs/higgs/zh_hww_4l/mva/ecm240/plots_training", help="Output directory")
-parser.add_argument("-f", "--full", action='store_true', default=False, help="Process full dataset")
-parser.add_argument("-l", "--loose", action='store_true', default=False, help="Process full dataset")
+# parser.add_argument("-f", "--full", action='store_true', default=False, help="Process full dataset")
+# parser.add_argument("-l", "--loose", action='store_true', default=False, help="Process full dataset")
 parser.add_argument("-e", "--ecm", default='240', type=str, help="Center-of-mass energy (240 or 365)", choices=['240', '365'])
+parser.add_argument("-s", "--scheme", default='loose_ful', type=str, help="Scheme")
 args = parser.parse_args()
 
-
-# if args.loose:
-#     parser.input.replace('mva', 'mva_loose')
-#     parser.outDir.replace('mva', 'mva_loose')
+ecm = args.ecm
+scheme = args.scheme
 
 
-model_path = f'../../../outputs/higgs/zh_hww_4l/mva{"_loose" if args.loose else ""}/ecm{args.ecm}/bdt_model_example.pkl'
-input_path = f'../../../outputs/higgs/zh_hww_4l/mva{"_loose" if args.loose else ""}/ecm{args.ecm}/preselection/{"full/" if args.full else ""}'
-output_path = f'../../../outputs/higgs/zh_hww_4l/mva{"_loose" if args.loose else ""}/ecm{args.ecm}/preselection_with_bdt/{"full/" if args.full else ""}'
+if ecm == '240':
+    print("Processing ecm240 samples...")
+    sampleList = [
+        "wzp6_ee_eeH_HWW_llnunu_ecm240",
+        "wzp6_ee_mumuH_HWW_llnunu_ecm240",
+        "p8_ee_WW_ee_ecm240",
+        "p8_ee_WW_mumu_ecm240",
+        "p8_ee_ZZ_ecm240",
+    ]
+elif ecm == '365':
+    print("Processing ecm365 samples...")
+    sampleList = [
+        "wzp6_ee_eeH_HWW_ecm365",
+        "wzp6_ee_mumuH_HWW_ecm365",
+        "p8_ee_WW_ecm365",
+        "p8_ee_WW_ee_ecm365",
+        "p8_ee_WW_mumu_ecm365",
+        "p8_ee_ZZ_ecm365",
+        "p8_ee_tt_ecm365"
+    ]
+
+
+model_path = f'../../../outputs/higgs/zh_hww_4l/mva/ecm{ecm}/{scheme}/bdt_model.pkl'
+input_path = f'../../../outputs/higgs/zh_hww_4l/mva/ecm{ecm}/{scheme}/preselection/'
+output_path = f'../../../outputs/higgs/zh_hww_4l/mva/ecm{ecm}/{scheme}/preselection_with_bdt/'
 
 
 def apply_bdt(in_file, out_file):
@@ -41,7 +68,7 @@ def apply_bdt(in_file, out_file):
     file = uproot.open(in_file)
     tree = file["events"]  # replace with your tree name
 
-    # Load features you trained on
+    # Load BDT input features
     features = [
         "lep0_p", "lep1_p", "lep2_p", "lep3_p", "muons_no", "electrons_no",  # leptons
         "zll_m", "zll_p", "zll_theta", "zll_phi", "zll_recoil_m",  # Z->ll system
@@ -94,11 +121,10 @@ if "__main__" == __name__:
         clf = pickle.load(f)
         model = clf['model']
     
-    apply_bdt(f"{input_path}/wzp6_ee_eeH_HWW_llnunu_ecm240.root", f"{output_path}/wzp6_ee_eeH_HWW_llnunu_ecm240.root")
-    apply_bdt(f"{input_path}/wzp6_ee_mumuH_HWW_llnunu_ecm240.root", f"{output_path}/wzp6_ee_mumuH_HWW_llnunu_ecm240.root")
-    # apply_bdt(f"{input_path}/p8_ee_WW_ecm240.root", f"{output_path}/p8_ee_WW_ecm240.root")
-    apply_bdt(f"{input_path}/p8_ee_WW_ee_ecm240.root", f"{output_path}/p8_ee_WW_ee_ecm240.root")
-    apply_bdt(f"{input_path}/p8_ee_WW_mumu_ecm240.root", f"{output_path}/p8_ee_WW_mumu_ecm240.root")
-    apply_bdt(f"{input_path}/p8_ee_ZZ_ecm240.root", f"{output_path}/p8_ee_ZZ_ecm240.root")
-
+    # Apply BDT to each sample
+    for sample in sampleList:
+        in_file = f"{input_path}/{sample}.root"
+        out_file = f"{output_path}/{sample}.root"
+        apply_bdt(in_file, out_file)
+    
     print("All done!")

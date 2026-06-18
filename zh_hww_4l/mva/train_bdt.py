@@ -3,7 +3,8 @@
 Train a Boosted Decision Tree (BDT) model using XGBoost for the ZH->llWW->4l analysis.
 
 Run:
-    python3 train_bdt.py
+    python3 train_bdt.py --ecm 240 --scheme loose_full
+    python3 train_bdt.py --ecm 365 --scheme loose_full
 """
 
 import uproot
@@ -13,7 +14,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, roc_auc_score
 import ROOT
 import pickle
-
+import argparse
 
 parser = argparse.ArgumentParser()
 # parser.add_argument("-i", "--input", type=str, default="../../../outputs/higgs/zh_hww_4l/mva/ecm240/bdt_model_example.pkl", help="Input pkl file")
@@ -21,13 +22,13 @@ parser = argparse.ArgumentParser()
 # parser.add_argument("-l", "--loose", action='store_true', default=False, help="Process full dataset")
 # parser.add_argument("-f", "--labelFontSize", type=int, default=14, help="xaxis and yaxis label font size")
 parser.add_argument("-e", "--ecm", default='240', help="Center-of-mass energy (240 or 365)", choices=['240', '365'])
+parser.add_argument("-s", "--scheme", default='loose_full', help="Scheme")
 args = parser.parse_args()
 
 
-is_loose = True
-use_full = True
 use_training = True  # should be True for training on the dedicated training samples
 ecm = args.ecm
+scheme = args.scheme
 
 
 ROOT.gROOT.SetBatch(True)
@@ -61,34 +62,57 @@ variables = [
     "miss_cosTheta", "miss_energy"  # missing energy
 ]
 weight_sf = 1e9
-outputs_path = f'../../../outputs/higgs/zh_hww_4l/mva{"_loose" if is_loose else ""}/ecm{ecm}/'
+# weight_sf = 1.0
+outputs_path = f'../../../outputs/higgs/zh_hww_4l/mva/ecm{ecm}/{scheme}/'
 
 # Define samples to be used for training/testing
 if use_training:
     print("Using training samples")
-    sample_list = [
-        {'name': 'wzp6_ee_eeH_HWW_llnunu_ecm240', 'target': 1},
-        {'name': 'wzp6_ee_mumuH_HWW_llnunu_ecm240', 'target': 1},
-        # {'name': 'p8_ee_WW_ecm240', 'target': 0},
-        # {'name': 'p8_ee_WW_ee_ecm240', 'target': 0},
-        # {'name': 'p8_ee_WW_mumu_ecm240', 'target': 0},
-        {'name': 'p8_ee_ZZ_llX_ecm240', 'target': 0},
-        {'name': 'p8_ee_ZZ_tautauX_ecm240', 'target': 0},
-    ]
+    
+    if ecm == '240':
+        sample_list = [
+            {'name': 'wzp6_ee_eeH_HWW_llnunu_ecm240', 'target': 1},
+            {'name': 'wzp6_ee_mumuH_HWW_llnunu_ecm240', 'target': 1},
+            {'name': 'p8_ee_ZZ_llX_ecm240', 'target': 0},
+            {'name': 'p8_ee_ZZ_tautauX_ecm240', 'target': 0},
+        ]
+    elif ecm == '365':
+        sample_list = [
+            {'name': 'wzp6_ee_eeH_HWW_ecm365', 'target': 1},
+            {'name': 'wzp6_ee_mumuH_HWW_ecm365', 'target': 1},
+            {'name': 'p8_ee_ZZ_llX_ecm365', 'target': 0},
+            {'name': 'p8_ee_ZZ_tautauX_ecm365', 'target': 0},
+            {'name': 'p8_ee_WW_ee_ecm365', 'target': 0},
+            {'name': 'p8_ee_WW_mumu_ecm365', 'target': 0},
+        ]
+        
 else:
     print("Using full samples")
-    sample_list = [
-        {'name': 'wzp6_ee_eeH_HWW_llnunu_ecm240', 'target': 1},
-        {'name': 'wzp6_ee_mumuH_HWW_llnunu_ecm240', 'target': 1},
-        {'name': 'p8_ee_WW_ecm240', 'target': 0},
-        {'name': 'p8_ee_ZZ_ecm240', 'target': 0},
-    ]
+    
+    if ecm == '240':
+        sample_list = [
+            {'name': 'wzp6_ee_eeH_HWW_llnunu_ecm240', 'target': 1},
+            {'name': 'wzp6_ee_mumuH_HWW_llnunu_ecm240', 'target': 1},
+            {'name': 'p8_ee_WW_ee_ecm240', 'target': 0},
+            {'name': 'p8_ee_WW_mumu_ecm240', 'target': 0},
+            {'name': 'p8_ee_ZZ_ecm240', 'target': 0},
+        ]
+    elif ecm == '365':
+        sample_list = [
+            {'name': 'wzp6_ee_eeH_HWW_ecm365', 'target': 1},
+            {'name': 'wzp6_ee_mumuH_HWW_ecm365', 'target': 1},
+            {'name': 'p8_ee_WW_ee_ecm365', 'target': 0},
+            {'name': 'p8_ee_WW_mumu_ecm365', 'target': 0},
+            {'name': 'p8_ee_ZZ_ecm365', 'target': 0},
+            {'name': 'p8_ee_tt_ee_ecm365', 'target': 0},
+        ]
+
 
 # Load signal and background dataframes
 df_list = []
 for sample in sample_list:
     print(f"Loading sample: {sample['name']}")
-    fIn = f"{outputs_path}/preselection/{'full/' if use_full else ''}{'training/' if use_training else ''}{sample['name']}.root"
+    fIn = f"{outputs_path}/preselection/{'training/' if use_training else ''}{sample['name']}.root"
     df = load_process(fIn, variables, weight_sf=weight_sf, target=sample['target'])
     df_list.append(df)
     
@@ -105,9 +129,9 @@ train_val_data, test_data, train_val_labels, test_labels, train_val_weights, tes
     data[variables], data['target'], data['weight'], test_size=0.1, random_state=42
 )
 
-# 2. Second split: Divide the remaining 90% into Train (80.2%) and Val (19.8%)
+# 2. Second split: Divide the remaining 90% into Train (72% of total) and Val (18% of total)
 train_data, val_data, train_labels, val_labels, train_weights, val_weights = train_test_split(
-    train_val_data, train_val_labels, train_val_weights, test_size=0.22, random_state=42
+    train_val_data, train_val_labels, train_val_weights, test_size=0.2, random_state=42
 )
 
 # conversion to numpy needed to have default feature_names (fN), needed for conversion to TMVA
@@ -150,7 +174,7 @@ bdt.fit(train_data, train_labels, verbose=True, eval_set=eval_set, sample_weight
 
 # Export model (to ROOT and pkl)
 print("Export model")
-fOutName = f"{outputs_path}/bdt_model_ecm{ecm}.root"
+fOutName = f"{outputs_path}/bdt_model.root"
 ROOT.TMVA.Experimental.SaveXGBoost(bdt, "bdt_model", fOutName, num_inputs=len(variables))
 
 # Append the input variable names to the same ROOT file
@@ -176,4 +200,7 @@ save['variables'] = variables
 pickle.dump(save, open(pkl_output_name, "wb"))
 print(f"Saved model and data to {pkl_output_name}")
 
-os.system(f"python3 evaluate_bdt.py --ecm {ecm} --input {pkl_output_name} --outDir {outputs_path}/plots_training")
+# Evaluate the model and make plots
+print("Evaluating model and making plots...")
+import subprocess
+subprocess.run(["python3", "evaluate_bdt.py", "--input", pkl_output_name, "--outDir", f"{outputs_path}/plots_training"])

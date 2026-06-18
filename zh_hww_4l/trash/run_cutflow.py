@@ -90,6 +90,8 @@ args = parser.parse_args()
 with open(args.config, 'r') as f:
     config = json.load(f)
 
+title = config.get('title', 'Cutflow Table')
+
 procs = config.get('processes', {})
 if 'signal' not in procs or 'backgrounds' not in procs:
     raise ValueError("JSON must contain 'processes' with 'signal' and 'backgrounds' definitions.")
@@ -161,7 +163,7 @@ h_tot_bkg = combine_histograms(hists, background_keys, combined_name='total_bkg'
 out_orig = sys.stdout
 output_path_dir = output_dir.replace('ee', 'll').replace('mumu','ll')
 os.makedirs(output_path_dir, exist_ok=True)
-output_path = f"{output_path_dir}/cutFlow_combined.txt"
+output_path = f"{output_path_dir}/cutFlow_detailed.txt"
 
 # LaTeX Initialization
 latex_file = None
@@ -173,6 +175,10 @@ if export_latex:
 
 with open(output_path, 'w') as f:
     sys.stdout = f
+    
+    if not export_latex:
+        print(f"{title}\n{'='*len(title)}\n")
+    
     headers = ["#", "Cut", "Significance"] + proc_list
     
     if add_perc:

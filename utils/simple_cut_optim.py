@@ -2,8 +2,8 @@
 This script performs a simple cut optimization by scanning over all possible (low, high) bin combinations of a given histogram and calculating the signal significance (using the Asimov formula) for each window. It identifies the window that maximizes the significance.
 
 Run with:
-python simple_cut_optim.py --path <path_to_histograms> --ecm <240_or_365> --variables <list_of_histogram_names> --use_simple_significance
-python simple_cut_optim.py --path '../../outputs/higgs/zh_hww_4l/histmaker/ecm365/hists/loose_' --ecm 365 --variables WW_leps_dR_cut9
+    python3 simple_cut_optim.py --path <path_to_histograms> --ecm <240_or_365> --variables <list_of_histogram_names> --use_simple_significance
+    python3 simple_cut_optim.py --path '../../outputs/higgs/zh_hww_4l/histmaker/ecm365/hists/loose_full' --ecm 365 --variables WW_leps_dR_cut9
 '''
 
 
@@ -25,6 +25,7 @@ parser.add_argument('--variables', '-v', nargs='*', help='List of histogram name
 parser.add_argument('--use_asimov_significance', '-as', action='store_true', help='Use simple S/sqrt(S+B) significance instead of Asimov formula', default=False)
 parser.add_argument('--xmin', '-xmin', type=float, help='Minimum x value for cut optimization (overrides histogram range)', default=None)
 parser.add_argument('--xmax', '-xmax', type=float, help='Minimum x value for cut optimization (overrides histogram range)', default=None)
+parser.add_argument('--rebin', '-r', type=int, help='Rebin histograms by this factor before optimization', default=1)
 args = parser.parse_args()
 
 ecm = args.ecm
@@ -78,13 +79,19 @@ signal_files = [
 ]
 background_files = [
     f"p8_ee_ZZ_ecm{ecm}.root",
-    f"p8_ee_WW_ecm{ecm}.root",
+    # f"p8_ee_WW_ecm{ecm}.root",
+    # f"p8_ee_WW_ee_ecm{ecm}.root",
+    # f"p8_ee_WW_mumu_ecm{ecm}.root",
     # f"wzp6_ee_mumu_ecm{ecm}.root",
     # f"wzp6_ee_tautau_ecm{ecm}.root",
     # f"wzp6_ee_ee_Mee_30_150_ecm{ecm}.root",
 ]
 if ecm == '365':
     background_files += ["p8_ee_tt_ecm365.root"]
+if 'inclWWInFit' in path:
+    background_files += [f"p8_ee_WW_ecm{ecm}.root"]
+else:
+    background_files += [f"p8_ee_WW_ee_ecm{ecm}.root", f"p8_ee_WW_mumu_ecm{ecm}.root",]
 
 
 # Minimum events in window required to consider a cut
@@ -143,6 +150,8 @@ for hname in hist_names:
         if not hs:
             print(f"Histogram {hname} missing in signal file {fs.GetName()}")
             continue
+        if args.rebin > 1:
+            hs = hs.Rebin(args.rebin)
         if h_sig_sum is None:
             h_sig_sum = hs.Clone("sig_sum_" + hname)
         else:
@@ -156,6 +165,8 @@ for hname in hist_names:
         if not hb:
             print(f"Histogram {hname} missing in background file {fb.GetName()}")
             continue
+        if args.rebin > 1:
+            hb = hb.Rebin(args.rebin)
         if h_bkg_sum is None:
             h_bkg_sum = hb.Clone("bkg_sum_" + hname)
         else:
@@ -169,6 +180,8 @@ for hname in hist_names:
         i_high = h_sig_sum.GetXaxis().FindBin(xmax)
         S = window_integral(h_sig_sum, i_low, i_high)
         B = window_integral(h_bkg_sum, i_low, i_high)
+        
+        if debug: print(f"  For fixed window [{xmin}, {xmax}] corresponding to bins [{i_low}, {i_high}], S = {S:.3f} and B = {B:.3f}")
         
         if asimov:
             Z = math.sqrt( 2*((S+B)*math.log(1+S/B) - S) ) if B > 0 else 0  # Asimov significance
@@ -185,6 +198,26 @@ for hname in hist_names:
         }
         
         print(f"  For fixed window [{xmin}, {xmax}] (bins [{i_low}, {i_high}]), Z = {Z:.4f} with S={S:.3f} and B={B:.3f}")
+
+
+
+        # print yields per sample
+        print("\n  Signal yields:")
+        for fs in f_sigs:
+            hs = fs.Get(hname)
+            if hs:
+                s = window_integral(hs, i_low, i_high)
+                s_tot = full_integral(hs)
+                print(f"    {fs.GetName()}: {s:.3f} (eff={s/s_tot:.3%})")
+        print("  Background yields:")
+        for fb in f_bkgs:
+            hb = fb.Get(hname)
+            if hb:
+                b = window_integral(hb, i_low, i_high)
+                b_tot = full_integral(hb)
+                print(f"    {fb.GetName()}: {b:.3f} (eff={b/b_tot:.3%})")
+        print("\n")
+                
 
 
         # # Find corresponding bins for the specified x range

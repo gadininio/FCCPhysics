@@ -1,5 +1,6 @@
 {
-  "name": "365_tight",
+  "name": "365_medium",
+  "title": "Cutflow for 365 GeV - Medium Selection",
   "signal_combined_name": "Z(ll)H",
   "scaleSig": 1.0,
   "cuts": [
@@ -8,14 +9,14 @@
     "2 OS pairs",
     "#geq1 SF pair",
     "p_{l_{1}},p_{l_{2}},p_{l_{3}},p_{l_{4}}",
-    "76 < m_{l^{+}l^{-}} < 106",
-    "140 < p_{l^{+}l^{-}} < 150",
-    "120 < m_{rec} < 140",
+    "30 < m_{l^{+}l^{-}} < 200",
+    "35 < p_{l^{+}l^{-}} < 155",
+    "115 < m_{rec} < 230",
     "|cos#theta_{miss}| < 0.98",
-    "30 < E_{miss} < 160",
-    "80 < m_{WW*} < 130",
-    "120 < p_{WW*} < 150",
-    "#DeltaR(l_{WW*,1},l_{WW*,2}) > 0.1"
+    "20 < E_{miss} < 180",
+    "m_{WW*} > 50",
+    "0.1<#DeltaR(l_{WW*,1},l_{WW*,2})<4.0",
+    "#DeltaR(Z#rightarrowll, WW*) > 3.0"
   ],
   "processes": {
     "signal": {
@@ -23,8 +24,9 @@
       "Z(mumu)H": "wzp6_ee_mumuH_HWW_ecm365"
     },
     "backgrounds": {
-      "WW": "p8_ee_WW_ecm365",
       "ZZ": "p8_ee_ZZ_ecm365",
+      "WW": "p8_ee_WW_ecm365",
+      "WW_ll": ["p8_ee_WW_ee_ecm365", "p8_ee_WW_mumu_ecm365"],
       "tt": "p8_ee_tt_ecm365"
     }
   }

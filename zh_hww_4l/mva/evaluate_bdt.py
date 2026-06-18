@@ -14,22 +14,22 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--input", type=str, default="../../../outputs/higgs/zh_hww_4l/mva/ecm240/bdt_model_example.pkl", help="Input pkl file")
 parser.add_argument("-o", "--outDir", type=str, default="../../../outputs/higgs/zh_hww_4l/mva/ecm240/plots_training", help="Output directory")
-parser.add_argument("-l", "--loose", action='store_true', default=False, help="Process full dataset")
 parser.add_argument("-f", "--labelFontSize", type=int, default=14, help="xaxis and yaxis label font size")
-parser.add_argument("-e", "--ecm", default='240', type=str, help="Center-of-mass energy (240 or 365)", choices=['240', '365'])
+# parser.add_argument("-l", "--loose", action='store_true', default=False, help="Process full dataset")
+# parser.add_argument("-e", "--ecm", default='240', type=str, help="Center-of-mass energy (240 or 365)", choices=['240', '365'])
 args = parser.parse_args()
 
-if args.loose:
-    if 'mva/' in args.input:
-        args.input = args.input.replace('mva', 'mva_loose')
-    if 'mva/' in args.outDir:
-        args.outDir = args.outDir.replace('mva', 'mva_loose')
+# if args.loose:
+#     if 'mva/' in args.input:
+#         args.input = args.input.replace('mva', 'mva_loose')
+#     if 'mva/' in args.outDir:
+#         args.outDir = args.outDir.replace('mva', 'mva_loose')
 
-if args.ecm == '365':
-    if 'ecm240' in args.input:
-        args.input = args.input.replace('ecm240', 'ecm365')
-    if 'ecm240' in args.outDir:
-        args.outDir = args.outDir.replace('ecm240', 'ecm365')
+# if args.ecm == '365':
+#     if 'ecm240' in args.input:
+#         args.input = args.input.replace('ecm240', 'ecm365')
+#     if 'ecm240' in args.outDir:
+#         args.outDir = args.outDir.replace('ecm240', 'ecm365')
 
 
 def plot_roc():

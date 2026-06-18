@@ -1,35 +1,32 @@
 '''
 Run with:
-    ecm=365 path=tight_ fccanalysis combine combine.py
+    ecm=365 scheme=tight fccanalysis combine combine.py
 '''
 
 import ROOT
 import os
 
 ecm = os.environ.get("ecm", "365")  # '240' or '365'
-path = os.environ.get("path", "full_tight_")  # 'nosel'_, 'loose_', 'tight_', 'full_tight_'
+scheme = os.environ.get("scheme", "tight_full")
 # flavor = "mumu" # mumu, ee
 
 
 ## 240 GeV
-# path = 'full_20251124_111307' # n_leptons=4
-# path = 'full_20251124_112545' # n_leptons=4, with dR(Z,WW)>0.25 cut
-# path = 'full_20251124_131704' # n_leptons>=4
-# path = 'full_20251124_131805' # n_leptons>=4, with dR(Z,WW)>0.25 cut
-# path = 'full_20251124_150648' # n_leptons=4, with dR(Z,WW)>0.25 cut
-# path = 'full_20251125_134522' # n_leptons=4, with dR(Z,WW)>0.25 cut, bug in resonanceBuilder_mass_recoil_advanced fixed
-
-## 365 GeV
-# path = 'tight_'
+# scheme = 'full_20251124_111307' # n_leptons=4
+# scheme = 'full_20251124_112545' # n_leptons=4, with dR(Z,WW)>0.25 cut
+# scheme = 'full_20251124_131704' # n_leptons>=4
+# scheme = 'full_20251124_131805' # n_leptons>=4, with dR(Z,WW)>0.25 cut
+# scheme = 'full_20251124_150648' # n_leptons=4, with dR(Z,WW)>0.25 cut
+# scheme = 'full_20251125_134522' # n_leptons=4, with dR(Z,WW)>0.25 cut, bug in resonanceBuilder_mass_recoil_advanced fixed
 
 
 intLumi        = 1.0 # assume histograms are scaled in previous step
-outputDir      = f"../../../outputs/higgs/zh_hww_4l/histmaker/ecm{ecm}/combine/{path}/"
+outputDir      = f"../../../outputs/higgs/zh_hww_4l/histmaker/ecm{ecm}/combine/{scheme}/"
 mc_stats       = True
 rebin          = 10
 
 # get histograms from histmaker step
-inputDir       = f"../../../outputs/higgs/zh_hww_4l/histmaker/ecm{ecm}/hists/{path}/"
+inputDir       = f"../../../outputs/higgs/zh_hww_4l/histmaker/ecm{ecm}/hists/{scheme}/"
 
 # # get histograms from final step, selection to be defined
 # inputDir       = f"../../../outputs/higgs/zh_hww_4l/histmaker/ecm{ecm}/final_selection/{flavor}/"

@@ -1,16 +1,16 @@
 import ROOT
 
 flavor = 'll'  # 'mumu', 'ee', 'll'
-fullrun = True
 ecm = '240'  # '240' or '365'
 
-# date = '20251124_111307' # n_leptons=4
-# date = '20251124_112545' # n_leptons=4, with dR(Z,WW)>0.25 cut
-# date = '20251124_131704' # n_leptons>=4
-# date = '20251124_131805' # n_leptons>=4, with dR(Z,WW)>0.25 cut
-# date = '20251124_150648' # n_leptons=4, with dR(Z,WW)>0.25 cut
-# date = '20251125_134522' # n_leptons=4, with dR(Z,WW)>0.25 cut, bug in resonanceBuilder_mass_recoil_advanced fixed
-date = 'loose_20260126_112336' # loose cuts used as preselections for mva analysis
+# scheme = '20251124_111307' # n_leptons=4
+# scheme = '20251124_112545' # n_leptons=4, with dR(Z,WW)>0.25 cut
+# scheme = '20251124_131704' # n_leptons>=4
+# scheme = '20251124_131805' # n_leptons>=4, with dR(Z,WW)>0.25 cut
+# scheme = '20251124_150648' # n_leptons=4, with dR(Z,WW)>0.25 cut
+# scheme = '20251125_134522' # n_leptons=4, with dR(Z,WW)>0.25 cut, bug in resonanceBuilder_mass_recoil_advanced fixed
+scheme = 'loose_20260126_112336' # loose cuts used as preselections for mva analysis
+scheme = 'loose' # loose cuts used as preselections for mva analysis
 
 if flavor=='mumu':
     Z_leptons = '#mu^{+}#mu^{-}'
@@ -18,7 +18,6 @@ if flavor=='ee':
     Z_leptons = 'e^{+}e^{-}'
 if flavor=='ll':
     Z_leptons = 'l^{+}l^{-}'
-path_full = f'full_{date}/' if date!='' else 'full/'
 
 lumi = "10.8" if ecm == '240' else "3"
 
@@ -31,9 +30,9 @@ ana_tex        = 'e^{+}e^{-}#rightarrow Z(' + Z_leptons + ') H#left[W(l#nu)W(l#n
 delphesVersion = '3.4.2'
 energy         = int(ecm)
 collider       = 'FCC-ee'
-inputDir       = f"../../../outputs/higgs/zh_hww_4l/histmaker/ecm{ecm}/hists/{path_full if fullrun else ''}"
+inputDir       = f"../../../outputs/higgs/zh_hww_4l/histmaker/ecm{ecm}/hists/{scheme}"
 formats        = ['pdf']
-outdir         = f"../../../outputs/higgs/zh_hww_4l/histmaker/ecm{ecm}/plots/{path_full if fullrun else ''}/{flavor}/"
+outdir         = f"../../../outputs/higgs/zh_hww_4l/histmaker/ecm{ecm}/plots/{scheme}/{flavor}/"
 plotStatUnc    = True
 
 
@@ -47,18 +46,13 @@ colors['Z'] = ROOT.kOrange+1
 
 procs = {}
 
-if ecm == '240':
-    if flavor=='ll':
-        procs['signal'] = {'ZH':['wzp6_ee_mumuH_HWW_llnunu_ecm240', 'wzp6_ee_eeH_HWW_llnunu_ecm240']}
-    else:
-        procs['signal'] = {'ZH':[f'wzp6_ee_{flavor}H_HWW_llnunu_ecm240']}
-    # procs['backgrounds'] =  {'WW':['p8_ee_WW_ee_ecm240', 'p8_ee_WW_mumu_ecm240'], 'ZZ':['p8_ee_ZZ_ecm240'], 'Z':['wzp6_ee_ee_Mee_30_150_ecm240', 'wzp6_ee_mumu_ecm240']}
-    procs['backgrounds'] =  {'WW':['p8_ee_WW_ecm240'], 'ZZ':['p8_ee_ZZ_ecm240'], 'Z':['wzp6_ee_ee_Mee_30_150_ecm240', 'wzp6_ee_mumu_ecm240']}
-    # procs['backgrounds'] =  {}
-
-elif ecm == '365':
-    procs['signal'] = {'ZH':['wzp6_ee_mumuH_HWW_ecm365', 'wzp6_ee_eeH_HWW_ecm365']}
-    procs['backgrounds'] =  {'WW':['p8_ee_WW_ecm365'], 'WW_ll':['p8_ee_WW_ee_ecm365', 'p8_ee_WW_mumu_ecm365'], 'ZZ':['p8_ee_ZZ_ecm365'], 'Z':['wzp6_ee_ee_Mee_30_150_ecm365', 'wzp6_ee_mumu_ecm365']}
+if flavor=='ll':
+    procs['signal'] = {'ZH':['wzp6_ee_mumuH_HWW_llnunu_ecm240', 'wzp6_ee_eeH_HWW_llnunu_ecm240']}
+else:
+    procs['signal'] = {'ZH':[f'wzp6_ee_{flavor}H_HWW_llnunu_ecm240']}
+# procs['backgrounds'] =  {'WW':['p8_ee_WW_ee_ecm240', 'p8_ee_WW_mumu_ecm240'], 'ZZ':['p8_ee_ZZ_ecm240'], 'Z':['wzp6_ee_ee_Mee_30_150_ecm240', 'wzp6_ee_mumu_ecm240']}
+# procs['backgrounds'] =  {'WW':['p8_ee_WW_ecm240'], 'ZZ':['p8_ee_ZZ_ecm240'], 'Z':['wzp6_ee_ee_Mee_30_150_ecm240', 'wzp6_ee_mumu_ecm240']}
+procs['backgrounds'] =  {'WW':['p8_ee_WW_ecm240'], 'ZZ':['p8_ee_ZZ_ecm240']}
 
 
 legend = {}
@@ -69,7 +63,7 @@ legend['ZZ'] = 'ZZ'
 legend['Z'] = 'Z#rightarrowll'
 
 
-if 'loose' in date:
+if 'loose' in scheme:
     cutflow_xaxis = ["All events", "4 leptons", "2 OS pairs", "#geq1 SF pair", "p_{l_{1}},p_{l_{2}},p_{l_{3}},p_{l_{4}}", "76 < m_{l^{+}l^{-}} < 106", "20 < p_{l^{+}l^{-}} < 70", "120 < m_{rec} < 145", "|cos#theta_{miss}| < 0.98", "20 < E_{miss} < 120", "60 < m_{WW*} < 135", "#DeltaR(l_{WW*,1}, l_{WW*,2})>0.25"]
 else:
     cutflow_xaxis = ["All events", "4 leptons", "2 OS pairs", "#geq1 SF pair", "p_{l_{1}},p_{l_{2}},p_{l_{3}},p_{l_{4}}", "76 < m_{l^{+}l^{-}} < 106", "20 < p_{l^{+}l^{-}} < 70", "120 < m_{rec} < 140", "|cos#theta_{miss}| < 0.98", "30 < E_{miss} < 110", "80 < m_{WW*} < 135", "#DeltaR(l_{WW*,1}, l_{WW*,2})>0.25"]
@@ -970,8 +964,8 @@ hists["WW_mass_cut4"] = {
     "extralab": "Before selections",
 }
 
-hists["WW_mass_cut8"] = {
-    "output":   "WW_mass_cut8",
+hists["WW_mass_cut9"] = {
+    "output":   "WW_mass_cut9",
     "logy":     False,
     "stack":    False,
     "rebin":    5,
@@ -1112,8 +1106,8 @@ hists["zll_WW_dR_final"] = {
 }
 
 # Missing energy
-hists["cosThetaMiss_cut6"] = {
-    "output":   "cosThetaMiss_cut6",
+hists["cosThetaMiss_cut7"] = {
+    "output":   "cosThetaMiss_cut7",
     "logy":     False,
     "stack":    False,
     "rebin":    200,
@@ -1140,8 +1134,8 @@ hists["cosThetaMiss_final"] = {
     # "extralab": "After cos(#theta_{miss}) cut",
 }
 
-hists["missingEnergy_cut7"] = {
-    "output":   "missingEnergy_cut7",
+hists["missingEnergy_cut8"] = {
+    "output":   "missingEnergy_cut8",
     "logy":     False,
     "stack":    False,
     "rebin":    10,

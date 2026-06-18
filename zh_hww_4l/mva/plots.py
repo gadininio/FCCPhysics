@@ -1,7 +1,15 @@
-import ROOT
+'''
+Run with:
+    ecm=240 scheme=loose_full fccanalysis plots plots.py
+    ecm=365 scheme=loose_full fccanalysis plots plots.py
+'''
 
-is_loose = True
-ecm = '240'  # '240' or '365'
+import ROOT
+import os
+
+ecm = os.environ.get("ecm", "240")  # '240' or '365'
+scheme = os.environ.get("scheme", "loose_full")
+
 
 lumi = "10.8" if ecm == '240' else "3"
 
@@ -12,9 +20,9 @@ ana_tex        = 'e^{+}e^{-}#rightarrow Z(l^{+}l^{-}) H#left[W(l#nu)W(l#nu)#righ
 delphesVersion = '3.4.2'
 energy         = int(ecm)
 collider       = 'FCC-ee'
-inputDir       = f'../../../outputs/higgs/zh_hww_4l/mva{"_loose" if is_loose else ""}/ecm{ecm}/final_selection/full/'
+inputDir       = f'../../../outputs/higgs/zh_hww_4l/mva/ecm{ecm}/{scheme}/final_selection/'
 formats        = ['pdf']
-outdir         = f'../../../outputs/higgs/zh_hww_4l/mva{"_loose" if is_loose else ""}/ecm{ecm}/plots/'
+outdir         = f'../../../outputs/higgs/zh_hww_4l/mva/ecm{ecm}/{scheme}/plots/'
 yaxis          = ['lin','log']
 stacksig       = ['nostack']
 plotStatUnc    = True
@@ -37,20 +45,34 @@ colors = {}
 colors['ZH'] = ROOT.kRed
 colors['WW'] = ROOT.kBlue+1
 colors['ZZ'] = ROOT.kGreen+2
+if ecm == '365':
+    colors['tt'] = ROOT.kMagenta+1
 
 
 plots = {}
-# plots['ZH'] = {'signal':{'ZH':['wzp6_ee_eeH_HWW_llnunu_ecm240', 'wzp6_ee_mumuH_HWW_llnunu_ecm240']},
-#                'backgrounds':{'WW':['p8_ee_WW_ecm240'], 'ZZ':['p8_ee_ZZ_ecm240']}
-#            }
-plots['ZH'] = {'signal':{'ZH':['wzp6_ee_eeH_HWW_llnunu_ecm240', 'wzp6_ee_mumuH_HWW_llnunu_ecm240']},
-               'backgrounds':{'WW':['p8_ee_WW_ee_ecm240', 'p8_ee_WW_mumu_ecm240'], 'ZZ':['p8_ee_ZZ_ecm240']}
-           }
-# plots['ZH'] = {'signal':{},
-#                'backgrounds':{'WW':['p8_ee_WW_ecm240']}
-#            }
+
+if ecm == '240':
+    plots['ZH'] = {
+        'signal': {'ZH':['wzp6_ee_eeH_HWW_llnunu_ecm240', 'wzp6_ee_mumuH_HWW_llnunu_ecm240']},
+        'backgrounds': {'WW':['p8_ee_WW_ee_ecm240', 'p8_ee_WW_mumu_ecm240'], 'ZZ':['p8_ee_ZZ_ecm240']}
+    }
+
+elif ecm == '365':
+    if 'inclWWInFit' in scheme:
+        print('Using inclusive WW in fit.')
+        WW_samples = ['p8_ee_WW_ecm365']
+    else:
+        print('Using WW->ee + WW->mumu in fit.')
+        WW_samples = ['p8_ee_WW_ee_ecm365', 'p8_ee_WW_mumu_ecm365']
+    plots['ZH'] = {
+        'signal': {'ZH':['wzp6_ee_eeH_HWW_ecm365', 'wzp6_ee_mumuH_HWW_ecm365']},
+        'backgrounds': {'WW':WW_samples, 'ZZ':['p8_ee_ZZ_ecm365'], 'tt':['p8_ee_tt_ecm365']}
+    }
+    
 
 legend = {}
 legend['ZH'] = 'ZH'
 legend['WW'] = 'WW'
 legend['ZZ'] = 'ZZ'
+if ecm == '365':
+    legend['tt'] = 't#bar{t}'

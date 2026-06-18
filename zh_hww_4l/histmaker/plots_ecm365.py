@@ -1,6 +1,12 @@
 '''
 Run with:
-    path=nosel_ fccanalysis plots plots_ecm365.py
+    scheme=loose_full fccanalysis plots plots_ecm365.py
+    scheme=medium_full_inclWWInFit fccanalysis plots plots_ecm365.py
+    scheme=medium fccanalysis plots plots_ecm365.py
+
+Use inclusive WW:
+    scheme=medium3 inclWW=true fccanalysis plots plots_ecm365.py
+    
 '''
 
 
@@ -9,16 +15,10 @@ import os
 
 ecm = os.environ.get("ecm", "365")  # '240' or '365'
 flavor = os.environ.get("flavor", "ll")
-path_full = os.environ.get("path", "nosel_")  # 'nosel'_, 'loose_', 'tight_', 'full_tight_'
+scheme = os.environ.get("scheme", "presel")
+use_incl_WW = os.environ.get("inclWW", "False").lower() in ("true", "1")
 
-print(f"ecm: {ecm} GeV, flavor: {flavor}, path: {path_full}")
-
-# flavor = 'll'  # 'mumu', 'ee', 'll'
-# ecm = '365'  
-# path_full = 'nosel_'  # no selections, 20% of events.
-# path_full = 'loose_'  # loose selections, 20% of events.
-# path_full = 'tight_'  # tight selections, 20% of events.
-# path_full = 'full_tight_'  # tight selections, 100% of events.
+print(f"ecm: {ecm} GeV, flavor: {flavor}, scheme: {scheme}")
 
 if flavor=='mumu':
     Z_leptons = '#mu^{+}#mu^{-}'
@@ -39,9 +39,9 @@ ana_tex        = 'e^{+}e^{-} #rightarrow Z(' + Z_leptons + ') H#left[W(l#nu)W(l#
 delphesVersion = '3.4.2'
 energy         = int(ecm)
 collider       = 'FCC-ee'
-inputDir       = f"../../../outputs/higgs/zh_hww_4l/histmaker/ecm{ecm}/hists/{path_full}"
+inputDir       = f"../../../outputs/higgs/zh_hww_4l/histmaker/ecm{ecm}/hists/{scheme}"
 formats        = ['pdf']
-outdir         = f"../../../outputs/higgs/zh_hww_4l/histmaker/ecm{ecm}/plots/{path_full}/{flavor}/"
+outdir         = f"../../../outputs/higgs/zh_hww_4l/histmaker/ecm{ecm}/plots/{scheme}/{flavor}/"
 plotStatUnc    = True
 
 
@@ -50,32 +50,64 @@ colors['ZH'] = ROOT.kRed
 colors['WW'] = ROOT.kBlue+1
 colors['WW_ll'] = ROOT.kBlue-2
 colors['ZZ'] = ROOT.kGreen+2
-colors['tt'] = ROOT.kOrange+3
+colors['tt'] = ROOT.kMagenta+1
 
 
 procs = {}
 procs['signal'] = {'ZH':['wzp6_ee_mumuH_HWW_ecm365', 'wzp6_ee_eeH_HWW_ecm365']}
+
+if 'inclWWInFit' in scheme or use_incl_WW:
+    print('Using inclusive WW in fit.')
+    WW_samples = ['p8_ee_WW_ecm365']
+    WW_legend = 'WW'
+else:
+    print('Using WW->ee + WW->mumu in fit.')
+    WW_samples = ['p8_ee_WW_ee_ecm365', 'p8_ee_WW_mumu_ecm365']
+    WW_legend = 'WW#rightarrow ee,#mu#mu'
 # procs['backgrounds'] =  {'WW':['p8_ee_WW_ecm365'], 'WW_ll':['p8_ee_WW_ee_ecm365', 'p8_ee_WW_mumu_ecm365'], 'ZZ':['p8_ee_ZZ_ecm365'], 'Z':['wzp6_ee_ee_Mee_30_150_ecm365', 'wzp6_ee_mumu_ecm365']}
-# procs['backgrounds'] =  {'WW':['p8_ee_WW_ecm365'], 'ZZ':['p8_ee_ZZ_ecm365'], 'Z':['wzp6_ee_ee_Mee_30_150_ecm365', 'wzp6_ee_mumu_ecm365']}
-procs['backgrounds'] =  {'WW':['p8_ee_WW_ecm365'], 'ZZ':['p8_ee_ZZ_ecm365'], 'tt':['p8_ee_tt_ecm365']}
+procs['backgrounds'] =  {'WW':WW_samples, 'ZZ':['p8_ee_ZZ_ecm365'], 'tt':['p8_ee_tt_ecm365']}
+
 
 # procs['signal'] = {'ZH':['wzp6_ee_eeH_HWW_ecm365']}
 # procs['backgrounds'] = {}
-# outdir         = f"../../../outputs/higgs/zh_hww_4l/histmaker/ecm{ecm}/plots/{path_full}/{flavor}_eeH/"
+# outdir         = f"../../../outputs/higgs/zh_hww_4l/histmaker/ecm{ecm}/plots/{scheme}/{flavor}_eeH/"
 
 # procs['signal'] = {'ZH':['wzp6_ee_mumuH_HWW_ecm365']}
 # procs['backgrounds'] = {}
-# outdir         = f"../../../outputs/higgs/zh_hww_4l/histmaker/ecm{ecm}/plots/{path_full}/{flavor}_mumuH/"
+# outdir         = f"../../../outputs/higgs/zh_hww_4l/histmaker/ecm{ecm}/plots/{scheme}/{flavor}_mumuH/"
+
 
 legend = {}
 legend['ZH'] = 'ZH'
-legend['WW'] = 'WW'
-legend['WW_ll'] = 'WW#rightarrow ee,#mu#mu'
+legend['WW'] = WW_legend
+# legend['WW_ll'] = 'WW#rightarrow ee,#mu#mu'
 legend['ZZ'] = 'ZZ'
 legend['tt'] = 't#bar{t}'
 
 
-if 'nosel' in path_full:
+
+
+#########################################################################
+# compare Z(ee)H(WW) with Z(mumu)H(WW)
+procs = {}
+procs['signal'] = {'Zmumu':['wzp6_ee_mumuH_HWW_ecm365']}
+procs['backgrounds'] = {'Zee':['wzp6_ee_eeH_HWW_ecm365']}
+outdir = f"../../../outputs/higgs/zh_hww_4l/histmaker/ecm{ecm}/plots/{scheme}/{flavor}_sig/"
+
+colors = {}
+colors['Zmumu'] = ROOT.kBlue+1
+colors['Zee'] = ROOT.kRed
+
+legend = {}
+legend['Zmumu'] = 'Z(#mu#mu)H(WW)'
+legend['Zee'] = 'Z(ee)H(WW)'
+#########################################################################
+
+
+
+
+extralab = ""
+if 'nosel' in scheme:
     cutflow_xaxis = ["All events",
                      "4 leptons",
                      "2 OS pairs",
@@ -92,7 +124,7 @@ if 'nosel' in path_full:
                     #  "3.0<#DeltaR(WW*,ZZ*)<4.0"
     ]
     extralab = "Preselections"
-elif 'loose' in path_full:
+elif 'loose' in scheme:
     cutflow_xaxis = ["All events",
                      "4 leptons",
                      "2 OS pairs",
@@ -109,7 +141,43 @@ elif 'loose' in path_full:
                     #  "3.0<#DeltaR(WW*,ZZ*)<4.0"
     ]
     extralab = "Loose selections"
-elif 'tight' in path_full:
+elif 'medium' in scheme:
+    cutflow_xaxis = ["All events",
+                     "4 leptons",
+                     "2 OS pairs",
+                     "#geq1 SF pair",
+                     "p_{l_{1}},p_{l_{2}},p_{l_{3}},p_{l_{4}}",
+                     "76 < m_{l^{+}l^{-}} < 106",
+                     "35 < p_{l^{+}l^{-}} < 155",
+                     "120 < m_{rec} < 145",
+                     "|cos#theta_{miss}| < 0.98",
+                     "E_{miss} < 60",
+                     "35 < m_{WW*} < 130",
+                     "100 < p_{WW*} < 150",
+                     "0.2<#DeltaR(l_{WW*,1},l_{WW*,2})<3.5",
+                     "#DeltaR(Z#rightarrow ll, WW*) > 3.0"
+    ]
+    # extralab = "Medium selections (loose + #DeltaR(Z#rightarrow ll, WW*) > 3.0 cut)"
+    extralab = "Medium selections"
+elif 'firm' in scheme:
+    cutflow_xaxis = ["All events",
+                     "4 leptons",
+                     "Lepton Isolation",
+                     "2 OS pairs",
+                     "#geq1 SF pair",
+                     "p_{l_{1}},p_{l_{2}},p_{l_{3}},p_{l_{4}}",
+                     "76 < m_{l^{+}l^{-}} < 106",
+                     "35 < p_{l^{+}l^{-}} < 155",
+                     "120 < m_{rec} < 145",
+                     "|cos#theta_{miss}| < 0.98",
+                     "E_{miss} < 60",
+                     "35 < m_{WW*} < 130",
+                     "100 < p_{WW*} < 150",
+                     "0.2<#DeltaR(l_{WW*,1},l_{WW*,2})<3.5",
+                     "#DeltaR(Z#rightarrow ll, WW*) > 3.0"
+    ]
+    extralab = "Firm selections (medium + lepton isolation)"
+elif 'tight' in scheme:
     cutflow_xaxis = ["All events",
                      "4 leptons",
                      "2 OS pairs",
@@ -192,7 +260,7 @@ hists["lep0_p_cut2"] = {
     "extralab": "Before lepton p_{l} cuts",
 }
 
-if not 'nosel' in path_full:
+if not 'nosel' in scheme:
     hists["lep0_p_cut2a"] = {
         "output":   "lep0_p_cut2a",
         "logy":     True,
@@ -224,7 +292,7 @@ hists["lep1_p_cut2"] = {
     "extralab": "Before lepton p_{l} cuts",
 }
 
-if not 'nosel' in path_full:
+if not 'nosel' in scheme:
     hists["lep1_p_cut2b"] = {
         "output":   "lep1_p_cut2b",
         "logy":     True,
@@ -256,7 +324,7 @@ hists["lep2_p_cut2"] = {
     "extralab": "Before lepton p_{l} cuts",
 }
 
-if not 'nosel' in path_full:
+if not 'nosel' in scheme:
     hists["lep2_p_cut2c"] = {
         "output":   "lep2_p_cut2c",
         "logy":     True,
@@ -287,7 +355,7 @@ hists["lep3_p_cut2"] = {
     "extralab": "Before lepton p_{l} cuts",
 }
 
-if not 'nosel' in path_full:
+if not 'nosel' in scheme:
     hists["lep3_p_cut2d"] = {
         "output":   "lep3_p_cut2d",
         "logy":     True,
@@ -363,6 +431,205 @@ hists["lep3_p_final"] = {
     "extralab": extralab,
 }
 
+
+
+
+
+
+if '_iso' in scheme:
+    
+    # Before cuts
+    hists["lep0_iso_cut2"] = {
+        "output":   "lep0_iso_cut2",
+        "logy":     False,
+        "stack":    False,
+        "rebin":    5,
+        "xmin":     0,
+        # "xmax":     100,
+        # "ymin":     10,
+        # "ymax":     100000,
+        "xtitle":   "l_{1} isolation",
+        "ytitle":   "Events ",
+        # "scaleSig": 100,
+        "extralab": "Before lepton p_{l} cuts",
+    }
+
+    hists["lep1_iso_cut2"] = {
+        "output":   "lep1_iso_cut2",
+        "logy":     False,
+        "stack":    False,
+        "rebin":    5,
+        "xmin":     0,
+        # "xmax":     100,
+        # "ymin":     10,
+        # "ymax":     100000,
+        "xtitle":   "l_{2} isolation",
+        "ytitle":   "Events ",
+        # "scaleSig": 100,
+        "extralab": "Before lepton p_{l} cuts",
+    }
+
+    hists["lep2_iso_cut2"] = {
+        "output":   "lep2_iso_cut2",
+        "logy":     False,
+        "stack":    False,
+        "rebin":    5,
+        "xmin":     0,
+        # "xmax":     100,
+        # "ymin":     10,
+        # "ymax":     100000,
+        "xtitle":   "l_{3} isolation",
+        "ytitle":   "Events ",
+        # "scaleSig": 100,
+        "extralab": "Before lepton p_{l} cuts",
+    }
+
+    hists["lep3_iso_cut2"] = {
+        "output":   "lep3_iso_cut2",
+        "logy":     False,
+        "stack":    False,
+        "rebin":    5,
+        "xmin":     0,
+        # "xmax":     100,
+        # "ymin":     10,
+        # "ymax":     100000,
+        "xtitle":   "l_{4} isolation",
+        "ytitle":   "Events ",
+        # "scaleSig": 100,
+        "extralab": "Before lepton p_{l} cuts",
+    }
+
+
+    # After all cuts
+    hists["lep0_iso_final"] = {
+        "output":   "lep0_iso",
+        "logy":     False,
+        "stack":    False,
+        "rebin":    1,
+        "xmin":     0,
+        "xmax":     0.01,
+        # "ymin":     10,
+        # "ymax":     100000,
+        "xtitle":   "l_{1} isolation",
+        "ytitle":   "Events ",
+        "scaleSig": 2,
+        "extralab": extralab,
+    }
+
+    hists["lep1_iso_final"] = {
+        "output":   "lep1_iso",
+        "logy":     False,
+        "stack":    False,
+        "rebin":    1,
+        "xmin":     0,
+        "xmax":     0.01,
+        # "ymin":     10,
+        # "ymax":     100000,
+        "xtitle":   "l_{2} isolation",
+        "ytitle":   "Events ",
+        "scaleSig": 2,
+        "extralab": extralab,
+    }
+
+    hists["lep2_iso_final"] = {
+        "output":   "lep2_iso",
+        "logy":     False,
+        "stack":    False,
+        "rebin":    1,
+        "xmin":     0,
+        "xmax":     0.01,
+        # "ymin":     10,
+        # "ymax":     100000,
+        "xtitle":   "l_{3} isolation",
+        "ytitle":   "Events ",
+        "scaleSig": 2,
+        "extralab": extralab,
+    }
+
+    hists["lep3_iso_final"] = {
+        "output":   "lep3_iso",
+        "logy":     False,
+        "stack":    False,
+        "rebin":    1,
+        "xmin":     0,
+        "xmax":     0.01,
+        # "ymin":     10,
+        # "ymax":     100000,
+        "xtitle":   "l_{4} isolation",
+        "ytitle":   "Events ",
+        "scaleSig": 2,
+        "extralab": extralab,
+    }
+
+
+    # After all cuts, log scale
+    hists["lep0_iso_log_final"] = {
+        "output":   "lep0_iso_log",
+        "logy":     True,
+        "stack":    False,
+        "rebin":    1000,
+        "xmin":     -15,
+        "xmax":     5,
+        # "ymin":     10,
+        # "ymax":     1e5,
+        "xtitle":   "log_{10}(l_{1} isolation)",
+        "ytitle":   "Events ",
+        "scaleSig": 1,
+        "extralab": extralab,
+    }
+
+    hists["lep1_iso_log_final"] = {
+        "output":   "lep1_iso_log",
+        "logy":     True,
+        "stack":    False,
+        "rebin":    1000,
+        "xmin":     -15,
+        "xmax":     5,
+        # "ymin":     10,
+        # "ymax":     1e5,
+        "xtitle":   "log_{10}(l_{2} isolation)",
+        "ytitle":   "Events ",
+        "scaleSig": 1,
+        "extralab": extralab,
+    }
+
+    hists["lep2_iso_log_final"] = {
+        "output":   "lep2_iso_log",
+        "logy":     True,
+        "stack":    False,
+        "rebin":    1000,
+        "xmin":     -15,
+        "xmax":     5,
+        # "ymin":     10,
+        # "ymax":     250,
+        "xtitle":   "log_{10}(l_{3} isolation)",
+        "ytitle":   "Events ",
+        "scaleSig": 1,
+        "extralab": extralab,
+    }
+
+    hists["lep3_iso_log_final"] = {
+        "output":   "lep3_iso_log",
+        "logy":     True,
+        "stack":    False,
+        "rebin":    1000,
+        "xmin":     -15,
+        "xmax":     5,
+        # "ymin":     10,
+        # "ymax":     300,
+        "xtitle":   "log_{10}(l_{4} isolation)",
+        "ytitle":   "Events ",
+        "scaleSig": 1,
+        "extralab": extralab,
+    }
+
+
+
+
+
+
+
+
 hists["zll_m_cut4"] = {
     "output":   "zll_m_cut4",
     "logy":     False,
@@ -378,18 +645,33 @@ hists["zll_m_cut4"] = {
     "extralab": "Before selections",
 }
 
+hists["zll_m_cut4"] = { # GADI
+    "output":   "zll_m_cut4",
+    "logy":     True,
+    "stack":    False,
+    # "rebin":    2,
+    "xmin":     0, # 76,
+    "xmax":     375, # 106,
+    # "ymin":     0,
+    # "ymax":     3000,
+    "xtitle":   "m_{l^{#plus}l^{#minus}} [GeV]",
+    "ytitle":   "Events ",
+    "scaleSig": 1,
+    "extralab": "Before selections",
+}
+
 hists["zll_m_final"] = {
     "output":   "zll_m",
     "logy":     False,
     "stack":    False,
-    "rebin":    1 if 'nosel' in path_full else 2,
-    "xmin":     0, # 76,
-    "xmax":     375 if 'nosel' in path_full else 120, # 106,
+    "rebin":    1 if 'nosel' in scheme else 10,
+    "xmin":     20,
+    "xmax":     375 if 'nosel' in scheme else 210,
     "ymin":     0,
     # "ymax":     3000,
     "xtitle":   "m_{l^{#plus}l^{#minus}} [GeV]",
     "ytitle":   "Events ",
-    "scaleSig": 100 if 'nosel' in path_full else 1,
+    "scaleSig": 100 if 'nosel' in scheme else 1,
     "extralab": extralab,
 }
 
@@ -427,9 +709,9 @@ hists["zll_p_final"] = {
     "output":   "zll_p",
     "logy":     False,
     "stack":    False,
-    # "rebin":    1 if 'nosel' in path_full else 4,
-    "xmin":     0 if 'nosel' in path_full else 100,
-    "xmax":     375 if 'nosel' in path_full else 200,
+    # "rebin":    1 if 'nosel' in scheme else 4,
+    "xmin":     0 if 'nosel' in scheme else 35,
+    "xmax":     375 if 'nosel' in scheme else 155,
     "ymin":     0,
     # "ymax":     2000,
     "xtitle":   "p_{l^{#plus}l^{#minus}} [GeV]",
@@ -523,6 +805,7 @@ hists["zll_recoil_m_cut6"] = {
     # "ymax":     200,
     "xtitle":   "m_{rec} [GeV]",
     "ytitle":   "Events / 100 MeV",
+    "scaleSig": 10,
     "extralab": "Before m_{rec} cut",
 }
 
@@ -530,14 +813,14 @@ hists["zll_recoil_m_final"] = {
     "output":   "zll_recoil_m",
     "logy":     False,
     "stack":    False,
-    "rebin":    5 if 'nosel' in path_full else 15,
-    "xmin":     0 if 'nosel' in path_full else 110,
-    "xmax":     375 if 'nosel' in path_full else 150,
+    "rebin":    5 if 'nosel' in scheme else 100,
+    "xmin":     0 if 'nosel' in scheme else 105,
+    "xmax":     375 if 'nosel' in scheme else 235,
     "ymin":     0,
     # "ymax":     2500,
     "xtitle":   "m_{rec} [GeV]",
     "ytitle":   "Events / 100 MeV",
-    "scaleSig": 10 if 'nosel' in path_full else 1,
+    "scaleSig": 10 if 'nosel' in scheme else 1,
     "extralab": extralab,
 }
 
@@ -1053,7 +1336,7 @@ hists["WW_leps_dR_final"] = {
     # "ymax":     100000,
     "xtitle":   "#DeltaR(l_{1}^{WW*}, l_{2}^{WW*})",
     "ytitle":   "Events ",
-    "scaleSig": 100 if 'nosel' in path_full else 1,
+    "scaleSig": 100 if 'nosel' in scheme else 1,
     "extralab": extralab,
 }
 
@@ -1176,13 +1459,13 @@ hists["WW_mass_final"] = {
     "logy":     False,
     "stack":    False,
     "rebin":    5,
-    "xmin":     0 if 'nosel' in path_full else 50,
-    "xmax":     300 if 'nosel' in path_full else 300,
+    "xmin":     0 if 'nosel' in scheme else 50,
+    "xmax":     300 if 'nosel' in scheme else 300,
     # "ymin":     10,
     # "ymax":     100000,
     "xtitle":   "m_{WW*} [GeV]",
     "ytitle":   "Events ",
-    "scaleSig": 100 if 'nosel' in path_full else 1,
+    "scaleSig": 100 if 'nosel' in scheme else 1,
     "extralab": extralab,
 }
 
@@ -1201,20 +1484,20 @@ hists["WW_p_cut4"] = {
     "extralab": "Before selections",
 }
 
-hists["WW_p_cut10"] = {
-    "output":   "WW_p_cut10",
-    "logy":     False,
-    "stack":    False,
-    "rebin":    5,
-    "xmin":     0,
-    # "xmax":     100,
-    # "ymin":     10,
-    # "ymax":     100000,
-    "xtitle":   "p_{WW*} [GeV]",
-    "ytitle":   "Events ",
-    # "scaleSig": 100,
-    "extralab": "Before selections",
-}
+# hists["WW_p_cut10"] = {
+#     "output":   "WW_p_cut10",
+#     "logy":     False,
+#     "stack":    False,
+#     "rebin":    5,
+#     "xmin":     0,
+#     # "xmax":     100,
+#     # "ymin":     10,
+#     # "ymax":     100000,
+#     "xtitle":   "p_{WW*} [GeV]",
+#     "ytitle":   "Events ",
+#     # "scaleSig": 100,
+#     "extralab": "Before selections",
+# }
 
 hists["WW_p_final"] = {
     "output":   "WW_p",
@@ -1227,7 +1510,7 @@ hists["WW_p_final"] = {
     # "ymax":     100000,
     "xtitle":   "p_{WW*} [GeV]",
     "ytitle":   "Events ",
-    "scaleSig": 100 if 'nosel' in path_full else 1,
+    "scaleSig": 100 if 'nosel' in scheme else 1,
     "extralab": extralab,
 }
 
@@ -1389,11 +1672,140 @@ hists["missingEnergy_final"] = {
     "stack":    False,
     "rebin":    5,
     "xmin":     0,
-    "xmax":     375 if 'nosel' in path_full else 200,
+    "xmax":     375 if 'nosel' in scheme else 180,
     # "ymin":     10,
     # "ymax":     1000,
     "xtitle":   "E_{miss} [GeV]",
     "ytitle":   "Events ",
-    "scaleSig": 100 if 'nosel' in path_full else 1,
+    "scaleSig": 100 if 'nosel' in scheme else 1,
+    "extralab": extralab,
+}
+
+
+
+
+
+
+hists["true_Z_p_final"] = {
+    "output":   "true_Z_p",
+    "logy":     False,
+    "stack":    False,
+    "rebin":    5,
+    # "xmin":     0,
+    # "xmax":     375 if 'nosel' in scheme else 180,
+    # "ymin":     10,
+    "ymax":     100,
+    "xtitle":   "E_{miss} [GeV]",
+    "ytitle":   "Events ",
+    "scaleSig": 100,
+    "extralab": extralab,
+}
+
+hists["true_Z_mass_final"] = {
+    "output":   "true_Z_mass",
+    "logy":     False,
+    "stack":    False,
+    "rebin":    5,
+    # "xmin":     0,
+    # "xmax":     375 if 'nosel' in scheme else 180,
+    # "ymin":     10,
+    "ymax":     100,
+    "xtitle":   "E_{miss} [GeV]",
+    "ytitle":   "Events ",
+    "scaleSig": 100 if 'nosel' in scheme else 1,
+    "extralab": extralab,
+}
+
+hists["true_lepton1_p_final"] = {
+    "output":   "true_lepton1_p",
+    "logy":     False,
+    "stack":    False,
+    # "rebin":    5,
+    # "xmin":     0,
+    # "xmax":     375 if 'nosel' in scheme else 180,
+    # "ymin":     10,
+    "ymax":     1000,
+    "xtitle":   "E_{miss} [GeV]",
+    "ytitle":   "Events ",
+    "scaleSig": 100 if 'nosel' in scheme else 1,
+    "extralab": extralab,
+}
+
+hists["true_lepton2_p_final"] = {
+    "output":   "true_lepton2_p",
+    "logy":     False,
+    "stack":    False,
+    # "rebin":    5,
+    # "xmin":     0,
+    # "xmax":     375 if 'nosel' in scheme else 180,
+    # "ymin":     10,
+    # "ymax":     1000,
+    "xtitle":   "E_{miss} [GeV]",
+    "ytitle":   "Events ",
+    "scaleSig": 100 if 'nosel' in scheme else 1,
+    "extralab": extralab,
+}
+
+hists["truth_lepton_dR_final"] = {
+    "output":   "truth_lepton_dR",
+    "logy":     False,
+    "stack":    False,
+    # "rebin":    5,
+    # "xmin":     0,
+    # "xmax":     375 if 'nosel' in scheme else 180,
+    # "ymin":     10,
+    # "ymax":     1000,
+    "xtitle":   "E_{miss} [GeV]",
+    "ytitle":   "Events ",
+    "scaleSig": 100 if 'nosel' in scheme else 1,
+    "extralab": extralab,
+}
+
+hists["eff_total"] = {
+    "output":   "eff_total",
+    "logy":     False,
+    "stack":    False,
+    # "rebin":    5,
+    # "xmin":     0,
+    # "xmax":     375 if 'nosel' in scheme else 180,
+    # "ymin":     10,
+    # "ymax":     1000,
+    "xtitle":   "Correct lepton pairing",
+    "ytitle":   "Events ",
+    "scaleSig": 100 if 'nosel' in scheme else 1,
+    "extralab": extralab,
+}
+
+
+###
+
+# acolinearity
+hists["zll_acolinearity_cut4"] = {
+    "output":   "zll_acolinearity_cut4",
+    "logy":     False,
+    "stack":    False,
+    "rebin":    50,
+    # "xmin":     0,
+    # "xmax":     1,
+    # "ymin":     10,
+    # "ymax":     100000,
+    "xtitle":   "cos(#theta_{acol})",
+    "ytitle":   "Events ",
+    # "scaleSig": 100,
+    "extralab": "Before cos(#theta_{acol}) cut",
+}
+
+hists["zll_acolinearity_final"] = {
+    "output":   "zll_acolinearity",
+    "logy":     False,
+    "stack":    False,
+    "rebin":    100,
+    # "xmin":     0,
+    # "xmax":     1,
+    # "ymin":     10,
+    # "ymax":     100000,
+    "xtitle":   "cos(#theta_{acol})",
+    "ytitle":   "Events ",
+    # "scaleSig": 100,
     "extralab": extralab,
 }

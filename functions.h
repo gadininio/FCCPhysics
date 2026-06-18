@@ -162,18 +162,18 @@ resonanceBuilder_mass_recoil_advanced::resonanceBuilder_mass_recoil_advanced(flo
 void resonanceBuilder_mass_recoil_advanced::buildResonances(const Vec_rp &legs, const Vec_i &recind, const Vec_i &mcind, const Vec_rp &reco, const Vec_mc &mc, Vec_rp &result, std::vector<std::vector<int>> &pairs) {
 
     int n = legs.size();
-    ROOT::VecOps::RVec<bool> v(n);
-    std::fill(v.end() - 2, v.end(), true);
+    ROOT::VecOps::RVec<bool> v(n);  // create a vector of size n
+    std::fill(v.end() - 2, v.end(), true);  // set the last two entries to true
 
     do {
-        std::vector<int> pair;
-        rp reso;
+        std::vector<int> pair;  // store the indices of the two leptons in the current pair candidate
+        rp reso;  // the resonance candidate built from the current pair of leptons
         reso.charge = 0;
         reso.type = legs[0].type; // assume all legs are of the same type. From some reason, this doesn't work, hence the following line.
         TLorentzVector reso_lv;
 
-        for (int i = 0; i < n; ++i) {
-            if (v[i]) {
+        for (int i = 0; i < n; ++i) {  // go over all leptons in the current permutation
+            if (v[i]) {  // and find the two selected leptons
                 pair.push_back(i);
                 reso.charge += legs[i].charge;
                 TLorentzVector leg_lv;
@@ -193,7 +193,7 @@ void resonanceBuilder_mass_recoil_advanced::buildResonances(const Vec_rp &legs, 
             }
         }
 
-        if (reso.charge != 0)
+        if (reso.charge != 0)  // require opposite-charge pairs
             continue;
 
         reso.momentum.x = reso_lv.Px();
@@ -204,7 +204,7 @@ void resonanceBuilder_mass_recoil_advanced::buildResonances(const Vec_rp &legs, 
         result.emplace_back(reso);
         pairs.push_back(pair);
 
-    } while (std::next_permutation(v.begin(), v.end()));
+    } while (std::next_permutation(v.begin(), v.end()));  // generate the next permutation of the vector v
 }
 
 Vec_rp resonanceBuilder_mass_recoil_advanced::resonanceBuilder_mass_recoil_advanced::operator()(Vec_rp legs_muons, Vec_rp legs_electrons, Vec_i recind, Vec_i mcind, Vec_rp reco, Vec_mc mc, Vec_i parents, Vec_i daugthers) {
@@ -250,10 +250,10 @@ Vec_rp resonanceBuilder_mass_recoil_advanced::resonanceBuilder_mass_recoil_advan
         for (int i = 0; i < result.size(); ++i) {
 
             // calculate recoil
-            auto recoil_p4 = TLorentzVector(0, 0, 0, ecm);
+            auto recoil_p4 = TLorentzVector(0, 0, 0, ecm);  // start with the initial state 4-momentum (0,0,0,ecm) in the center-of-mass frame
             TLorentzVector tv1;
-            tv1.SetXYZM(result.at(i).momentum.x, result.at(i).momentum.y, result.at(i).momentum.z, result.at(i).mass);
-            recoil_p4 -= tv1;
+            tv1.SetXYZM(result.at(i).momentum.x, result.at(i).momentum.y, result.at(i).momentum.z, result.at(i).mass);  // the 4-momentum of the di-lepton system for the current pair candidate
+            recoil_p4 -= tv1;  // recoil = initial state - di-lepton system
 
             auto recoil_fcc = edm4hep::ReconstructedParticleData();
             recoil_fcc.momentum.x = recoil_p4.Px();
@@ -261,13 +261,9 @@ Vec_rp resonanceBuilder_mass_recoil_advanced::resonanceBuilder_mass_recoil_advan
             recoil_fcc.momentum.z = recoil_p4.Pz();
             recoil_fcc.mass = recoil_p4.M();
 
-            TLorentzVector tg;
-            tg.SetXYZM(result.at(i).momentum.x, result.at(i).momentum.y, result.at(i).momentum.z, result.at(i).mass);
-
-            float boost = tg.P();
-            float mass = std::pow(result.at(i).mass - m_resonance_mass, 2); // mass
-            float rec = std::pow(recoil_fcc.mass - m_recoil_mass, 2); // recoil
-            float d = (1.0-chi2_recoil_frac)*mass + chi2_recoil_frac*rec;
+            float mass = std::pow(result.at(i).mass - m_resonance_mass, 2);  // (m_zll - 91)^2
+            float rec = std::pow(recoil_fcc.mass - m_recoil_mass, 2);  // (m_recoil - 125)^2
+            float d = (1.0-chi2_recoil_frac)*mass + chi2_recoil_frac*rec;  // chi2 = (1-f)*(m_zll - 91)^2 + f*(m_recoil - 125)^2
 
             if(d < d_min) {
                 d_min = d;
@@ -331,6 +327,241 @@ Vec_rp resonanceBuilder_mass_recoil_advanced::resonanceBuilder_mass_recoil_advan
     
     return bestReso;
 }
+
+
+
+
+
+// struct PairingTruthInfo {
+//     int is_correct;
+//     float true_Z_p;
+//     float true_Z_mass;
+//     float true_lepton1_p;
+//     float true_lepton2_p;
+//     float truth_lepton_dR;
+// };
+
+ROOT::VecOps::RVec<float> check_pairing_efficiency_via_Z(Vec_rp bestReso, Vec_i recind, Vec_i mcind, Vec_rp reco, Vec_mc mc, Vec_i parents, Vec_i daughters) {  // GADI
+
+    // Initialize a vector of 6 elements with a default failure value (-999.0)
+    // Index mapping:
+    // [0] = is_correct (0.0 or 1.0)
+    // [1] = true_Z_p
+    // [2] = true_Z_mass
+    // [3] = true_lepton1_p
+    // [4] = true_lepton2_p
+    // [5] = truth_lepton_dR
+    ROOT::VecOps::RVec<float> info(6, -999.0);
+    info[0] = 0.0; // Default: pairing is incorrect
+
+    // If the builder didn't return a resonance and two leptons, return defaults
+    if (bestReso.size() < 3) return info; 
+
+    std::vector<int> true_z_daughters;
+    int z_index = -1;
+
+    // Step 1: Find the true Z boson and extract the indices of its lepton daughters
+    for (size_t i = 0; i < mc.size(); ++i) {
+        auto & p = mc[i];
+        if (std::abs(p.PDG) == 23) { 
+            z_index = i;
+            int d_begin = p.daughters_begin;
+            int d_end = p.daughters_end;
+            
+            for (int d = d_begin; d < d_end; ++d) {
+                int daughter_idx = daughters[d];
+                int pdg = std::abs(mc[daughter_idx].PDG);
+                
+                if (pdg == 11 || pdg == 13) {
+                    true_z_daughters.push_back(daughter_idx);
+                }
+            }
+            break; 
+        }
+    }
+
+    if (z_index == -1)  { // If no Z boson found, return defaults
+        printf("WARNING: check_pairing_efficiency, no Z boson found in MC truth.\n");
+    }
+
+    // If the true Z did not decay into exactly 2 leptons, we cannot proceed
+    if (true_z_daughters.size() != 2) return info; 
+
+    // Step 2: Calculate Kinematics using TLorentzVector
+    TLorentzVector z_lv, l1_lv, l2_lv;
+    
+    z_lv.SetXYZM(mc[z_index].momentum.x, mc[z_index].momentum.y, mc[z_index].momentum.z, mc[z_index].mass);
+    
+    auto true_l1 = mc[true_z_daughters[0]];
+    auto true_l2 = mc[true_z_daughters[1]];
+    
+    l1_lv.SetXYZM(true_l1.momentum.x, true_l1.momentum.y, true_l1.momentum.z, true_l1.mass);
+    l2_lv.SetXYZM(true_l2.momentum.x, true_l2.momentum.y, true_l2.momentum.z, true_l2.mass);
+
+    // Populate the RVec elements
+    info[1] = z_lv.P();
+    info[2] = z_lv.M();
+    info[3] = l1_lv.P();
+    info[4] = l2_lv.P();
+    info[5] = l1_lv.DeltaR(l2_lv);
+
+    // Step 3: Get the MC truth indices for the two reco leptons using track-to-MC matching
+    int reco_trk_1 = bestReso[1].tracks_begin;  // index of the reco lead lepton's first track
+    int reco_mc_idx_1 = ReconstructedParticle2MC::getTrack2MC_index(reco_trk_1, recind, mcind, reco);  // returns the index of the MC truth particle that created that track.
+    
+    int reco_trk_2 = bestReso[2].tracks_begin; // index of the reco subl lepton's first track
+    int reco_mc_idx_2 = ReconstructedParticle2MC::getTrack2MC_index(reco_trk_2, recind, mcind, reco);  // returns the index of the MC truth particle that created that track.
+    
+    // Step 4: Check Pairing Correctness
+    bool match1 = (reco_mc_idx_1 == true_z_daughters[0] && reco_mc_idx_2 == true_z_daughters[1]);
+    bool match2 = (reco_mc_idx_1 == true_z_daughters[1] && reco_mc_idx_2 == true_z_daughters[0]);
+    info[0] = match1 || match2;
+
+    return info;
+}
+
+
+
+
+ROOT::VecOps::RVec<float> check_pairing_efficiency_via_HWW(
+    const Vec_rp& bestReso, 
+    const Vec_i& recind, 
+    const Vec_i& mcind, 
+    const Vec_rp& reco, 
+    const Vec_mc& mc, 
+    const Vec_i& parents, 
+    const Vec_i& daughters) 
+{
+    ROOT::VecOps::RVec<float> info(6, -999.0);
+    info[0] = 0.0; // Default: incorrect pairing
+
+    if (bestReso.size() < 3) return info; 
+
+    std::vector<int> primary_leptons;
+
+    // Step 1: Find the true recoil leptons directly
+    for (size_t i = 0; i < mc.size(); ++i) {
+        int pdg = std::abs(mc[i].PDG);
+        
+        // We look for stable, final-state electrons or muons (status 1)
+        if (mc[i].generatorStatus == 1 && (pdg == 11 || pdg == 13)) {
+            bool from_W_or_H = false;
+            int current_idx = i;
+            
+            // Trace the parentage upwards: check if any ancestor is a W boson (PDG 24) or a Higgs boson (PDG 25)
+            while (true) {
+                // look for the index of `current_idx` parent, with the updated value from the previous iteration.
+                int p_begin = mc[current_idx].parents_begin;
+                int p_end = mc[current_idx].parents_end;
+                
+                // Break if we reach the top of the decay chain
+                if (p_end <= p_begin) break; 
+                
+                // Follow the primary parent branch
+                current_idx = parents[p_begin]; 
+                int parent_pdg = std::abs(mc[current_idx].PDG);
+                
+                // If an ancestor is a W or a Higgs, this is a decay lepton, not a recoil lepton
+                if (parent_pdg == 24 || parent_pdg == 25) { 
+                    from_W_or_H = true;
+                    break;
+                }
+            }
+            
+            // If it does not trace back to a W or H, save it as a primary recoil lepton
+            if (!from_W_or_H) {
+                primary_leptons.push_back(i);
+            }
+        }
+    }
+
+    // We must find exactly 2 primary leptons to proceed (the inclusive dilepton pair)
+    if (primary_leptons.size() != 2) return info; 
+
+    // Step 2: Calculate Kinematics 
+    TLorentzVector l1_lv, l2_lv, z_lv;
+    
+    auto true_l1 = mc[primary_leptons[0]];
+    auto true_l2 = mc[primary_leptons[1]];
+    
+    l1_lv.SetXYZM(true_l1.momentum.x, true_l1.momentum.y, true_l1.momentum.z, true_l1.mass);
+    l2_lv.SetXYZM(true_l2.momentum.x, true_l2.momentum.y, true_l2.momentum.z, true_l2.mass);
+    
+    // Reconstruct the inclusive Z/gamma* system from the two leptons
+    z_lv = l1_lv + l2_lv; 
+
+    info[1] = z_lv.P();
+    info[2] = z_lv.M();
+    info[3] = l1_lv.P();
+    info[4] = l2_lv.P();
+    info[5] = l1_lv.DeltaR(l2_lv);
+
+    // Step 3: Get the MC truth indices for the two reco leptons using track-to-MC matching
+    int reco_trk_1 = bestReso[1].tracks_begin;
+    int reco_mc_idx_1 = ReconstructedParticle2MC::getTrack2MC_index(reco_trk_1, recind, mcind, reco);
+    
+    int reco_trk_2 = bestReso[2].tracks_begin;
+    int reco_mc_idx_2 = ReconstructedParticle2MC::getTrack2MC_index(reco_trk_2, recind, mcind, reco);
+    
+    // Step 4: Check Pairing Correctness
+    bool match1 = (reco_mc_idx_1 == primary_leptons[0] && reco_mc_idx_2 == primary_leptons[1]);
+    bool match2 = (reco_mc_idx_1 == primary_leptons[1] && reco_mc_idx_2 == primary_leptons[0]);
+    info[0] = match1 || match2;
+
+    return info;
+}
+
+
+
+
+// bool is_correct_pairing(Vec_rp bestReso, Vec_i recind, Vec_i mcind, Vec_rp reco, Vec_mc mc, Vec_i parents, Vec_i daughters) {
+//     // If the builder didn't return a resonance and two leptons, fail early.
+//     if (bestReso.size() < 3) return 0; 
+
+//     std::vector<int> true_z_daughters;
+
+//     // Step 1: Find the true Z boson and extract the indices of its lepton daughters
+//     for (size_t i = 0; i < mc.size(); ++i) {
+//         auto & p = mc[i];
+//         if (std::abs(p.PDG) == 23) { // 23 is the PDG ID for the Z boson
+//             int d_begin = p.daughters_begin;
+//             int d_end = p.daughters_end;
+            
+//             for (int d = d_begin; d < d_end; ++d) {
+//                 int daughter_idx = mcind[d];
+//                 int pdg = std::abs(mc[daughter_idx].PDG);
+                
+//                 // Keep only electrons (11) or muons (13)
+//                 if (pdg == 11 || pdg == 13) {
+//                     true_z_daughters.push_back(daughter_idx);
+//                 }
+//             }
+//             break; // Stop searching once the Z is found and processed
+//         }
+//     }
+
+//     // If the true Z did not decay into exactly 2 leptons, we cannot match it
+//     if (true_z_daughters.size() != 2) return 0; 
+
+//     // Step 2: Get the MC truth indices for the two reco leptons that were paired by the algorithm
+//     int reco_trk_1 = bestReso[1].tracks_begin;
+//     int reco_mc_idx_1 = ReconstructedParticle2MC::getTrack2MC_index(reco_trk_1, recind, mcind, reco);
+
+//     int reco_trk_2 = bestReso[2].tracks_begin;
+//     int reco_mc_idx_2 = ReconstructedParticle2MC::getTrack2MC_index(reco_trk_2, recind, mcind, reco);
+
+//     // Step 3: Compare the reco indices to the truth indices (order does not matter)
+//     bool match1 = (reco_mc_idx_1 == true_z_daughters[0] && reco_mc_idx_2 == true_z_daughters[1]);
+//     bool match2 = (reco_mc_idx_1 == true_z_daughters[1] && reco_mc_idx_2 == true_z_daughters[0]);
+
+//     if (match1 || match2) {
+//         return true; // true means the pairing was perfectly correct
+//     }
+    
+//     return false; // false means the algorithm picked the wrong pair
+// }
+
+
 
 
 // Get dilepton vector, and return the dilepton category: -1: not leptonic, 0: e+e-, 1: mu+mu-, 2: e-mu or mu-e
@@ -545,6 +776,44 @@ bool is_ww_leptonic(Vec_mc mc, Vec_i ind) {
    }
    return false;
 }
+
+
+
+
+
+// acolinearity between two reco particles
+float acolinearity(Vec_rp in) {
+    if(in.size() < 2) return -999;
+
+    TLorentzVector p1;
+    p1.SetXYZM(in[0].momentum.x, in[0].momentum.y, in[0].momentum.z, in[0].mass);
+
+    TLorentzVector p2;
+    p2.SetXYZM(in[1].momentum.x, in[1].momentum.y, in[1].momentum.z, in[1].mass);
+
+    TVector3 v1 = p1.Vect();
+    TVector3 v2 = p2.Vect();
+    return std::acos(v1.Dot(v2)/(v1.Mag()*v2.Mag())*(-1.));  // cos(pi - theta_12) = -cos(theta_12)
+}
+
+// acoplanarity between two reco particles
+float acoplanarity(Vec_rp in) {
+    if(in.size() < 2) return -999;
+
+    TLorentzVector p1;
+    p1.SetXYZM(in[0].momentum.x, in[0].momentum.y, in[0].momentum.z, in[0].mass);
+
+    TLorentzVector p2;
+    p2.SetXYZM(in[1].momentum.x, in[1].momentum.y, in[1].momentum.z, in[1].mass);
+
+    float acop = abs(p1.Phi() - p2.Phi());
+    if(acop > M_PI) acop = 2 * M_PI - acop;
+    acop = M_PI - acop;
+
+    return acop;
+}
+
+
 
 
 }}
