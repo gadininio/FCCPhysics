@@ -5,13 +5,35 @@ This script applies a set of cuts. The cuts are applied sequentially, and can be
 Run with:
 
     Debug:
-        run=debug ecm=365 training=True sel_type=1 fccanalysis run preselection.py
+        run=debug ecm=365 training=True sel_type=medium fccanalysis run preselection.py
 
-    Full, loose selections, training samples:
-        run=full ecm=365 training=True sel_type=1 fccanalysis run preselection.py
+    Full, medium selections, training samples:
+        run=full ecm=365 training=True  sel_type=medium chi2=1.0 iso=3.0 fccanalysis run preselection.py
 
-    Full, loose selections, analysis samples:
-        run=full ecm=365 training=False sel_type=1 fccanalysis run preselection.py
+    Full, medium selections, analysis samples:
+        run=full ecm=365 training=False sel_type=medium chi2=1.0 iso=3.0 fccanalysis run preselection.py
+
+    Local, medium selections, analysis samples:
+        run=local ecm=365 training=False sel_type=medium chi2=1.0 fccanalysis run preselection.py
+
+
+Then, add the parameters to the output root files for the analysis samples:
+
+    python3 ../../utils/add_parameters_to_root.py \
+        -f ../../../outputs/higgs/zh_hww_4l/mva/ecm365/<scheme>/preselection \
+        -n dataset sel_type chi2 lepton_iso \
+        -t string string float float \
+        -v winter2023_IDEA medium 1.0 3
+
+and for the training samples:
+
+    python3 ../../utils/add_parameters_to_root.py \
+        -f ../../../outputs/higgs/zh_hww_4l/mva/ecm365/<scheme>/preselection/training \
+        -n dataset sel_type chi2 lepton_iso \
+        -t string string float float \
+        -v winter2023_training_IDEA medium 1.0 3
+
+with e.g., scheme = "medium_full_chi2-1.0_iso-3.0".
 
 '''
 
@@ -22,9 +44,12 @@ import os
 run = os.environ.get("run", "full")  # 'local', 'debug', 'full', 'full+condor'
 ecm = os.environ.get("ecm", "240")  # '240' or '365'
 is_training = os.environ.get("training", "False").lower() in ("true", "1")
-sel_type = int(os.environ.get("sel_type", 0))  # 0: presel, 1: loose, 2: tight
+sel_type = os.environ.get("sel_type", 'loose')  # presel, loose, medium, tight
+chi2_coeff_default = 0.4
+chi2_coeff = float(os.environ.get("chi2", chi2_coeff_default))
+lepton_iso = float(os.environ.get("iso", -999))  # default isolation cut for firm selection
 
-print(f"Run type: {run}, ECM: {ecm} GeV, Training mode: {is_training}, selections type: {sel_type}")
+print(f"Run type: {run}, ECM: {ecm} GeV, Training mode: {is_training}, selections type: {sel_type}, chi2 coefficient: {chi2_coeff}, lepton isolation cut: {lepton_iso}")
 
 if run == 'debug':  # debug run
     print("Running in debug mode: only 0.5% of bkg, 100% of signal data, 1 chunk")
@@ -81,29 +106,29 @@ else:
     if ecm == '365':
         processList['p8_ee_tt_ecm365'] = {'fraction': fraction, 'chunks': nchunks}
 
-
 processList = {f'wzp6_ee_mumuH_HWW_{"llnunu_" if ecm=="240" else ""}ecm{ecm}':{'fraction': 0.2}} if debug else processList
 
-
 # Production tag when running over EDM4Hep centrally produced events, this points to the yaml files for getting sample statistics (mandatory)
-prodTag     = "FCCee/winter2023/IDEA/" if not is_training else "FCCee/winter2023_training/IDEA/"
+prodTag = "FCCee/winter2023/IDEA/" if not is_training else "FCCee/winter2023_training/IDEA/"
 
 # Link to the dictonary that contains all the cross section informations etc... (mandatory)
 procDict = "FCCee_procDict_winter2023_IDEA.json" if not is_training else "FCCee_procDict_winter2023_training_IDEA.json"
 
-
-
-
 # Additional/custom C++ functions, defined in header files
-includePaths = ["../../functions.h"]
+includePaths = ["../functions.h"]
 
 # Output directory
-if sel_type == 0: output_fix = "presel"
-elif sel_type == 1: output_fix = "loose"
-elif sel_type == 5: output_fix = "medium"
-elif sel_type == 2: output_fix = "tight"
+output_fix = sel_type
 if debug: output_fix += "_debug"
-elif fullrun: output_fix += "_full"
+if fullrun: output_fix += "_full"
+if chi2_coeff != chi2_coeff_default: output_fix += f"_chi2-{chi2_coeff}"
+if lepton_iso != -999: output_fix += f"_iso-{lepton_iso}"
+
+# get time stamp for the output directory
+import datetime
+timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+output_fix += f"_{timestamp}"
+
 outputDir   = f"../../../outputs/higgs/zh_hww_4l/mva/ecm{ecm}/{output_fix}/preselection/{'training/' if is_training else ''}"
 
 
@@ -146,9 +171,10 @@ class RDFanalysis():
         df = df.Define("muons_q", "FCCAnalyses::ReconstructedParticle::get_charge(muons)")
         df = df.Define("muons_no", "FCCAnalyses::ReconstructedParticle::get_n(muons)")
 
-        # # compute the muon isolation and store muons with an isolation cut of 0.25 in a separate column muons_sel_iso
-        # df = df.Define("muons_iso", "FCCAnalyses::ZHfunctions::coneIsolation(0.01, 0.5)(muons, ReconstructedParticles)")
-        # df = df.Define("muons_sel_iso", "FCCAnalyses::ZHfunctions::sel_iso(0.25)(muons, muons_iso)")
+        if lepton_iso != -999:
+            # compute the muon isolation and store muons with an isolation cut of 0.25 in a separate column muons_sel_iso
+            df = df.Define("muons_iso", "FCCAnalyses::ZHfunctions::coneIsolation(0.01, 0.5)(muons, ReconstructedParticles)")
+            df = df.Define("muons_sel_iso", f"FCCAnalyses::ZHfunctions::sel_iso({lepton_iso})(muons, muons_iso)")
 
         ## define electrons
         df = df.Alias("Electron0", "Electron#0.index")
@@ -162,17 +188,22 @@ class RDFanalysis():
         df = df.Define("electrons_q", "FCCAnalyses::ReconstructedParticle::get_charge(electrons)")
         df = df.Define("electrons_no", "FCCAnalyses::ReconstructedParticle::get_n(electrons)")
 
-        # # compute the muon isolation and store muons with an isolation cut of 0.25 in a separate column muons_sel_iso
-        # df = df.Define("electrons_iso", "FCCAnalyses::ZHfunctions::coneIsolation(0.01, 0.5)(electrons, ReconstructedParticles)")
-        # df = df.Define("electrons_sel_iso", "FCCAnalyses::ZHfunctions::sel_iso(0.25)(electrons, electrons_iso)")
+        if lepton_iso != -999:
+            # compute the muon isolation and store muons with an isolation cut of 0.25 in a separate column muons_sel_iso
+            df = df.Define("electrons_iso", "FCCAnalyses::ZHfunctions::coneIsolation(0.01, 0.5)(electrons, ReconstructedParticles)")
+            df = df.Define("electrons_sel_iso", f"FCCAnalyses::ZHfunctions::sel_iso({lepton_iso})(electrons, electrons_iso)")
 
 
         #########
-        ### CUT 1: exactly 4 leptons (add isolation later)
+        ### CUT 1: require exactly 4 leptons
         #########
-        df = df.Define("n_leptons", "muons_no + electrons_no")
-        if sel_type >= 0:
-            df = df.Filter("n_leptons == 4")
+        df = df.Define("n_leptons", "muons_no + electrons_no")            
+        df = df.Filter("n_leptons == 4")
+        
+        # If lepton_iso is specified, require exactly 4 isolated leptons
+        if lepton_iso != -999:
+            df = df.Define("n_leptons_iso", "muons_sel_iso.size() + electrons_sel_iso.size()")
+            df = df.Filter("n_leptons_iso == 4")
 
 
         #########
@@ -180,15 +211,13 @@ class RDFanalysis():
         #########
         # df = df.Filter(f"{leps}_no >= 2 && abs(Sum({leps}_q)) < {leps}_q.size()")
         # df = df.Filter(f"abs(Sum({leps}_q)) <= {leps}_q.size() - 4")
-        if sel_type >= 0:
-            df = df.Filter(f"abs(Sum(muons_q) + Sum(electrons_q)) <= muons_q.size() + electrons_q.size() - 4")
+        df = df.Filter(f"abs(Sum(muons_q) + Sum(electrons_q)) <= muons_q.size() + electrons_q.size() - 4")
 
 
         #########
         ### CUT 3: at least one same-flavor (SF) lepton pair
         #########
-        if sel_type >= 0:
-            df = df.Filter("(muons_no >= 2) || (electrons_no >= 2)")
+        df = df.Filter("(muons_no >= 2) || (electrons_no >= 2)")
 
 
         #########
@@ -203,29 +232,28 @@ class RDFanalysis():
         df = df.Define("lep2_p", "leptons_p[2]")
         df = df.Define("lep3_p", "leptons_p[3]")
         
-        if sel_type > 0:  # apply the loose or tight selections
-            if ecm == '240':
-                if sel_type == 1:  # loose
-                    df = df.Filter("lep0_p > 20 && lep0_p < 85")
-                    df = df.Filter("lep1_p > 10 && lep1_p < 80")
-                    df = df.Filter("lep2_p > 10 && lep2_p < 80")
-                    df = df.Filter("lep3_p > 10 && lep3_p < 75")
-                elif sel_type == 2:  # tight
-                    df = df.Filter("lep0_p > 25 && lep0_p < 80")
-                    df = df.Filter("lep1_p > 15 && lep1_p < 80")
-                    df = df.Filter("lep2_p > 10 && lep2_p < 80")
-                    df = df.Filter("lep3_p > 10 && lep3_p < 75")
-            elif ecm == '365':
-                if sel_type == 1 or sel_type == 5:  # loose
-                    df = df.Filter("lep0_p > 20 && lep0_p < 165")
-                    df = df.Filter("lep1_p > 10 && lep1_p < 160")
-                    df = df.Filter("lep2_p > 5 && lep2_p < 150")
-                    df = df.Filter("lep3_p > 5 && lep3_p < 150")
-                elif sel_type == 2:  # tight
-                    df = df.Filter("lep0_p > 70 && lep0_p < 155")
-                    df = df.Filter("lep1_p > 25 && lep1_p < 105")
-                    df = df.Filter("lep2_p > 15 && lep2_p < 80")
-                    df = df.Filter("lep3_p > 5 && lep3_p < 65")
+        if ecm == '240':
+            if sel_type == 'loose':
+                df = df.Filter("lep0_p > 20 && lep0_p < 85")
+                df = df.Filter("lep1_p > 10 && lep1_p < 80")
+                df = df.Filter("lep2_p > 10 && lep2_p < 80")
+                df = df.Filter("lep3_p > 10 && lep3_p < 75")
+            elif sel_type == 'tight':
+                df = df.Filter("lep0_p > 25 && lep0_p < 80")
+                df = df.Filter("lep1_p > 15 && lep1_p < 80")
+                df = df.Filter("lep2_p > 10 && lep2_p < 80")
+                df = df.Filter("lep3_p > 10 && lep3_p < 75")
+        elif ecm == '365':
+            if sel_type == 'loose' or sel_type == 'medium':
+                df = df.Filter("lep0_p > 20 && lep0_p < 165")
+                df = df.Filter("lep1_p > 10 && lep1_p < 160")
+                df = df.Filter("lep2_p > 5 && lep2_p < 150")
+                df = df.Filter("lep3_p > 5 && lep3_p < 150")
+            elif sel_type == 'tight':
+                df = df.Filter("lep0_p > 70 && lep0_p < 155")
+                df = df.Filter("lep1_p > 25 && lep1_p < 105")
+                df = df.Filter("lep2_p > 15 && lep2_p < 80")
+                df = df.Filter("lep3_p > 5 && lep3_p < 65")
 
 
         #########
@@ -237,9 +265,8 @@ class RDFanalysis():
         # Technically, it returns a ReconstructedParticleData object with index 0 the Z->ll di-lepton system, index 1 and 2 the leptons of the pair, and index 3 and 4 the other two leptons.
         # If no pair is found, the returned vector is empty.
         # We then require that at least one pair was found (size>=5) to keep the event.
-        df = df.Define("zbuilder_result", f"FCCAnalyses::ZHfunctions::resonanceBuilder_mass_recoil_advanced(91.2, 125, 0.4, {ecm}, false)(muons, electrons, MCRecoAssociations0, MCRecoAssociations1, ReconstructedParticles, Particle, Particle0, Particle1)")
-        if sel_type > 0:  # apply the loose or tight selections
-            df = df.Filter("zbuilder_result.size() >= 5") # make sure at least one pair was found (and additional two leptons)
+        df = df.Define("zbuilder_result", f"FCCAnalyses::ZHfunctions::resonanceBuilder_mass_recoil_advanced(91.2, 125, {chi2_coeff}, {ecm}, false)(muons, electrons, MCRecoAssociations0, MCRecoAssociations1, ReconstructedParticles, Particle, Particle0, Particle1)")
+        df = df.Filter("zbuilder_result.size() >= 5") # make sure at least one pair was found (and additional two leptons)
         
         df = df.Define("zll", "Vec_rp{zbuilder_result[0]}") # the Z
         df = df.Define("zll_tlv", "FCCAnalyses::ReconstructedParticle::get_tlv(zll, 0)")
@@ -312,43 +339,43 @@ class RDFanalysis():
         #########
         ### CUT 5: Z mass window
         #########
-        if sel_type > 0:  # apply the loose or tight selections
-            if ecm == '240':
+        if ecm == '240':
+            df = df.Filter("zll_m > 76 && zll_m < 106")
+        elif ecm == '365':
+            if sel_type == 'loose':
+                df = df.Filter("zll_m > 30 && zll_m < 200")
+            if sel_type == 'medium':
+                # df = df.Filter("zll_m > 71 && zll_m < 111")
+                df = df.Filter("zll_m > 61 && zll_m < 121")
+            elif sel_type == 'tight':
                 df = df.Filter("zll_m > 76 && zll_m < 106")
-            elif ecm == '365':
-                if sel_type == 1 or sel_type == 5:  # loose
-                    df = df.Filter("zll_m > 30 && zll_m < 200")
-                elif sel_type == 2:  # tight
-                    df = df.Filter("zll_m > 76 && zll_m < 106")
 
 
         #########
         ### CUT 6: Z momentum
         #########
-        if sel_type > 0:  # apply the loose or tight selections
-            if ecm == '240':
-                df = df.Filter("zll_p > 20 && zll_p < 70")
-            elif ecm == '365':
-                if sel_type == 1 or sel_type == 5:  # loose
-                    df = df.Filter("zll_p > 35 && zll_p < 155")
-                elif sel_type == 2:  # tight
-                    df = df.Filter("zll_p > 140 && zll_p < 150")
+        if ecm == '240':
+            df = df.Filter("zll_p > 20 && zll_p < 70")
+        elif ecm == '365':
+            if sel_type == 'loose' or sel_type == 'medium':
+                df = df.Filter("zll_p > 35 && zll_p < 155")
+            elif sel_type == 'tight':
+                df = df.Filter("zll_p > 60 && zll_p < 155")
 
 
         #########
         ### CUT 7: recoil mass window (reconstructed Higgs mass using the recoil method)
         #########
-        if sel_type > 0:  # apply the loose or tight selections
-            if ecm == '240':
-                if sel_type == 1:  # loose
-                    df = df.Filter("zll_recoil_m < 145 && zll_recoil_m > 120")
-                elif sel_type == 2:  # tight
-                    df = df.Filter("zll_recoil_m < 140 && zll_recoil_m > 120")
-            elif ecm == '365':
-                if sel_type == 1 or sel_type == 5:  # loose
-                    df = df.Filter("zll_recoil_m < 230 && zll_recoil_m > 115")
-                elif sel_type == 2:  # tight
-                    df = df.Filter("zll_recoil_m < 140 && zll_recoil_m > 120")
+        if ecm == '240':
+            if sel_type == 'loose':
+                df = df.Filter("zll_recoil_m < 145 && zll_recoil_m > 120")
+            elif sel_type == 'tight':
+                df = df.Filter("zll_recoil_m < 140 && zll_recoil_m > 120")
+        elif ecm == '365':
+            if sel_type == 'loose' or sel_type == 'medium':
+                df = df.Filter("zll_recoil_m < 230 && zll_recoil_m > 115")
+            elif sel_type == 'tight':
+                df = df.Filter("zll_recoil_m < 200 && zll_recoil_m > 115")
 
 
         #########
@@ -356,75 +383,67 @@ class RDFanalysis():
         #########  
         df = df.Define("miss_cosTheta", "FCCAnalyses::ZHfunctions::get_cosTheta_miss(missingEnergy_vec)")
         df = df.Define("miss_energy", "FCCAnalyses::ZHfunctions::get_missing_energy(missingEnergy_vec)")
-        if sel_type > 0:  # apply the loose or tight selections
-            df = df.Filter("miss_cosTheta < 0.98")
+        df = df.Filter("miss_cosTheta < 0.98")
 
 
         #########
         ### CUT 9: missingEnergy
         #########  
-        if sel_type > 0:  # apply the loose or tight selections
-            if ecm == '240':
-                if sel_type == 1:  # loose
-                    df = df.Filter("miss_energy > 20 && miss_energy < 120")
-                elif sel_type == 2:  # tight
-                    df = df.Filter("miss_energy > 30 && miss_energy < 110")
-            elif ecm == '365':
-                if sel_type == 1 or sel_type == 5:  # loose
-                    df = df.Filter("miss_energy > 20 && miss_energy < 180")
-                elif sel_type == 2:  # tight
-                    df = df.Filter("miss_energy > 30 && miss_energy < 160")
+        if ecm == '240':
+            if sel_type == 'loose':
+                df = df.Filter("miss_energy > 20 && miss_energy < 120")
+            elif sel_type == 'tight':
+                df = df.Filter("miss_energy > 30 && miss_energy < 110")
+        elif ecm == '365':
+            if sel_type == 'loose' or sel_type == 'medium':
+                df = df.Filter("miss_energy > 20 && miss_energy < 180")
+            elif sel_type == 'tight':
+                df = df.Filter("miss_energy > 30 && miss_energy < 160")
 
 
         #########
         ### CUT 10: WW system mass window
         #########
-        if sel_type > 0:  # apply the loose or tight selections
-            if ecm == '240':
-                if sel_type == 1:  # loose
-                    df = df.Filter("WW_mass > 60 && WW_mass < 135")
-                elif sel_type == 2:  # tight
-                    df = df.Filter("WW_mass > 80 && WW_mass < 135")
-            elif ecm == '365':
-                if sel_type == 1 or sel_type == 5:  # loose
-                    df = df.Filter("WW_mass > 50")
-                elif sel_type == 2:  # tight
-                    df = df.Filter("WW_mass > 80 && WW_mass < 130")
-
-
-        # #########
-        # ### CUT 11: WW system momentum
-        # #########
-        # if sel_type > 0:  # apply the loose or tight selections
-        #     if ecm == '365':
-        #         if sel_type == 1:  # loose
-        #             df = df.Filter("WW_p > 100 && WW_p < 150")
-        #         elif sel_type == 2:  # tight
-        #             df = df.Filter("WW_p > 120 && WW_p < 150")
+        if ecm == '240':
+            if sel_type == 'loose':
+                df = df.Filter("WW_mass > 60 && WW_mass < 135")
+            elif sel_type == 'tight':
+                df = df.Filter("WW_mass > 80 && WW_mass < 135")
+        elif ecm == '365':
+            if sel_type == 'loose' or sel_type == 'medium':
+                df = df.Filter("WW_mass > 50")
+            elif sel_type == 'tight':
+                df = df.Filter("WW_mass > 70")
 
 
         #########
-        ### CUT 12: dR(l_WW, l_WW)
+        ### CUT 11: dR(l_WW, l_WW)
         #########  
-        if sel_type > 0:  # apply the loose or tight selections
-            if ecm == '240':
-                df = df.Filter("WW_leps_dR > 0.25")
-            elif ecm == '365':
-                if sel_type == 1 or sel_type == 5:  # loose
-                    df = df.Filter("WW_leps_dR > 0.1 && WW_leps_dR < 4.0")
-                elif sel_type == 2:  # tight
-                    df = df.Filter("WW_leps_dR > 0.1")
+        if ecm == '240':
+            df = df.Filter("WW_leps_dR > 0.25")
+        elif ecm == '365':
+            if sel_type == 'loose' or sel_type == 'medium':
+                df = df.Filter("WW_leps_dR > 0.1 && WW_leps_dR < 4.0")
+            elif sel_type == 'tight':
+                df = df.Filter("WW_leps_dR > 0.1")
 
 
         #########
-        ### CUT 13: dR(Z->ll, WW*)
+        ### CUT 12: dR(Z->ll, WW*)
         #########  
-        if sel_type > 0:
-            if ecm == '365':
-                if sel_type == 5:  # medium
-                    df = df.Filter("zll_WW_dR > 3.0")
+        if ecm == '365':
+            if sel_type == 'medium':
+                df = df.Filter("zll_WW_dR > 3.0")
             
-            
+
+        #########
+        ### CUT 13: dR(l1, l2)
+        #########  
+        if ecm == '365':
+            if sel_type == 'medium':
+                df = df.Filter("zll_leps_dR < 3.0")
+
+        
         if doInference:
             tmva_helper = TMVAHelperXGB(bdt_model_path, "bdt_model") # read the XGBoost training
             df = tmva_helper.run_inference(df, col_name="mva_score") # by default, makes a new column mva_score
@@ -442,7 +461,10 @@ class RDFanalysis():
             "lep2_p",
             "lep3_p",
             "muons_no",
+            "muons_q",
             "electrons_no",
+            "electrons_q",
+            "n_leptons",
             
             # Z->ll system
             "zll_m",
@@ -492,6 +514,14 @@ class RDFanalysis():
             
             "ww_leptonic",
         ]
+        
+        if lepton_iso != -999:
+            branchList += [
+                "muons_iso",
+                "electrons_iso",
+                "n_leptons_iso",
+            ]
+
 
         if doInference:
             branchList.append("mva_score")

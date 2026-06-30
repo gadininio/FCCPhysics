@@ -3,10 +3,16 @@
 Run with:
     ecm=240 sel_type=1 fccanalysis run histmaker.py
     ecm=365 sel_type=5 fccanalysis run histmaker.py
-    ecm=365 sel_type=5 chi2=0.1 fccanalysis run histmaker.py
+    ecm=365 sel_type=8 fccanalysis run histmaker.py
+
+Use different chi2 coeff for the resonance builder:
+    ecm=365 sel_type=5 chi2=1.0 fccanalysis run histmaker.py
+
+Add lepton isolation cut:
+    ecm=365 sel_type=5 chi2=1.0 iso=3 fccanalysis run histmaker.py
 
 Full run:
-    ecm=365 sel_type=5 fullrun=true fccanalysis run histmaker.py
+    ecm=365 sel_type=5 chi2=1.0 fullrun=true fccanalysis run histmaker.py
 
 Full run for training:
     ecm=365 sel_type=5 fullrun=true training=true fccanalysis run histmaker.py
@@ -15,6 +21,7 @@ Selection types (sel_type):
     0: preselections only
     1: loose selections
     5: medium selections (loose + dR(Z->ll, WW*) cut)
+    8: medium optimized for chi2=1.0
     7: firm selections (medium + lepton isolation)
     6: tight selections
     2: tightest selections
@@ -34,8 +41,11 @@ sel_type = int(os.environ.get("sel_type", 0))  # 0: presel, 1: loose, 2: tightes
 is_training = os.environ.get("training", "False").lower() in ("true", "1")
 chi2_coeff_default = 0.4
 chi2_coeff = float(os.environ.get("chi2", chi2_coeff_default))
+lepton_iso = float(os.environ.get("iso", -999))  # default isolation cut for firm selection
 
-print(f"Running with fraction={fraction}, nchunks={nchunks}, debug={debug}, fullrun={fullrun}, ecm={ecm}, sel_type={sel_type}, training={is_training}, chi2_coeff={chi2_coeff}")
+if sel_type == 8: chi2_coeff = 1.0  # el_type=8 is medium optimized for chi2=1.0
+
+print(f"Running with fraction={fraction}, nchunks={nchunks}, debug={debug}, fullrun={fullrun}, ecm={ecm}, sel_type={sel_type}, training={is_training}, chi2_coeff={chi2_coeff}, lepton_iso={lepton_iso}")
 
 
 if fullrun and not debug:
@@ -88,7 +98,7 @@ prodTag     = "FCCee/winter2023/IDEA/" if not is_training else "FCCee/winter2023
 procDict = "FCCee_procDict_winter2023_IDEA.json" if not is_training else "FCCee_procDict_winter2023_training_IDEA.json"
 
 # additional/custom C++ functions, defined in header files (optional)
-includePaths = ["../../functions.h"]
+includePaths = ["../functions.h"]
 
 # Define the input dir (optional)
 #inputDir    = "outputs/FCCee/higgs/mH-recoil/mumu/stage1"
@@ -98,6 +108,7 @@ includePaths = ["../../functions.h"]
 if sel_type == 0:   output_fix = "presel"
 elif sel_type == 1: output_fix = "loose"
 elif sel_type == 5: output_fix = "medium3"
+elif sel_type == 8: output_fix = "medium5"
 elif sel_type == 7: output_fix = "firm"
 elif sel_type == 6: output_fix = "tight"
 elif sel_type == 2: output_fix = "tightest"
@@ -106,11 +117,20 @@ elif sel_type == 3: output_fix = "loose_norecoil"
 elif sel_type == 4: output_fix = "tightest_norecoil"
 
 if is_training: output_fix += "_training"
+
 if debug: output_fix += "_debug"
 elif fullrun: output_fix += "_full"
 
 if chi2_coeff != chi2_coeff_default:
     output_fix += f"_chi2-{chi2_coeff}"
+
+if lepton_iso != -999: output_fix += f"_iso-{lepton_iso}"
+elif sel_type == 7: lepton_iso = 0.25  # default isolation cut for firm selection
+
+# # get time stamp for the output directory
+# import datetime
+# timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+# output_fix += f"_{timestamp}"
 
 # output_fix = ""
 # if debug: output_fix = "debug/"
@@ -146,6 +166,7 @@ bins_m_ll_large = (n_bins*2, 0, n_bins*2) # 100 MeV bins
 bins_p_ll = (n_bins, 0, n_bins) # 100 MeV bins
 bins_recoil = (n_bins, 0, n_bins) # 1 GeV bins
 bins_cosThetaMiss = (10000, 0, 1)
+bins_q2 = (150000, -150000, 0)
 
 bins_theta = (500, -5, 5)
 bins_eta = (600, -3, 3)
@@ -198,10 +219,10 @@ def build_graph(df, dataset):
     df = df.Define("muons_q", "FCCAnalyses::ReconstructedParticle::get_charge(muons)")
     df = df.Define("muons_no", "FCCAnalyses::ReconstructedParticle::get_n(muons)")
 
-    if sel_type == 7:  # firm selection, apply lepton isolation
+    if sel_type == 7 or lepton_iso != -999:  # firm selection, apply lepton isolation
         # compute the muon isolation and store muons with an isolation cut of 0.25 in a separate column muons_sel_iso
         df = df.Define("muons_iso", "FCCAnalyses::ZHfunctions::coneIsolation(0.01, 0.5)(muons, ReconstructedParticles)")
-        df = df.Define("muons_sel_iso", "FCCAnalyses::ZHfunctions::sel_iso(0.25)(muons, muons_iso)")
+        df = df.Define("muons_sel_iso", f"FCCAnalyses::ZHfunctions::sel_iso({lepton_iso})(muons, muons_iso)")
 
 
     # define electrons
@@ -216,10 +237,10 @@ def build_graph(df, dataset):
     df = df.Define("electrons_q", "FCCAnalyses::ReconstructedParticle::get_charge(electrons)")
     df = df.Define("electrons_no", "FCCAnalyses::ReconstructedParticle::get_n(electrons)")
 
-    if sel_type == 7:  # firm selection, apply lepton isolation
+    if sel_type == 7 or lepton_iso != -999:  # firm selection, apply lepton isolation
         # compute the electron isolation and store electrons with an isolation cut of 0.25 in a separate column electrons_sel_iso
         df = df.Define("electrons_iso", "FCCAnalyses::ZHfunctions::coneIsolation(0.01, 0.5)(electrons, ReconstructedParticles)")
-        df = df.Define("electrons_sel_iso", "FCCAnalyses::ZHfunctions::sel_iso(0.25)(electrons, electrons_iso)")
+        df = df.Define("electrons_sel_iso", f"FCCAnalyses::ZHfunctions::sel_iso({lepton_iso})(electrons, electrons_iso)")
 
 
     # baseline histograms, before any selection cuts (store with _cut0)
@@ -229,7 +250,7 @@ def build_graph(df, dataset):
     results.append(df.Histo1D(("muons_phi_cut0", "", *bins_phi), "muons_phi"))
     results.append(df.Histo1D(("muons_q_cut0", "", *bins_charge), "muons_q"))
     results.append(df.Histo1D(("muons_no_cut0", "", *bins_count), "muons_no"))
-    if sel_type == 7:
+    if sel_type == 7 or lepton_iso != -999:
         results.append(df.Histo1D(("muons_iso_cut0", "", *bins_iso), "muons_iso"))
 
     results.append(df.Histo1D(("electrons_all_p_cut0", "", *bins_p_mu), "electrons_all_p"))
@@ -238,7 +259,7 @@ def build_graph(df, dataset):
     results.append(df.Histo1D(("electrons_phi_cut0", "", *bins_phi), "electrons_phi"))
     results.append(df.Histo1D(("electrons_q_cut0", "", *bins_charge), "electrons_q"))
     results.append(df.Histo1D(("electrons_no_cut0", "", *bins_count), "electrons_no"))
-    if sel_type == 7:
+    if sel_type == 7 or lepton_iso != -999:
         results.append(df.Histo1D(("electrons_iso_cut0", "", *bins_iso), "electrons_iso"))
 
 
@@ -272,7 +293,7 @@ def build_graph(df, dataset):
 
 
     #########
-    ### CUT 1: exactly 4 isolated leptons (for `firm` selections only)
+    ### CUT 1a: exactly 4 isolated leptons (for `firm` selections only)
     #########
     if sel_type == 7:  # firm selection, use isolated leptons
         df = df.Define("n_leptons_iso", "muons_sel_iso.size() + electrons_sel_iso.size()")
@@ -281,6 +302,12 @@ def build_graph(df, dataset):
         results.append(df.Histo1D(("cutFlow", "", *bins_count), f"cut{icut}"))
         icut += 1
 
+    if lepton_iso != -999:  # leptpn isolation is specified, apply isolation cut
+        df = df.Define("n_leptons_iso", "muons_sel_iso.size() + electrons_sel_iso.size()")
+        df = df.Filter("n_leptons_iso == 4")
+        df = df.Define(f"cut{icut}", str(icut))
+        results.append(df.Histo1D(("cutFlow", "", *bins_count), f"cut{icut}"))
+        icut += 1
 
 
     #########
@@ -318,15 +345,15 @@ def build_graph(df, dataset):
     df = df.Define("lep2_iso", "leptons_iso[2]")
     df = df.Define("lep3_iso", "leptons_iso[3]")
     
-    df = df.Define("lep0_iso_log", "log(leptons_iso[0] + 1e-6)")
-    df = df.Define("lep1_iso_log", "log(leptons_iso[1] + 1e-6)")
-    df = df.Define("lep2_iso_log", "log(leptons_iso[2] + 1e-6)")
-    df = df.Define("lep3_iso_log", "log(leptons_iso[3] + 1e-6)") 
+    df = df.Define("lep0_iso_log", "log10(leptons_iso[0] + 1e-10)")
+    df = df.Define("lep1_iso_log", "log10(leptons_iso[1] + 1e-10)")
+    df = df.Define("lep2_iso_log", "log10(leptons_iso[2] + 1e-10)")
+    df = df.Define("lep3_iso_log", "log10(leptons_iso[3] + 1e-10)") 
     
-    results.append(df.Histo1D(("lep0_iso_cut2", "", *bins_iso), "lep0_iso"))
-    results.append(df.Histo1D(("lep1_iso_cut2", "", *bins_iso), "lep1_iso"))
-    results.append(df.Histo1D(("lep2_iso_cut2", "", *bins_iso), "lep2_iso"))
-    results.append(df.Histo1D(("lep3_iso_cut2", "", *bins_iso), "lep3_iso"))    
+    results.append(df.Histo1D(("lep0_iso_log_cut2", "", *bins_iso), "lep0_iso_log"))
+    results.append(df.Histo1D(("lep1_iso_log_cut2", "", *bins_iso), "lep1_iso_log"))
+    results.append(df.Histo1D(("lep2_iso_log_cut2", "", *bins_iso), "lep2_iso_log"))
+    results.append(df.Histo1D(("lep3_iso_log_cut2", "", *bins_iso), "lep3_iso_log"))    
     
     # leptons p
     df = df.Define("leptons_p", "FCCAnalyses::ReconstructedParticle::get_p(leptons)")
@@ -353,7 +380,7 @@ def build_graph(df, dataset):
                 df = df.Filter("lep2_p > 10 && lep2_p < 80")
                 df = df.Filter("lep3_p > 10 && lep3_p < 75")
         elif ecm == '365':
-            if sel_type == 1 or sel_type == 3 or sel_type == 5 or sel_type == 6 or sel_type == 7:  # loose (with or without m_rec cut)
+            if sel_type == 1 or sel_type == 3 or sel_type == 5 or sel_type == 6 or sel_type == 7 or sel_type == 8:  # loose (with or without m_rec cut)
                 results.append(df.Histo1D(("lep0_p_cut2a", "", *bins_p_mu), "lep0_p"))
                 df = df.Filter("lep0_p > 20 && lep0_p < 165")
                 results.append(df.Histo1D(("lep1_p_cut2b", "", *bins_p_mu), "lep1_p"))
@@ -411,16 +438,24 @@ def build_graph(df, dataset):
     df = df.Define("true_lepton2_p",     "pairing_info[4]")
     df = df.Define("truth_lepton_dR",    "pairing_info[5]")
 
+    results.append(df.Histo1D(("eff_total_cut4", "Overall Pairing Efficiency; ; Efficiency", 2, -0.5, 1.5), "is_correct_pairing"))
+    results.append(df.Histo1D(("true_Z_p_cut4", "True Z Momentum; p_{Z} [GeV]; Events", 100, 0, 250), "true_Z_p"))
+    results.append(df.Histo1D(("true_Z_mass_cut4", "True Z Mass; m_{Z} [GeV]; Events", 100, 0, 200), "true_Z_mass"))
+    results.append(df.Histo1D(("true_lepton1_p_cut4", "True Lepton 1 Momentum; p_{l1} [GeV]; Events", 100, 0, 250), "true_lepton1_p"))
+    results.append(df.Histo1D(("true_lepton2_p_cut4", "True Lepton 2 Momentum; p_{l2} [GeV]; Events", 100, 0, 250), "true_lepton2_p"))
+    results.append(df.Histo1D(("truth_lepton_dR_cut4", "dR between the two leptons from the Z decay; dR; Events", 50, 0, 5), "truth_lepton_dR"))
     
     df = df.Define("zll", "Vec_rp{zbuilder_result[0]}") # the Z
     df = df.Define("zll_tlv", "FCCAnalyses::ReconstructedParticle::get_tlv(zll, 0)")
     df = df.Define("zll_m", "FCCAnalyses::ReconstructedParticle::get_mass(zll)[0]") # Z mass
     df = df.Define("zll_p", "FCCAnalyses::ReconstructedParticle::get_p(zll)[0]") # momentum of the Z
+    df = df.Define("zll_pt", "FCCAnalyses::ReconstructedParticle::get_pt(zll)[0]") # momentum of the Z
     df = df.Define("zll_theta", "FCCAnalyses::ReconstructedParticle::get_theta(zll)[0]") # momentum of the Z
     df = df.Define("zll_phi", "FCCAnalyses::ReconstructedParticle::get_phi(zll)[0]") # momentum of the Z
 
     # results.append(df.Histo1D(("zll_m_cut4", "", *bins_m_ll), "zll_m"))
     results.append(df.Histo1D(("zll_p_cut4", "", *bins_p_ll), "zll_p"))
+    results.append(df.Histo1D(("zll_pt_cut4", "", *bins_p_ll), "zll_pt"))
     results.append(df.Histo1D(("zll_theta_cut4", "", *bins_theta), "zll_theta"))
     results.append(df.Histo1D(("zll_phi_cut4", "", *bins_phi), "zll_phi"))
 
@@ -432,19 +467,24 @@ def build_graph(df, dataset):
     ## Study the Z-lepton candidates
     df = df.Define("zll_leps", "Vec_rp{zbuilder_result[1],zbuilder_result[2]}") # Z-lepton candidates
     df = df.Define("zll_leps_p", "FCCAnalyses::ReconstructedParticle::get_p(zll_leps)") # get the momentum of these 2 leptons
+    df = df.Define("zll_leps_pt", "FCCAnalyses::ReconstructedParticle::get_pt(zll_leps)") # get the momentum of these 2 leptons
     df = df.Define("zll_leps_theta", "FCCAnalyses::ReconstructedParticle::get_theta(zll_leps)") # get the theta of these 2 leptons
     df = df.Define("zll_leps_phi", "FCCAnalyses::ReconstructedParticle::get_phi(zll_leps)") # get the phi of these 2 leptons
     
     df = df.Define("zll_lep0_p", "zll_leps_p[0]")
+    df = df.Define("zll_lep0_pt", "zll_leps_pt[0]")
     df = df.Define("zll_lep0_theta", "zll_leps_theta[0]")
     df = df.Define("zll_lep0_phi", "zll_leps_phi[0]")
     df = df.Define("zll_lep1_p", "zll_leps_p[1]")
+    df = df.Define("zll_lep1_pt", "zll_leps_pt[1]")
     df = df.Define("zll_lep1_theta", "zll_leps_theta[1]")
     df = df.Define("zll_lep1_phi", "zll_leps_phi[1]")
     results.append(df.Histo1D(("zll_lep0_p_cut4", "", *bins_p_mu), "zll_lep0_p"))
+    results.append(df.Histo1D(("zll_lep0_pt_cut4", "", *bins_p_mu), "zll_lep0_pt"))
     results.append(df.Histo1D(("zll_lep0_theta_cut4", "", *bins_theta), "zll_lep0_theta"))
     results.append(df.Histo1D(("zll_lep0_phi_cut4", "", *bins_phi), "zll_lep0_phi"))
     results.append(df.Histo1D(("zll_lep1_p_cut4", "", *bins_p_mu), "zll_lep1_p"))
+    results.append(df.Histo1D(("zll_lep1_pt_cut4", "", *bins_p_mu), "zll_lep1_pt"))
     results.append(df.Histo1D(("zll_lep1_theta_cut4", "", *bins_theta), "zll_lep1_theta"))
     results.append(df.Histo1D(("zll_lep1_phi_cut4", "", *bins_phi), "zll_lep1_phi"))
 
@@ -463,6 +503,14 @@ def build_graph(df, dataset):
     
     df = df.Define("zll_acolinearity", "FCCAnalyses::ZHfunctions::acolinearity(zll_leps)")
     results.append(df.Histo1D(("zll_acolinearity_cut4", "", *bins_cosTheta), "zll_acolinearity"))
+    
+    # For the VBF componenet, the two "resonance" leptons Z->ll don't come from the Z, but they are the scattered electron and positron going in the forward direction. Compute q1^2 and q2^2 of the virtual radiated Z bosons using the 4-momenta of the scattered electrons and the beam electron and positron.
+    df = df.Define("vbf_q2_values", f"FCCAnalyses::ZHfunctions::vbf_q2_builder({ecm})(zll_leps)")
+    df = df.Define("vbf_q1_squared", "vbf_q2_values[0]")
+    df = df.Define("vbf_q2_squared", "vbf_q2_values[1]")    
+    results.append(df.Histo1D(("vbf_q1_squared_cut4", "", *bins_q2), "vbf_q1_squared"))
+    results.append(df.Histo1D(("vbf_q2_squared_cut4", "", *bins_q2), "vbf_q2_squared"))
+   
     
     ## Study the WW-lepton candidates
     df = df.Define("WW_leps", "Vec_rp{zbuilder_result[3],zbuilder_result[4]}") # the leptons 
@@ -527,6 +575,8 @@ def build_graph(df, dataset):
                 df = df.Filter("zll_m > 30 && zll_m < 200")
             if sel_type == 5 or sel_type == 7:  # medium or firm
                 df = df.Filter("zll_m > 71 && zll_m < 111")
+            elif sel_type == 8:  # medium (optimized for chi2=1.0)
+                df = df.Filter("zll_m > 61 && zll_m < 121")
             elif sel_type == 6:  # tight
                 df = df.Filter("zll_m > 50 && zll_m < 150")
             elif sel_type == 2:  # tightest
@@ -544,7 +594,7 @@ def build_graph(df, dataset):
         if ecm == '240':
             df = df.Filter("zll_p > 20 && zll_p < 70")
         elif ecm == '365':
-            if sel_type == 1 or sel_type == 3 or sel_type == 5 or sel_type == 7:  # loose (with or without m_rec cut)
+            if sel_type == 1 or sel_type == 3 or sel_type == 5 or sel_type == 7 or sel_type == 8:  # loose (with or without m_rec cut)
                 df = df.Filter("zll_p > 35 && zll_p < 155")
             elif sel_type == 6:  # tight
                 df = df.Filter("zll_p > 60 && zll_p < 155")
@@ -566,7 +616,7 @@ def build_graph(df, dataset):
             elif sel_type == 2:  # tight (with m_rec cut)
                 df = df.Filter("zll_recoil_m < 140 && zll_recoil_m > 120")
         elif ecm == '365':
-            if sel_type == 1 or sel_type == 5 or sel_type == 7:  # loose (with m_rec cut)
+            if sel_type == 1 or sel_type == 5 or sel_type == 7 or sel_type == 8:  # loose (with m_rec cut)
                 df = df.Filter("zll_recoil_m < 230 && zll_recoil_m > 115")
             elif sel_type == 6:  # tight
                 df = df.Filter("zll_recoil_m < 200 && zll_recoil_m > 115")
@@ -604,7 +654,7 @@ def build_graph(df, dataset):
             elif sel_type == 2 or sel_type == 4:  # tight (with or without m_rec cut)
                 df = df.Filter("missingEnergy > 30 && missingEnergy < 110")
         elif ecm == '365':
-            if sel_type == 1 or sel_type == 3 or sel_type == 5 or sel_type == 6 or sel_type == 7:  # loose (with or without m_rec cut)
+            if sel_type == 1 or sel_type == 3 or sel_type == 5 or sel_type == 6 or sel_type == 7 or sel_type == 8:  # loose (with or without m_rec cut)
                 df = df.Filter("missingEnergy > 20 && missingEnergy < 180")
             elif sel_type == 2 or sel_type == 4:  # tightest (with or without m_rec cut)
                 df = df.Filter("missingEnergy > 30 && missingEnergy < 160")
@@ -624,7 +674,7 @@ def build_graph(df, dataset):
             elif sel_type == 2 or sel_type == 4:  # tight (with or without m_rec cut)
                 df = df.Filter("WW_mass > 80 && WW_mass < 135")
         elif ecm == '365':
-            if sel_type == 1 or sel_type == 3 or sel_type == 5 or sel_type == 7:  # loose (with or without m_rec cut)
+            if sel_type == 1 or sel_type == 3 or sel_type == 5 or sel_type == 7 or sel_type == 8:  # loose (with or without m_rec cut)
                 df = df.Filter("WW_mass > 50")
             elif sel_type == 6:  # tight
                 df = df.Filter("WW_mass > 70")
@@ -641,7 +691,7 @@ def build_graph(df, dataset):
     # results.append(df.Histo1D(("WW_p_cut10", "", *bins_p_ll), "WW_p"))
     # if sel_type > 0:
     #     if ecm == '365':
-    #         if sel_type == 1 or sel_type == 3 or sel_type == 5 or sel_type == 7:  # loose (with or without m_rec cut)
+    #         if sel_type == 1 or sel_type == 3 or sel_type == 5 or sel_type == 7 or sel_type == 8:  # loose (with or without m_rec cut)
     #             df = df.Filter("WW_p > 100 && WW_p < 150")
     #         elif sel_type == 2 or sel_type == 4:  # tight (with or without m_rec cut)
     #             df = df.Filter("WW_p > 120 && WW_p < 150")
@@ -657,7 +707,7 @@ def build_graph(df, dataset):
         if ecm == '240':
             df = df.Filter("WW_leps_dR > 0.25")
         elif ecm == '365':
-            if sel_type == 1 or sel_type == 3 or sel_type == 5 or sel_type == 6 or sel_type == 7:  # loose (with or without m_rec cut)
+            if sel_type == 1 or sel_type == 3 or sel_type == 5 or sel_type == 6 or sel_type == 7 or sel_type == 8:  # loose (with or without m_rec cut)
                 df = df.Filter("WW_leps_dR > 0.1 && WW_leps_dR < 4.0")
             elif sel_type == 2 or sel_type == 4:  # tight (with or without m_rec cut)
                 df = df.Filter("WW_leps_dR > 0.1")
@@ -672,7 +722,7 @@ def build_graph(df, dataset):
     results.append(df.Histo1D(("zll_WW_dR_cut11", "", *bins_dR), "zll_WW_dR"))
     if sel_type > 0:
         if ecm == '365':
-            if sel_type == 5 or sel_type == 6 or sel_type == 7:  # medium or tight
+            if sel_type == 5 or sel_type == 6 or sel_type == 7 or sel_type == 8:  # medium or tight
                 df = df.Filter("zll_WW_dR > 3.0")
             df = df.Define(f"cut{icut}", str(icut))
             results.append(df.Histo1D(("cutFlow", "", *bins_count), f"cut{icut}"))
@@ -685,7 +735,7 @@ def build_graph(df, dataset):
     results.append(df.Histo1D(("zll_leps_dR_cut12", "", *bins_dR), "zll_leps_dR"))
     if sel_type > 0:
         if ecm == '365':
-            if sel_type == 5 or sel_type == 6 or sel_type == 7:  # medium or tight
+            if sel_type == 5 or sel_type == 6 or sel_type == 7 or sel_type == 8:  # medium or tight
                 df = df.Filter("zll_leps_dR < 3.0")
             df = df.Define(f"cut{icut}", str(icut))
             results.append(df.Histo1D(("cutFlow", "", *bins_count), f"cut{icut}"))
@@ -717,15 +767,18 @@ def build_graph(df, dataset):
     results.append(df.Histo1D(("zll_m_final", "", *bins_m_ll), "zll_m"))
     results.append(df.Histo1D(("zll_recoil_m_final", "", *bins_recoil_final), "zll_recoil_m"))
     results.append(df.Histo1D(("zll_p_final", "", *bins_p_ll), "zll_p"))
+    results.append(df.Histo1D(("zll_pt_final", "", *bins_p_ll), "zll_pt"))
     results.append(df.Histo1D(("zll_theta_final", "", *bins_theta), "zll_theta"))
     results.append(df.Histo1D(("zll_phi_final", "", *bins_phi), "zll_phi"))
 
     # zll leptons
     results.append(df.Histo1D(("zll_lep0_p_final", "", *bins_p_mu), "zll_lep0_p"))
+    results.append(df.Histo1D(("zll_lep0_pt_final", "", *bins_p_mu), "zll_lep0_pt"))
     results.append(df.Histo1D(("zll_lep0_theta_final", "", *bins_theta), "zll_lep0_theta"))
     results.append(df.Histo1D(("zll_lep0_phi_final", "", *bins_phi), "zll_lep0_phi"))
     results.append(df.Histo1D(("zll_lep0_p_index_final", "", 5, -1, 4), "zll_lep0_p_index"))  # Which muon is zll_lep0_p?
     results.append(df.Histo1D(("zll_lep1_p_final", "", *bins_p_mu), "zll_lep1_p"))
+    results.append(df.Histo1D(("zll_lep1_pt_final", "", *bins_p_mu), "zll_lep1_pt"))
     results.append(df.Histo1D(("zll_lep1_theta_final", "", *bins_theta), "zll_lep1_theta"))
     results.append(df.Histo1D(("zll_lep1_phi_final", "", *bins_phi), "zll_lep1_phi"))
     results.append(df.Histo1D(("zll_lep1_p_index_final", "", 5, -1, 4), "zll_lep1_p_index"))  # Which muon is zll_lep1_p?
@@ -733,7 +786,9 @@ def build_graph(df, dataset):
     results.append(df.Histo1D(("zll_leps_dR_final", "", *bins_dR), "zll_leps_dR"))
     results.append(df.Histo1D(("zll_leps_category_final", "", 4, -1, 3), "zll_leps_category"))
     results.append(df.Histo1D(("zll_acolinearity_final", "", *bins_cosTheta), "zll_acolinearity"))
-
+    results.append(df.Histo1D(("vbf_q1_squared_final", "", *bins_q2), "vbf_q1_squared"))
+    results.append(df.Histo1D(("vbf_q2_squared_final", "", *bins_q2), "vbf_q2_squared"))
+   
     # WW system
     results.append(df.Histo1D(("WW_mass_final", "", *bins_m_ll_large), "WW_mass"))
     results.append(df.Histo1D(("WW_p_final", "", *bins_p_ll), "WW_p"))
@@ -767,7 +822,7 @@ def build_graph(df, dataset):
     results.append(df.Histo1D(("true_lepton2_p_final", "True Lepton 2 Momentum; p_{l2} [GeV]; Events", 100, 0, 250), "true_lepton2_p"))
     results.append(df.Histo1D(("truth_lepton_dR_final", "dR between the two leptons from the Z decay; dR; Events", 50, 0, 5), "truth_lepton_dR"))
 
-    results.append(df.Histo1D(("eff_total", "Overall Pairing Efficiency; ; Efficiency", 2, -0.5, 1.5), "is_correct_pairing"))
+    results.append(df.Histo1D(("eff_total_final", "Overall Pairing Efficiency; ; Efficiency", 2, -0.5, 1.5), "is_correct_pairing"))
     
     # Profile histogram to plot Efficiency vs. True Z Momentum directly (y-axis is the mean of is_correct_pairing in each x-axis bin)
     # results.append(df.Profile1D(("eff_vs_Z_p", "Pairing Efficiency vs True Z Momentum; True p_{Z} [GeV]; Efficiency", 50, 0, 250), "true_Z_p", "is_correct_pairing"))

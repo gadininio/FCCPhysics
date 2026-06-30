@@ -53,21 +53,13 @@ cutList = {
 }
 
 
-# Dictionary for the ouput variable/hitograms.
-# - The key is the name of the variable in the output files.
-# - "cols" is the name of the variable in the input file
-# - "title" is the x-axis label of the histogram
-# - "bin" is (nbins,xmin,xmax)
-
-###Dictionary for the ouput variable/hitograms. The key is the name of the variable in the output files. "name" is the name of the variable in the input file, "title" is the x-axis label of the histogram, "bin" the number of bins of the histogram, "xmin" the minimum x-axis value and "xmax" the maximum x-axis value.
-
+# Dictionary for the ouput variable/hitograms. The key is the name of the output PDF file. "name" is the name of the variable in the input ROOT file, "title" is the x-axis label of the histogram, "bin" the number of bins of the histogram, "xmin" the minimum x-axis value and "xmax" the maximum x-axis value.
+# see FCCAnalyses/python/run_final_analysis.py lines 396-434
 
 histoList = {
-    "mva_score":{"cols": ["mva_score"], "title": "MVA score", "bins": [(100,0,1)]},
-    "zll_m":{"cols": ["zll_m"], "title": "m_{Z} (GeV)", "bins": [(250,0,250)]},
-    "zll_p":{"cols": ["zll_p"], "title": "p_{Z} (GeV)", "bins": [(250,0,250)]},
-    "zll_recoil_m":{"cols": ["zll_recoil_m"], "title": "Recoil (GeV)", "bins": [(250,0,250)]},
-    "zll_recoil_m_final":{"cols": ["zll_recoil_m"], "title": "Recoil (GeV)", "bins": [(200,120,140)]},
+    "mva_score": {"name": "mva_score", "title": "MVA score", "bin": 100, "xmin": 0, "xmax": 1},
+    "zll_m": {"name": "zll_m", "title": "m_{ll} [GeV]", "bin": 250, "xmin": 0, "xmax": 250},
+    "zll_p": {"name": "zll_p", "title": "p_{ll} [GeV]", "bin": 250, "xmin": 0, "xmax": 250},
+    "zll_recoil_m": {"name": "zll_recoil_m", "title": "Recoil [GeV]", "bin": 250, "xmin": 0, "xmax": 250},
+    "zll_recoil_m_final": {"name": "zll_recoil_m", "title": "Recoil [GeV]", "bin": 200, "xmin": 120, "xmax": 140},
 }
-
-# add all variables to plot here!

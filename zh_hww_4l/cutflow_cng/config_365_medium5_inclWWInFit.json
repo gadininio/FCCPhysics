@@ -1,6 +1,6 @@
 {
-  "name": "365_medium2_InclWWInFit",
-  "title": "Cutflow for 365 GeV - Medium2 Selection - Inclusive WW in Fit",
+  "name": "365_medium5_InclWWInFit",
+  "title": "Cutflow for 365 GeV - Medium5 Selection (optimized for chi2=1.0) - Inclusive WW in Fit",
   "signal_combined_name": "Z(ll)H",
   "scaleSig": 1.0,
   "cuts": [
@@ -9,14 +9,15 @@
     "2 OS pairs",
     "#geq1 SF pair",
     "p_{l_{1}},p_{l_{2}},p_{l_{3}},p_{l_{4}}",
-    "71 < m_{l^{+}l^{-}} < 111",
+    "61 < m_{l^{+}l^{-}} < 121",
     "35 < p_{l^{+}l^{-}} < 155",
     "115 < m_{rec} < 230",
     "|cos#theta_{miss}| < 0.98",
     "20 < E_{miss} < 180",
     "m_{WW*} > 50",
     "0.1<#DeltaR(l_{WW*,1},l_{WW*,2})<4.0",
-    "#DeltaR(Z#rightarrowll, WW*) > 3.0"
+    "#DeltaR(Z#rightarrowll, WW*) > 3.0",
+    "#DeltaR(l^{Z}_{1}, l^{Z}_{2}) < 3"
   ],
   "processes": {
     "signal": {

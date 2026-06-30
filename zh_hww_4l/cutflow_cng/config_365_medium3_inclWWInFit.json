@@ -1,6 +1,6 @@
 {
-  "name": "365_medium_InclWWInFit",
-  "title": "Cutflow for 365 GeV - Medium Selection - Inclusive WW in Fit",
+  "name": "365_medium3_InclWWInFit",
+  "title": "Cutflow for 365 GeV - Medium3 Selection - Inclusive WW in Fit",
   "signal_combined_name": "Z(ll)H",
   "scaleSig": 1.0,
   "cuts": [

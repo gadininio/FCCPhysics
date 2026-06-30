@@ -1,10 +1,13 @@
 
 '''
-Use a trained BDT model to compute MVA scores and add them to ROOT files.
+Use a trained BDT model to compute MVA scores and add them to ROOT files of the analysis samples.
 
 Run with:
     python3 apply_mva.py -e 240 -s loose_full
-    python3 apply_mva.py -e 365 -s loose_full
+    python3 apply_mva.py -e 365 -s medium_full
+
+or use a trained model from a different scheme:
+    python3 apply_mva.py -e 365 -s medium_full -m loose_full
 '''
 
 import uproot
@@ -26,6 +29,7 @@ parser = argparse.ArgumentParser()
 # parser.add_argument("-l", "--loose", action='store_true', default=False, help="Process full dataset")
 parser.add_argument("-e", "--ecm", default='240', type=str, help="Center-of-mass energy (240 or 365)", choices=['240', '365'])
 parser.add_argument("-s", "--scheme", default='loose_ful', type=str, help="Scheme")
+parser.add_argument("-m", "--model_scheme", default='', type=str, help="Use trained model from a different scheme.")
 args = parser.parse_args()
 
 ecm = args.ecm
@@ -54,7 +58,10 @@ elif ecm == '365':
     ]
 
 
-model_path = f'../../../outputs/higgs/zh_hww_4l/mva/ecm{ecm}/{scheme}/bdt_model.pkl'
+model_scheme = scheme if args.model_scheme == "" else args.model_scheme
+print(f"Using trained model from scheme: {model_scheme}")
+
+model_path = f'../../../outputs/higgs/zh_hww_4l/mva/ecm{ecm}/{model_scheme}/bdt_model.pkl'
 input_path = f'../../../outputs/higgs/zh_hww_4l/mva/ecm{ecm}/{scheme}/preselection/'
 output_path = f'../../../outputs/higgs/zh_hww_4l/mva/ecm{ecm}/{scheme}/preselection_with_bdt/'
 

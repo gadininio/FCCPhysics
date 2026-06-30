@@ -16,7 +16,7 @@ lumi = "10.8" if ecm == '240' else "3"
 # global parameters
 intLumi        = 1.
 intLumiLabel   = f"L = {lumi} ab^{{-1}}"
-ana_tex        = 'e^{+}e^{-}#rightarrow Z(l^{+}l^{-}) H#left[W(l#nu)W(l#nu)#right]'
+ana_tex        = 'e^{+}e^{-} #rightarrow Z(ll)H, H #rightarrow WW* #rightarrow l#nul#nu'
 delphesVersion = '3.4.2'
 energy         = int(ecm)
 collider       = 'FCC-ee'
@@ -31,7 +31,7 @@ plotStatUnc    = True
 
 
 variables = ['zll_recoil_m', 'zll_recoil_m_final', 'zll_m', 'zll_p', 'mva_score']
-rebin = [1, 1, 1, 1, 5] # uniform rebin per variable (optional)
+rebin = [10, 1, 1, 1, 5] # uniform rebin per variable (optional)
 
 ###Dictonnary with the analysis name as a key, and the list of selections to be plotted for this analysis. The name of the selections should be the same than in the final selection
 selections = {}
@@ -58,12 +58,12 @@ if ecm == '240':
     }
 
 elif ecm == '365':
-    if 'inclWWInFit' in scheme:
-        print('Using inclusive WW in fit.')
-        WW_samples = ['p8_ee_WW_ecm365']
-    else:
-        print('Using WW->ee + WW->mumu in fit.')
-        WW_samples = ['p8_ee_WW_ee_ecm365', 'p8_ee_WW_mumu_ecm365']
+    # if 'inclWWInFit' in scheme:
+    print('Using inclusive WW in fit.')
+    WW_samples = ['p8_ee_WW_ecm365']
+    # else:
+    #     print('Using WW->ee + WW->mumu in fit.')
+    #     WW_samples = ['p8_ee_WW_ee_ecm365', 'p8_ee_WW_mumu_ecm365']
     plots['ZH'] = {
         'signal': {'ZH':['wzp6_ee_eeH_HWW_ecm365', 'wzp6_ee_mumuH_HWW_ecm365']},
         'backgrounds': {'WW':WW_samples, 'ZZ':['p8_ee_ZZ_ecm365'], 'tt':['p8_ee_tt_ecm365']}

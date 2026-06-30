@@ -6,43 +6,50 @@
 - Run histmaker to create root files with histograms:
 
     Preselections only:
+        ecm=240 sel_type=0 fccanalysis run histmaker.py
         ecm=365 sel_type=0 fccanalysis run histmaker.py
 
-    Loose selections:
-        ecm=365 sel_type=1 fccanalysis run histmaker.py
+    Loose/Medium selections:
+        ecm=240 sel_type=1 fccanalysis run histmaker.py
+        ecm=365 sel_type=5 fccanalysis run histmaker.py
 
-    Tight selections:
-        ecm=365 sel_type=2 fccanalysis run histmaker.py
+    Medium selections with isolation:
+        ecm=365 sel_type=5 chi2=1.0 iso=3 fccanalysis run histmaker.py
 
     Full run:
-        ecm=365 sel_type=2 fullrun=true fccanalysis run histmaker.py
+        ecm=365 sel_type=5 chi2=1.0 iso=3 fullrun=true fccanalysis run histmaker.py
 
 ## Run plotter
 
 - Run plotter to procude pdf files combining all samples:
 
-    scheme=presel fccanalysis plots plots_ecm365.py
-    scheme=medium_inclWWInFit fccanalysis plots plots_ecm365.py
-    scheme=tight_inclWWInFit fccanalysis plots plots_ecm365.py
-
+    fccanalysis plots plots.py
+    scheme=medium3_full_chi2-1.0_iso-3.0 inclWW=true iso=true fccanalysis plots plots_ecm365.py
+    
 - Run cutflow:
 
     python3 detailed_cutflow.py \
-        -cfg ../zh_hww_4l/cutflow_cng/config_365_loose.json \
+        -cfg ../cutflow_cng/config_240_loose_allbkg.json \
+        -i ../../outputs/higgs/zh_hww_4l/histmaker/ecm240/hists/full_loose_20260126_112336/ \
+        -o ../../outputs/higgs/zh_hww_4l/histmaker/ecm240/plots/full_loose_20260126_112336/ll/ \
+        --latex
+
+    python3 detailed_cutflow.py \
+        -cfg ../cutflow_cng/config_365_loose.json \
         -i ../../outputs/higgs/zh_hww_4l/histmaker/ecm365/hists/loose_full/ \
         -o ../../outputs/higgs/zh_hww_4l/histmaker/ecm365/plots/loose_full/ll/ \
         --latex
 
     python3 detailed_cutflow.py \
-        -cfg ../zh_hww_4l/cutflow_cng/config_365_loose_training.json \
+        -cfg ../cutflow_cng/config_365_loose_training.json \
         -i ../../outputs/higgs/zh_hww_4l/histmaker/ecm365/hists/loose_training_full/ \
         -o ../../outputs/higgs/zh_hww_4l/histmaker/ecm365/plots/loose_training_full/ll/ \
         --latex
 
     python3 detailed_cutflow.py \
-        -cfg ../zh_hww_4l/cutflow_cng/config_365_medium3_inclWWInFit.json \
-        -i ../../outputs/higgs/zh_hww_4l/histmaker/ecm365/hists/medium3/ \
-        -o ../../outputs/higgs/zh_hww_4l/histmaker/ecm365/plots/medium3/ll/ \
+        -cfg ../cutflow_cng/config_365_medium4_inclWWInFit.json \
+        -i ../../outputs/higgs/zh_hww_4l/histmaker/ecm365/hists/medium4/ \
+        -o ../../outputs/higgs/zh_hww_4l/histmaker/ecm365/plots/medium4/ll/ \
         --latex
 
 - Cut optimization:
@@ -50,9 +57,9 @@
     Find window with best significance:
 
         python simple_cut_optim.py \
-            --path '../../outputs/higgs/zh_hww_4l/histmaker/ecm365/hists/loose' \
+            --path '../../outputs/higgs/zh_hww_4l/histmaker/ecm365/hists/medium3_chi2-1.0' \
             --ecm 365 \
-            --variables WW_leps_dR_cut9
+            --variables zll_m_cut4
 
     Get efficiencies per sample for given window:
 

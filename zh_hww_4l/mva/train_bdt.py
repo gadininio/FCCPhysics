@@ -82,8 +82,8 @@ if use_training:
             {'name': 'wzp6_ee_mumuH_HWW_ecm365', 'target': 1},
             {'name': 'p8_ee_ZZ_llX_ecm365', 'target': 0},
             {'name': 'p8_ee_ZZ_tautauX_ecm365', 'target': 0},
-            {'name': 'p8_ee_WW_ee_ecm365', 'target': 0},
-            {'name': 'p8_ee_WW_mumu_ecm365', 'target': 0},
+            # {'name': 'p8_ee_WW_ee_ecm365', 'target': 0},
+            # {'name': 'p8_ee_WW_mumu_ecm365', 'target': 0},
         ]
         
 else:

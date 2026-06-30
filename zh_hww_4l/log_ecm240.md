@@ -19,61 +19,42 @@ Cut 11     ΔR(l_WW*,1, l_WW*,2)>0.25       26.898          1.0777e+03 (98.1%)  
 Total                                                      70.5478%              68.3073%              72.9238%              0.0000%               0.0032%              
 
 
-# training without WW
+# number of entries (stat for training)
 
-[gino@lxplus944 utils]$ root -l -q 'PrintEntries.C("../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection/")'
+[gino@lxplus944 utils]$ root -l -q 'PrintEntries.C("../../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection/")'
+[SUCCESS] ../../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection//p8_ee_ZZ_ecm240.root: 1843 entries
+[SUCCESS] ../../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection//p8_ee_WW_ecm240.root: 110 entries
+[SUCCESS] ../../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection//wzp6_ee_eeH_HWW_ecm240_inc.root: 14654 entries
+[SUCCESS] ../../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection//wzp6_ee_eeH_HWW_ecm240.root: 12613 entries
+[SUCCESS] ../../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection//wzp6_ee_eeH_HWW_llnunu_ecm240_inc.root: 173896 entries
+[SUCCESS] ../../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection//wzp6_ee_eeH_HWW_llnunu_ecm240.root: 173896 entries
+[SUCCESS] ../../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection//wzp6_ee_mumuH_HWW_ecm240_inc.root: 15642 entries
+[SUCCESS] ../../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection//wzp6_ee_mumuH_HWW_ecm240.root: 13494 entries
+[SUCCESS] ../../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection//wzp6_ee_mumuH_HWW_llnunu_ecm240_inc.root: 185741 entries
+[SUCCESS] ../../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection//wzp6_ee_mumuH_HWW_llnunu_ecm240.root: 185741 entries
 
-Processing PrintEntries.C("../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection/")...
-Scanning directory: ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection/
---------------------------------------------------
-[SUCCESS] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection//p8_ee_WW_ecm240.root: 110 entries
-[SUCCESS] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection//p8_ee_ZZ_ecm240.root: 1843 entries
-[SUCCESS] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection//wzp6_ee_eeH_HWW_ecm240_inc.root: 14654 entries
-[SUCCESS] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection//wzp6_ee_eeH_HWW_ecm240.root: 12613 entries
-[SUCCESS] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection//wzp6_ee_eeH_HWW_llnunu_ecm240_inc.root: 173896 entries
-[SUCCESS] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection//wzp6_ee_eeH_HWW_llnunu_ecm240.root: 173896 entries
-[SUCCESS] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection//wzp6_ee_mumuH_HWW_ecm240_inc.root: 15642 entries
-[SUCCESS] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection//wzp6_ee_mumuH_HWW_ecm240.root: 13494 entries
-[SUCCESS] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection//wzp6_ee_mumuH_HWW_llnunu_ecm240_inc.root: 185741 entries
-[SUCCESS] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection//wzp6_ee_mumuH_HWW_llnunu_ecm240.root: 185741 entries
-[gino@lxplus944 utils]$ root -l -q 'PrintEntries.C("../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection/training")'
-
-Processing PrintEntries.C("../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection/training")...
-Scanning directory: ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection/training
---------------------------------------------------
-[SUCCESS] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection/training/p8_ee_ZZ_llX_ecm240.root: 30197 entries
-[SUCCESS] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection/training/p8_ee_ZZ_tautauX_ecm240.root: 26910 entries
-[FAIL] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection/training/p8_ee_WW_ecm240.root: Tree 'events' not found.
-[SUCCESS] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection/training/wzp6_ee_eeH_HWW_llnunu_ecm240.root: 152564 entries
-[SUCCESS] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection/training/wzp6_ee_mumuH_HWW_llnunu_ecm240_inc.root: 185829 entries
-[SUCCESS] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection/training/wzp6_ee_eeH_HWW_llnunu_ecm240_inc.root: 174037 entries
-[SUCCESS] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection/training/wzp6_ee_mumuH_HWW_llnunu_ecm240.root: 162660 entries
-[SUCCESS] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection/training/p8_ee_WW_ee_ecm240.root: 346 entries
-[SUCCESS] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection/training/p8_ee_WW_mumu_ecm240.root: 175 entries
+[gino@lxplus944 utils]$ root -l -q 'PrintEntries.C("../../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection/training")'
+[SUCCESS] ../../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection/training/p8_ee_ZZ_llX_ecm240.root: 30197 entries
+[SUCCESS] ../../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection/training/p8_ee_ZZ_tautauX_ecm240.root: 26910 entries
+[FAIL] ../../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection/training/p8_ee_WW_ecm240.root: 0 entries
+[SUCCESS] ../../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection/training/p8_ee_WW_ee_ecm240.root: 346 entries
+[SUCCESS] ../../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection/training/p8_ee_WW_mumu_ecm240.root: 175 entries
+[SUCCESS] ../../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection/training/wzp6_ee_eeH_HWW_llnunu_ecm240.root: 152564 entries
+[SUCCESS] ../../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection/training/wzp6_ee_mumuH_HWW_llnunu_ecm240_inc.root: 185829 entries
+[SUCCESS] ../../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection/training/wzp6_ee_eeH_HWW_llnunu_ecm240_inc.root: 174037 entries
+[SUCCESS] ../../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_trainedWithoutWW/preselection/training/wzp6_ee_mumuH_HWW_llnunu_ecm240.root: 162660 entries
 
 
-# training without WW, but use WWtraining samples as analysis samples
+==> train without WW, but use WW training samples (346+175=521 entries) as analysis samples (currently only 110 entries) for the fit.
 
-[gino@lxplus944 utils]$ root -l -q 'PrintEntries.C("../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full/preselection/")'
+# cutflow
 
-Processing PrintEntries.C("../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full/preselection/")...
-Scanning directory: ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full/preselection/
---------------------------------------------------
-[SUCCESS] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full/preselection//p8_ee_WW_ee_ecm240.root: 346 entries
-[SUCCESS] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full/preselection//p8_ee_WW_mumu_ecm240.root: 175 entries
-[SUCCESS] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full/preselection//p8_ee_ZZ_ecm240.root: 1843 entries
-[SUCCESS] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full/preselection//wzp6_ee_eeH_HWW_ecm240.root: 12613 entries
-[SUCCESS] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full/preselection//wzp6_ee_eeH_HWW_llnunu_ecm240.root: 173896 entries
-[SUCCESS] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full/preselection//wzp6_ee_mumuH_HWW_ecm240.root: 13494 entries
-[SUCCESS] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full/preselection//wzp6_ee_mumuH_HWW_llnunu_ecm240.root: 185741 entries
-[gino@lxplus944 utils]$ root -l -q 'PrintEntries.C("../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full/preselection/training")'
+  python3 detailed_cutflow.py \
+    -cfg ../zh_hww_4l/cutflow_cng/config_240_loose_allbkg.json \
+    -i ../../../outputs/higgs/zh_hww_4l/histmaker/ecm240/hists/full_loose_20260126_112336/ \
+    -o ../../../outputs/higgs/zh_hww_4l/histmaker/ecm240/plots/full_loose_20260126_112336/ll/
 
-Processing PrintEntries.C("../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full/preselection/training")...
-Scanning directory: ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full/preselection/training
---------------------------------------------------
-[SUCCESS] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full/preselection/training/p8_ee_ZZ_llX_ecm240.root: 30197 entries
-[SUCCESS] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full/preselection/training/p8_ee_ZZ_tautauX_ecm240.root: 26910 entries
-[SUCCESS] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full/preselection/training/wzp6_ee_eeH_HWW_llnunu_ecm240.root: 152564 entries
-[SUCCESS] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full/preselection/training/wzp6_ee_eeH_HWW_llnunu_ecm240_inc.root: 174037 entries
-[SUCCESS] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full/preselection/training/wzp6_ee_mumuH_HWW_llnunu_ecm240.root: 162660 entries
-[SUCCESS] ../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full/preselection/training/wzp6_ee_mumuH_HWW_llnunu_ecm240_inc.root: 185829 entries
+  python3 detailed_cutflow.py \
+    -cfg ../zh_hww_4l/cutflow_cng/config_240_loose.json \
+    -i ../../../outputs/higgs/zh_hww_4l/histmaker/ecm240/hists/full_loose_20260126_112336/ \
+    -o ../../../outputs/higgs/zh_hww_4l/histmaker/ecm240/plots/full_loose_20260126_112336/ll/

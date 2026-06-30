@@ -1,0 +1,35 @@
+{
+  "name": "240_loose",
+  "title": "Cutflow for 240 GeV - Loose selection",
+  "signal_combined_name": "Z(ll)H",
+  "scaleSig": 1.0,
+  "cuts": [
+    "All events",
+    "4 leptons",
+    "2 OS pairs",
+    "#geq1 SF pair",
+    "Leptons p",
+    "76 < m_{l^{+}l^{-}} < 106",
+    "20 < p_{l^{+}l^{-}} < 70",
+    "120 < m_{rec} < 145",
+    "|cos#theta_{miss}| < 0.98",
+    "20 < E_{miss} < 120",
+    "60 < m_{WW*} < 135",
+    "#DeltaR(l_{WW*},l_{WW*}) > 0.25"
+  ],
+
+  "processes": {
+    "signal": {
+      "Z(ee)H": "wzp6_ee_eeH_HWW_llnunu_ecm240",
+      "Z(mumu)H": "wzp6_ee_mumuH_HWW_llnunu_ecm240"
+    },
+    "backgrounds": {
+      "ZZ": "p8_ee_ZZ_ecm240",
+      "WW": "p8_ee_WW_ecm240",
+      "Z": [
+        "wzp6_ee_ee_Mee_30_150_ecm240", 
+        "wzp6_ee_mumu_ecm240"
+      ]
+    }
+  }
+}
