@@ -60,7 +60,7 @@ if ecm == '240':
         # 'wzp6_ee_ee_Mee_30_150_ecm240':{'fraction': fraction, 'chunks': nchunks},
         # 'wzp6_ee_mumu_ecm240':{'fraction': fraction, 'chunks': nchunks},
         # 'wzp6_ee_tautau_ecm240':{'fraction': fraction, 'chunks': nchunks},
-        'wzp6_ee_eeH_HWW_llnunu_ecm240':{'fraction': 1},
+        'wzp6_ee_eeH_HWW_llnunu_ecm240':{'fraction': 1}, # note that l=e,mu,tau, so w_leptonic_filter should still be applied!
         'wzp6_ee_mumuH_HWW_llnunu_ecm240':{'fraction': 1},
     }
 elif ecm == '365':
@@ -127,10 +127,11 @@ if chi2_coeff != chi2_coeff_default:
 if lepton_iso != -999: output_fix += f"_iso-{lepton_iso}"
 elif sel_type == 7: lepton_iso = 0.25  # default isolation cut for firm selection
 
-# # get time stamp for the output directory
-# import datetime
-# timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-# output_fix += f"_{timestamp}"
+# get time stamp for the output directory
+from datetime import datetime
+now = datetime.now()
+dt_string = now.strftime("%Y%m%d_%H%M%S")
+output_fix += f"_{dt_string}"
 
 # output_fix = ""
 # if debug: output_fix = "debug/"
@@ -350,10 +351,10 @@ def build_graph(df, dataset):
     df = df.Define("lep2_iso_log", "log10(leptons_iso[2] + 1e-10)")
     df = df.Define("lep3_iso_log", "log10(leptons_iso[3] + 1e-10)") 
     
-    results.append(df.Histo1D(("lep0_iso_log_cut2", "", *bins_iso), "lep0_iso_log"))
-    results.append(df.Histo1D(("lep1_iso_log_cut2", "", *bins_iso), "lep1_iso_log"))
-    results.append(df.Histo1D(("lep2_iso_log_cut2", "", *bins_iso), "lep2_iso_log"))
-    results.append(df.Histo1D(("lep3_iso_log_cut2", "", *bins_iso), "lep3_iso_log"))    
+    results.append(df.Histo1D(("lep0_iso_log_cut2", "", *bins_iso_log), "lep0_iso_log"))
+    results.append(df.Histo1D(("lep1_iso_log_cut2", "", *bins_iso_log), "lep1_iso_log"))
+    results.append(df.Histo1D(("lep2_iso_log_cut2", "", *bins_iso_log), "lep2_iso_log"))
+    results.append(df.Histo1D(("lep3_iso_log_cut2", "", *bins_iso_log), "lep3_iso_log"))    
     
     # leptons p
     df = df.Define("leptons_p", "FCCAnalyses::ReconstructedParticle::get_p(leptons)")

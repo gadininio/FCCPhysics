@@ -11,6 +11,7 @@ Use inclusive WW:
 Plot lepton isolation:
     scheme=presel_chi2-1.0 inclWW=true iso=true no_new=true fccanalysis plots plots_ecm365.py
     scheme=medium3 inclWW=true iso=true fccanalysis plots plots_ecm365.py
+    scheme=medium3_chi2-1.0 inclWW=true iso=true fccanalysis plots plots_ecm365.py
     scheme=medium3_full_chi2-1.0_iso-3.0 inclWW=true iso=true fccanalysis plots plots_ecm365.py
     
 Compare signal Z(ee)H(WW) vs Z(mumu)H(WW):
@@ -452,66 +453,68 @@ hists["lep3_p_final"] = {
 
 if '_iso' in scheme or plot_lepton_iso:
     
-    # # Before cuts
-    # hists["lep0_iso_cut2"] = {
-    #     "output":   "lep0_iso_cut2",
-    #     "logy":     False,
-    #     "stack":    False,
-    #     "rebin":    500,
-    #     "xmin":     -11,
-    #     "xmax":     3,
-    #     # "ymin":     10,
-    #     # "ymax":     100000,
-    #     "xtitle":   "l_{1} isolation",
-    #     "ytitle":   "Events ",
-    #     # "scaleSig": 100,
-    #     "extralab": "Before lepton p_{l} cuts",
-    # }
+    if is_plot_new:
+        
+        # Before cuts
+        hists["lep0_iso_log_cut2"] = {
+            "output":   "lep0_iso_log_cut2",
+            "logy":     True,
+            "stack":    False,
+            "rebin":    250,
+            "xmin":     -11,
+            "xmax":     3,
+            # "ymin":     10,
+            # "ymax":     100000,
+            "xtitle":   "log_{10}(Iso_{l_{1}}+10^{-10})",
+            "ytitle":   "Events ",
+            # "scaleSig": 100,
+            "extralab": "Before leptons p cuts",
+        }
 
-    # hists["lep1_iso_cut2"] = {
-    #     "output":   "lep1_iso_cut2",
-    #     "logy":     False,
-    #     "stack":    False,
-    #     "rebin":    500,
-    #     "xmin":     -11,
-    #     "xmax":     3,
-    #     # "ymin":     10,
-    #     # "ymax":     100000,
-    #     "xtitle":   "l_{2} isolation",
-    #     "ytitle":   "Events ",
-    #     # "scaleSig": 100,
-    #     "extralab": "Before lepton p_{l} cuts",
-    # }
+        hists["lep1_iso_log_cut2"] = {
+            "output":   "lep1_iso_log_cut2",
+            "logy":     True,
+            "stack":    False,
+            "rebin":    250,
+            "xmin":     -11,
+            "xmax":     3,
+            # "ymin":     10,
+            # "ymax":     100000,
+            "xtitle":   "log_{10}(Iso_{l_{2}}+10^{-10})",
+            "ytitle":   "Events ",
+            # "scaleSig": 100,
+            "extralab": "Before leptons p cuts",
+        }
 
-    # hists["lep2_iso_cut2"] = {
-    #     "output":   "lep2_iso_cut2",
-    #     "logy":     False,
-    #     "stack":    False,
-    #     "rebin":    500,
-    #     "xmin":     -11,
-    #     "xmax":     3,
-    #     # "ymin":     10,
-    #     # "ymax":     100000,
-    #     "xtitle":   "l_{3} isolation",
-    #     "ytitle":   "Events ",
-    #     # "scaleSig": 100,
-    #     "extralab": "Before lepton p_{l} cuts",
-    # }
+        hists["lep2_iso_log_cut2"] = {
+            "output":   "lep2_iso_log_cut2",
+            "logy":     True,
+            "stack":    False,
+            "rebin":    250,
+            "xmin":     -11,
+            "xmax":     3,
+            # "ymin":     10,
+            # "ymax":     100000,
+            "xtitle":   "log_{10}(Iso_{l_{3}}+10^{-10})",
+            "ytitle":   "Events ",
+            # "scaleSig": 100,
+            "extralab": "Before leptons p cuts",
+        }
 
-    # hists["lep3_iso_cut2"] = {
-    #     "output":   "lep3_iso_cut2",
-    #     "logy":     False,
-    #     "stack":    False,
-    #     "rebin":    500,
-    #     "xmin":     -11,
-    #     "xmax":     3,
-    #     # "ymin":     10,
-    #     # "ymax":     100000,
-    #     "xtitle":   "l_{4} isolation",
-    #     "ytitle":   "Events ",
-    #     # "scaleSig": 100,
-    #     "extralab": "Before lepton p_{l} cuts",
-    # }
+        hists["lep3_iso_log_cut2"] = {
+            "output":   "lep3_iso_log_cut2",
+            "logy":     True,
+            "stack":    False,
+            "rebin":    250,
+            "xmin":     -11,
+            "xmax":     3,
+            # "ymin":     10,
+            # "ymax":     100000,
+            "xtitle":   "log_{10}(Iso_{l_{4}}+10^{-10})",
+            "ytitle":   "Events ",
+            # "scaleSig": 100,
+            "extralab": "Before leptons p cuts",
+        }
 
 
     # After all cuts, log scale

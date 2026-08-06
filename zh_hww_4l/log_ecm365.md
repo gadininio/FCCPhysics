@@ -794,6 +794,12 @@ python3 analyze_hists.py /afs/cern.ch/work/g/gino/private/FCC-ee/outputs/higgs/z
   wzp6_ee_mumuH_HWW_ecm365.root: Efficiency: 88.97%
   wzp6_ee_eeH_HWW_ecm365.root: Efficiency: 55.74%
 
+---
+
+python3 analyze_hists.py /afs/cern.ch/work/g/gino/private/FCC-ee/outputs/higgs/zh_hww_4l/histmaker/ecm365/hists/medium3/wzp6_ee_VBF_HWW_ecm365.root -n zll_m_cut4 --xmin 71 --xmax 111
+  Efficiency: 27.23%
+python3 analyze_hists.py /afs/cern.ch/work/g/gino/private/FCC-ee/outputs/higgs/zh_hww_4l/histmaker/ecm365/hists/medium3_chi2-1.0/wzp6_ee_VBF_HWW_ecm365.root -n zll_m_cut4 --xmin 71 --xmax 111
+  Efficiency: 7.48%
 
 # fit with ZZ only
 

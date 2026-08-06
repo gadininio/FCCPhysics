@@ -11,6 +11,7 @@ ecm = '240'  # '240' or '365'
 # scheme = 'full_20251125_134522' # n_leptons=4, with dR(Z,WW)>0.25 cut, bug in resonanceBuilder_mass_recoil_advanced fixed
 scheme = 'full_loose_20260126_112336' # loose cuts used as preselections for mva analysis
 # scheme = 'loose' # loose cuts used as preselections for mva analysis
+scheme = 'loose_20260806_155312'
 
 if flavor=='mumu':
     Z_leptons = '#mu^{+}#mu^{-}'

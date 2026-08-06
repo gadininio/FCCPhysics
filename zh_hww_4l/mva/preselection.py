@@ -86,6 +86,7 @@ if is_training:
     processList = {
         f'p8_ee_ZZ_llX_ecm{ecm}':{'fraction': fraction, 'chunks': nchunks},
         f'p8_ee_ZZ_tautauX_ecm{ecm}':{'fraction': fraction, 'chunks': nchunks},
+        f'p8_ee_ZZ_ecm{ecm}':{'fraction': fraction, 'chunks': nchunks},
         f'p8_ee_WW_ee_ecm{ecm}':{'fraction': fraction, 'chunks': nchunks},
         f'p8_ee_WW_mumu_ecm{ecm}':{'fraction': fraction, 'chunks': nchunks},
         f'p8_ee_WW_ecm{ecm}':{'fraction': fraction, 'chunks': nchunks},
@@ -125,9 +126,10 @@ if chi2_coeff != chi2_coeff_default: output_fix += f"_chi2-{chi2_coeff}"
 if lepton_iso != -999: output_fix += f"_iso-{lepton_iso}"
 
 # get time stamp for the output directory
-import datetime
-timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-output_fix += f"_{timestamp}"
+from datetime import datetime
+now = datetime.now()
+dt_string = now.strftime("%Y%m%d_%H%M%S")
+output_fix += f"_{dt_string}"
 
 outputDir   = f"../../../outputs/higgs/zh_hww_4l/mva/ecm{ecm}/{output_fix}/preselection/{'training/' if is_training else ''}"
 
