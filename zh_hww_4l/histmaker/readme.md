@@ -1,31 +1,48 @@
 
-# Cut-based analysis
+# Cut-based analysis --- commands
 
 ## Run histmaker
 
 - Run histmaker to create root files with histograms:
 
-    Preselections only:
-        ecm=240 sel_type=0 fccanalysis run histmaker.py
-        ecm=365 sel_type=0 fccanalysis run histmaker.py
+    for 240 GeV:
 
-    Loose/Medium selections:
-        ecm=240 sel_type=1 fccanalysis run histmaker.py
-        ecm=365 sel_type=5 fccanalysis run histmaker.py
+        Preselections only:
+            ecm=240 sel_type=0 fccanalysis run histmaker.py
 
-    Medium selections with isolation:
-        ecm=365 sel_type=5 chi2=1.0 iso=3 fccanalysis run histmaker.py
+        Loose selections:
+            ecm=240 sel_type=1 fullrun=true fccanalysis run histmaker.py
 
-    Full run:
-        ecm=365 sel_type=5 chi2=1.0 iso=3 fullrun=true fccanalysis run histmaker.py
+        Training samples: add `training=true`
+        
+
+    for 365 GeV:
+
+        Preselections only:
+            ecm=365 sel_type=0 fccanalysis run histmaker.py
+
+        Medium selections:
+            ecm=365 sel_type=5 fullrun=true fccanalysis run histmaker.py
+
+        Medium selections with lepton isolation cut (iso < 3) and f=1.0 in chi2 function:
+            ecm=365 sel_type=5 chi2=1.0 iso=3 fullrun=true fccanalysis run histmaker.py
+
+        Training samples: add `training=true`
+
 
 ## Run plotter
 
 - Run plotter to procude pdf files combining all samples:
 
-    fccanalysis plots plots.py
-    scheme=medium3_full_chi2-1.0_iso-3.0 inclWW=true iso=true fccanalysis plots plots_ecm365.py
+    for 240 GeV:
+        fccanalysis plots plots.py
     
+    for 365 GeV:
+        scheme=medium3_full_chi2-1.0_iso-3.0 inclWW=true iso=true fccanalysis plots plots_ecm365.py
+
+
+## Utils
+
 - Run cutflow:
 
     python3 detailed_cutflow.py \
@@ -68,6 +85,13 @@
             --ecm 365 \
             --variables lep3_iso_log_final -r 100 -xmin -15 -xmax -1
 
+- Get efficiency/total yield
+
+    python3 analyze_hists.py \
+        /afs/cern.ch/work/g/gino/private/FCC-ee/outputs/higgs/zh_hww_4l/histmaker/ecm365/hists/medium3_chi2-1.0/wzp6_ee_eeH_HWW_ecm365.root \
+        -n zll_m_cut4 --xmin 51 --xmax 131
+
+
 ## Run fit
 
 - Prepare the Combine-compatible datacards:
@@ -80,13 +104,3 @@
 
     cd /afs/cern.ch/work/g/gino/private/FCC-ee/outputs/higgs/zh_hww_4l/histmaker/ecm365/combine/tight_norecoil
     singularity exec /eos/project/f/fccsw-web/www/analysis/auxiliary/combine-standalone_v9.2.1.sif bash -c '/afs/cern.ch/work/g/gino/private/FCC-ee/outputs/higgs/zh_hww_4l/histmaker/ecm365/combine/tight_norecoil; text2workspace.py datacard.txt -o ws.root; combine -M MultiDimFit -v 10 --rMin 0.9 --rMax 1.1 --setParameters r=1 ws.root'
-
-
-
-singularity exec /eos/project/f/fccsw-web/www/analysis/auxiliary/combine-standalone_v9.2.1.sif bash -c '/afs/cern.ch/work/g/gino/private/FCC-ee/outputs/higgs/zh_hww_4l/combine/full; text2workspace.py datacard.txt -o ws.root; combine -M MultiDimFit -v 10 --rMin 0.9 --rMax 1.1 --setParameters r=1 ws.root'
-
-singularity exec /eos/project/f/fccsw-web/www/analysis/auxiliary/combine-standalone_v9.2.1.sif bash -c '/afs/cern.ch/work/g/gino/private/FCC-ee/outputs/higgs/zh_hww_4l/combine/full_20251125_134522; text2workspace.py datacard.txt -o ws.root; combine -M MultiDimFit -v 10 --rMin 0.9 --rMax 1.1 --setParameters r=1 ws.root'
-
-
-No BDT:   loose selections - including a cut on the recoil mass. Fit is done using the BDT score.
-With BDT: tight selections - no cut is applied on the recoil mass. Fit is done using the recoil mass.

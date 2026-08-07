@@ -60,6 +60,10 @@ if ecm == '240':
         'signal': {'ZH':['wzp6_ee_eeH_HWW_llnunu_ecm240', 'wzp6_ee_mumuH_HWW_llnunu_ecm240']},
         'backgrounds': {'WW':['p8_ee_WW_ecm240'], 'ZZ':['p8_ee_ZZ_ecm240']}
     }
+    # plots['ZH'] = {
+    #     'signal': {'ZH':['wzp6_ee_eeH_HWW_llnunu_ecm240', 'wzp6_ee_mumuH_HWW_llnunu_ecm240']},
+    #     'backgrounds': {'ZZ':['p8_ee_ZZ_ecm240']}
+    # }
 
 elif ecm == '365':
     # if 'inclWWInFit' in scheme:

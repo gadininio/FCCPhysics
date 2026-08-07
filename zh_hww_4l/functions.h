@@ -715,6 +715,27 @@ Vec_rp missingEnergy(float ecm, Vec_rp in, float p_cutoff = 0.0) {
     return ret;
 }
 
+// returns the missing mass from the missing energy vector
+float get_missing_mass(const Vec_rp& met_vec) {
+    if (met_vec.empty()) return -999.0;
+    
+    float e = met_vec[0].energy;
+    float px = met_vec[0].momentum.x;
+    float py = met_vec[0].momentum.y;
+    float pz = met_vec[0].momentum.z;
+    
+    float p2 = px * px + py * py + pz * pz;
+    float m2 = e * e - p2;
+    
+    // Protect against negative mass squared due to detector resolution
+    if (m2 > 0.0) {
+        return std::sqrt(m2);
+    } else {
+        // When p > E due to smearing, you can return 0 or -sqrt(-m2)
+        return 0.0; 
+    }
+}
+
 // calculate the cosine(theta) of the missing energy vector
 float get_cosTheta_miss(Vec_rp met){
     float costheta = 0.;

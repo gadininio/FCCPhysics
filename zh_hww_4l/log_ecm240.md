@@ -204,3 +204,148 @@ Considering analysis sample incl WW for the fit, but using HWW_llnunu without th
 
 without WW in the fit:
 2.92%
+
+
+ python simple_cut_optim.py \
+    --path '../../../outputs/higgs/zh_hww_4l/histmaker/ecm240/hists/loose_20260806_180441' \
+    --ecm 240 \
+    --variables WW_leps_mass_final -r 1 -xmin 5 -xmax 100
+
+    python3 detailed_cutflow.py \
+        -cfg ../cutflow_cng/config_240_loose2.json \
+        -i ../../outputs/higgs/zh_hww_4l/histmaker/ecm240/hists/loose_20260806_205359/ \
+        -o ../../outputs/higgs/zh_hww_4l/histmaker/ecm240/plots/loose_20260806_205359/ll/ 
+
+    python3 detailed_cutflow.py \
+        -cfg ../cutflow_cng/config_240_loose.json \
+        -i ../../outputs/higgs/zh_hww_4l/histmaker/ecm240/hists/loose_20260806_213653/ \
+        -o ../../outputs/higgs/zh_hww_4l/histmaker/ecm240/plots/loose_20260806_213653/ll/ 
+
+
+So it's more important to have high signal acceptance and better sig-bkg separation than good bkg rejection.
+Apparently, the cut for lepton3 p>10 had 92% signal efficiency (all the rest ~99.5%). Lowering to 5, total lepton p efficiency in signal is 99.6%, and total eff is not 75.76%:
+
+
+Cutflow for 240 GeV - Loose selection (loose_20260806_213653)
+/=====================================
+
+/#          Cut                             Significance    Z(ll)H                Z(ee)H                Z(mumu)H              ZZ                    WW                   
+---------- ------------------------------- --------------- --------------------- --------------------- --------------------- --------------------- ---------------------
+Cut 0      All events                      0.110           1.5277e+03 (100.0%)   7.8624e+02 (100.0%)   7.4141e+02 (100.0%)   1.4677e+07 (100.0%)   1.7754e+08 (100.0%)  
+Cut 1      4 leptons                       3.509           1.3583e+03 (88.9%)    6.9694e+02 (88.6%)    6.6132e+02 (89.2%)    1.3938e+05 (0.9%)     9.1086e+03 (0.0%)    
+Cut 2      2 OS pairs                      3.601           1.3583e+03 (100.0%)   6.9694e+02 (100.0%)   6.6132e+02 (100.0%)   1.3218e+05 (94.8%)    8.7427e+03 (96.0%)   
+Cut 3      ≥1 SF pair                      3.601           1.3583e+03 (100.0%)   6.9694e+02 (100.0%)   6.6132e+02 (100.0%)   1.3218e+05 (100.0%)   8.7427e+03 (100.0%)  
+Cut 4      Leptons p                       5.705           1.3527e+03 (99.6%)    6.9371e+02 (99.5%)    6.5903e+02 (99.7%)    5.0661e+04 (38.3%)    4.2098e+03 (48.2%)   
+Cut 5      76 < m_ll < 106                 6.293           1.2483e+03 (92.3%)    6.2593e+02 (90.2%)    6.2233e+02 (94.4%)    3.7382e+04 (73.8%)    7.1034e+02 (16.9%)   
+Cut 6      20 < p_ll < 70                  8.079           1.2368e+03 (99.1%)    6.1951e+02 (99.0%)    6.1726e+02 (99.2%)    2.1553e+04 (57.7%)    6.4382e+02 (90.6%)   
+Cut 7      120 < m_rec < 145               10.349          1.2099e+03 (97.8%)    6.0334e+02 (97.4%)    6.0661e+02 (98.3%)    1.2053e+04 (55.9%)    4.0625e+02 (63.1%)   
+Cut 8      |cosθ_miss| < 0.98              13.031          1.1858e+03 (98.0%)    5.9142e+02 (98.0%)    5.9436e+02 (98.0%)    6.6956e+03 (55.5%)    3.9912e+02 (98.2%)   
+Cut 9      20 < E_miss < 120               22.247          1.1857e+03 (100.0%)   5.9140e+02 (100.0%)   5.9434e+02 (100.0%)   1.2703e+03 (19.0%)    3.8487e+02 (96.4%)   
+Cut 10     60 < m_WW* < 135                25.599          1.1793e+03 (99.5%)    5.8806e+02 (99.4%)    5.9119e+02 (99.5%)    6.5073e+02 (51.2%)    2.9222e+02 (75.9%)   
+Cut 11     ΔR(l_WW*,l_WW*) > 0.25          26.664          1.1574e+03 (98.1%)    5.7720e+02 (98.2%)    5.8021e+02 (98.1%)    6.3644e+02 (97.8%)    9.0278e+01 (30.9%)   
+
+Total eff                                                  75.7640%              73.4131%              78.2571%              0.0043%               0.0001%              
+Entries                                                    337726                163640                174086                490                   38                   
+
+
+I tried to add two more cuts:
+
+Cutflow for 240 GeV - Loose2 selection (loose_20260806_205359)
+/======================================
+
+/#          Cut                             Significance    Z(ll)H                Z(ee)H                Z(mumu)H              ZZ                    WW                   
+---------- ------------------------------- --------------- --------------------- --------------------- --------------------- --------------------- ---------------------
+Cut 0      All events                      0.110           1.5277e+03 (100.0%)   7.8624e+02 (100.0%)   7.4141e+02 (100.0%)   1.4677e+07 (100.0%)   1.7754e+08 (100.0%)  
+Cut 1      4 leptons                       3.509           1.3583e+03 (88.9%)    6.9694e+02 (88.6%)    6.6132e+02 (89.2%)    1.3938e+05 (0.9%)     9.1086e+03 (0.0%)    
+Cut 2      2 OS pairs                      3.601           1.3583e+03 (100.0%)   6.9694e+02 (100.0%)   6.6132e+02 (100.0%)   1.3218e+05 (94.8%)    8.7427e+03 (96.0%)   
+Cut 3      ≥1 SF pair                      3.601           1.3583e+03 (100.0%)   6.9694e+02 (100.0%)   6.6132e+02 (100.0%)   1.3218e+05 (100.0%)   8.7427e+03 (100.0%)  
+Cut 4      Leptons p                       5.960           1.2519e+03 (92.2%)    6.4042e+02 (91.9%)    6.1148e+02 (92.5%)    4.1026e+04 (31.0%)    1.8412e+03 (21.1%)   
+Cut 5      76 < m_ll < 106                 6.356           1.1603e+03 (92.7%)    5.8126e+02 (90.8%)    5.7903e+02 (94.7%)    3.1779e+04 (77.5%)    3.8249e+02 (20.8%)   
+Cut 6      20 < p_ll < 70                  7.999           1.1497e+03 (99.1%)    5.7540e+02 (99.0%)    5.7431e+02 (99.2%)    1.9159e+04 (60.3%)    3.5161e+02 (91.9%)   
+Cut 7      120 < m_rec < 145               10.175          1.1249e+03 (97.8%)    5.6049e+02 (97.4%)    5.6438e+02 (98.3%)    1.0860e+04 (56.7%)    2.3757e+02 (67.6%)   
+Cut 8      |cosθ_miss| < 0.98              13.056          1.1025e+03 (98.0%)    5.4945e+02 (98.0%)    5.5302e+02 (98.0%)    5.7955e+03 (53.4%)    2.3282e+02 (98.0%)   
+Cut 9      20 < E_miss < 120               24.153          1.1024e+03 (100.0%)   5.4944e+02 (100.0%)   5.5300e+02 (100.0%)   7.4814e+02 (12.9%)    2.3282e+02 (100.0%)  
+Cut 10     60 < m_WW* < 135                26.030          1.0981e+03 (99.6%)    5.4713e+02 (99.6%)    5.5093e+02 (99.6%)    4.8188e+02 (64.4%)    1.9956e+02 (85.7%)   
+Cut 11     ΔR(l_WW*,l_WW*) > 0.25          26.767          1.0777e+03 (98.1%)    5.3706e+02 (98.2%)    5.4067e+02 (98.1%)    4.7928e+02 (99.5%)    6.4145e+01 (32.1%)   
+Cut 12     5 < m_l_W1,l_W2 < 80            27.190          1.0713e+03 (99.4%)    5.3381e+02 (99.4%)    5.3748e+02 (99.4%)    4.3122e+02 (90.0%)    4.9890e+01 (77.8%)   
+Cut 13     0 < m_miss < 80                 27.445          1.0681e+03 (99.7%)    5.3231e+02 (99.7%)    5.3578e+02 (99.7%)    4.0135e+02 (93.1%)    4.5139e+01 (90.5%)   
+
+Total eff                                                  69.9170%              67.7025%              72.2653%              0.0027%               0.0000%              
+Entries                                                    311668                150911                160757                309                   19                   
+
+
+Currently, running preselection.py corresponding to loose_20260806_213653 (no new selections; 10 -> 5).
+Added the following variables to branchList:
+    - WW_leps_dPhi
+    - WW_leps_mass
+    - missingMass
+Maybe can help for a better separation. 
+
+Maybe try to train with the few WW events?
+
+
+
+# 07/08/2026
+
+## loose_full_20260807_071918
+
+Not using WW for training, using analysis incl WW sample for fit.
+Training with additional variables:
+    - WW_leps_dPhi
+    - WW_leps_mass
+    - missingMass
+lep3_p>10 --> lep3_p>5 to increase signal acceptance.
+
+root -l -q 'PrintEntries.C("../../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_20260807_071918/preselection")'
+    p8_ee_ZZ_ecm240.root: 2419 entries
+    p8_ee_WW_ecm240.root: 175 entries
+    p8_ee_WW_ee_ecm240.root: 91 entries
+    p8_ee_WW_mumu_ecm240.root: 55 entries
+    wzp6_ee_mumuH_HWW_llnunu_ecm240_inc.root: 209566 entries
+    wzp6_ee_mumuH_HWW_llnunu_ecm240.root: 174086 entries
+    wzp6_ee_eeH_HWW_llnunu_ecm240_inc.root: 196450 entries
+    wzp6_ee_eeH_HWW_llnunu_ecm240.root: 163640 entries
+
+root -l -q 'PrintEntries.C("../../../outputs/higgs/zh_hww_4l/mva/ecm240/loose_full_20260807_071918/preselection/training")'
+    preselection/training/p8_ee_ZZ_ecm240.root: 1274 entries
+    preselection/training/p8_ee_ZZ_llX_ecm240.root: 30166 entries
+    preselection/training/p8_ee_ZZ_tautauX_ecm240.root: 34294 entries
+    preselection/training/p8_ee_WW_ecm240.root: 2 entries
+    preselection/training/p8_ee_WW_ee_ecm240.root: 573 entries
+    preselection/training/p8_ee_WW_mumu_ecm240.root: 309 entries
+    preselection/training/wzp6_ee_mumuH_HWW_llnunu_ecm240_inc.root: 209962 entries
+    preselection/training/wzp6_ee_mumuH_HWW_llnunu_ecm240.root: 174898 entries
+    preselection/training/wzp6_ee_eeH_HWW_llnunu_ecm240_inc.root: 196565 entries
+    preselection/training/wzp6_ee_eeH_HWW_llnunu_ecm240.root: 163818 entries
+
+Training AUC: 0.993523
+Testing AUC: 0.990910
+
+==> 3.08959% precision.
+
+
+without WW in the fit:
+
+==> 3.02117% precision.
+
+
+    python3 detailed_cutflow.py \
+        -cfg ../cutflow_cng/config_240_loose.json \
+        -i ../../outputs/higgs/zh_hww_4l/histmaker/ecm240/hists/loose_full_20260807_071945/ \
+        -o ../../outputs/higgs/zh_hww_4l/histmaker/ecm240/plots/loose_full_20260807_071945/ll/ 
+
+    python3 detailed_cutflow.py \
+        -cfg ../cutflow_cng/config_240_loose_allbkg.json \
+        -i ../../outputs/higgs/zh_hww_4l/histmaker/ecm240/hists/loose_full_20260807_071945/ \
+        -o ../../outputs/higgs/zh_hww_4l/histmaker/ecm240/plots/loose_full_20260807_071945/ll/      
+
+### combined fit
+
+With all bkg in the fit, combined fit: 2.9841%
+
+approximation: 1/sqrt(1/0.0759192^2 + 1/0.0308959^2) = 2.86%
+
+
+Use the latest:
+histmaker: loose_full_20260807_071918
+mva: loose_full_20260807_071918

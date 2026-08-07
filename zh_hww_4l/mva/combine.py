@@ -47,13 +47,14 @@ elif ecm == '365':
 
 # categories = ["recoil"]
 # hist_names = ["zll_recoil_m_final"]
-categories = ["MVA"]
+categories = [f"MVA_{ecm}"]
 hist_names = ["mva_score"]
 
 
 systs = {}
 
-systs['bkg_norm'] = {
+# For the simultaneous fit, treat the background normalization as a nuisance parameter with a 1% uncertainty, uncorrelated between the two center-of-mass energies.
+systs[f'bkg_norm_{ecm}'] = {
     'type': 'lnN',
     'value': 1.01,
     'procs': ['bkg'],

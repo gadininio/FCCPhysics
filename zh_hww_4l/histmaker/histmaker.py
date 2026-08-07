@@ -172,6 +172,7 @@ bins_q2 = (150000, -150000, 0)
 bins_theta = (500, -5, 5)
 bins_eta = (600, -3, 3)
 bins_phi = (500, -5, 5)
+bins_dPhi = (320, 0, 3.2)
 bins_dR = (1000, -10, 10)
 bins_cosTheta = (2000, -1, 1)
 
@@ -374,7 +375,7 @@ def build_graph(df, dataset):
                 df = df.Filter("lep0_p > 20 && lep0_p < 85")
                 df = df.Filter("lep1_p > 10 && lep1_p < 80")
                 df = df.Filter("lep2_p > 10 && lep2_p < 80")
-                df = df.Filter("lep3_p > 10 && lep3_p < 75")
+                df = df.Filter("lep3_p > 5  && lep3_p < 75")
             elif sel_type == 2 or sel_type == 4:  # tight (with or without m_rec cut)
                 df = df.Filter("lep0_p > 25 && lep0_p < 80")
                 df = df.Filter("lep1_p > 15 && lep1_p < 80")
@@ -534,7 +535,11 @@ def build_graph(df, dataset):
     
     df = df.Define("WW_lep0_tlv", "FCCAnalyses::ReconstructedParticle::get_tlv(WW_leps, 0)")
     df = df.Define("WW_lep1_tlv", "FCCAnalyses::ReconstructedParticle::get_tlv(WW_leps, 1)")
+    df = df.Define("WW_leps_mass", "(WW_lep0_tlv + WW_lep1_tlv).M()")
+    df = df.Define("WW_leps_dPhi", "std::abs(WW_lep0_tlv.DeltaPhi(WW_lep1_tlv))")
     df = df.Define("WW_leps_dR", "WW_lep0_tlv.DeltaR(WW_lep1_tlv)")
+    results.append(df.Histo1D(("WW_leps_mass_cut4", "", *bins_m_ll), "WW_leps_mass"))
+    results.append(df.Histo1D(("WW_leps_dPhi_cut4", "", *bins_dPhi), "WW_leps_dPhi"))
     results.append(df.Histo1D(("WW_leps_dR_cut4", "", *bins_dR), "WW_leps_dR"))
 
     df = df.Define("WW_leps_category", "FCCAnalyses::ZHfunctions::getDileptonCategory(WW_leps)")
@@ -561,6 +566,12 @@ def build_graph(df, dataset):
     ## dR(Z, WW)
     df = df.Define("zll_WW_dR", "WW_tlv.DeltaR(zll_tlv)")
     results.append(df.Histo1D(("zll_WW_dR_cut4", "", *bins_dR), "zll_WW_dR"))
+
+    ## Missing mass
+    # df = df.Define("missingMass", "FCCAnalyses::ReconstructedParticle::get_mass(missingEnergy_vec)[0]")
+    # df = df.Define("missingMass", "missingEnergy_tlv.M()")
+    df = df.Define("missingMass", "FCCAnalyses::ZHfunctions::get_missing_mass(missingEnergy_vec)")
+    results.append(df.Histo1D(("missingMass_cut4", "", *bins_m_ll_large), "missingMass"))
 
 
     #########
@@ -743,6 +754,30 @@ def build_graph(df, dataset):
             icut += 1
 
 
+    # #########
+    # ### CUT 13: invariant mass of the W-candidate leptons
+    # #########
+    # results.append(df.Histo1D(("WW_leps_mass_cut13", "", *bins_m_ll), "WW_leps_mass"))
+    # if sel_type > 0:
+    #     if ecm == '240':
+    #         df = df.Filter("WW_leps_mass >= 5 && WW_leps_mass <= 80")
+    #         df = df.Define(f"cut{icut}", str(icut))
+    #         results.append(df.Histo1D(("cutFlow", "", *bins_count), f"cut{icut}"))
+    #         icut += 1
+
+
+    # #########
+    # ### CUT 14: missing mass
+    # #########
+    # results.append(df.Histo1D(("missingMass_cut14", "", *bins_m_ll_large), "missingMass"))
+    # if sel_type > 0:
+    #     if ecm == '240':
+    #         df = df.Filter("missingMass >= 0 && missingMass <= 80")
+    #         df = df.Define(f"cut{icut}", str(icut))
+    #         results.append(df.Histo1D(("cutFlow", "", *bins_count), f"cut{icut}"))
+    #         icut += 1
+
+
     ########################
     # Final histograms
     ########################
@@ -806,6 +841,8 @@ def build_graph(df, dataset):
     results.append(df.Histo1D(("WW_lep1_phi_final", "", *bins_phi), "WW_lep1_phi"))
     results.append(df.Histo1D(("WW_lep1_p_index_final", "", 5, -1, 4), "WW_lep1_p_index"))  # Which muon is zll_lep1_p?
 
+    results.append(df.Histo1D(("WW_leps_mass_final", "", *bins_m_ll), "WW_leps_mass"))
+    results.append(df.Histo1D(("WW_leps_dPhi_final", "", *bins_dPhi), "WW_leps_dPhi"))
     results.append(df.Histo1D(("WW_leps_dR_final", "", *bins_dR), "WW_leps_dR"))
     results.append(df.Histo1D(("WW_leps_category_final", "", 4, -1, 3), "WW_leps_category"))
     
@@ -815,6 +852,7 @@ def build_graph(df, dataset):
     # missing energy
     results.append(df.Histo1D(("cosThetaMiss_final", "", *bins_cosThetaMiss), "cosTheta_miss"))
     results.append(df.Histo1D(("missingEnergy_final", "", *bins_p_mu), "missingEnergy"))
+    results.append(df.Histo1D(("missingMass_final", "", *bins_m_ll_large), "missingMass"))
     
     # truth info used for pairing efficiency
     results.append(df.Histo1D(("true_Z_p_final", "True Z Momentum; p_{Z} [GeV]; Events", 100, 0, 250), "true_Z_p"))
@@ -845,4 +883,3 @@ def build_graph(df, dataset):
 
     
     return results, weightsum
-

@@ -239,7 +239,7 @@ class RDFanalysis():
                 df = df.Filter("lep0_p > 20 && lep0_p < 85")
                 df = df.Filter("lep1_p > 10 && lep1_p < 80")
                 df = df.Filter("lep2_p > 10 && lep2_p < 80")
-                df = df.Filter("lep3_p > 10 && lep3_p < 75")
+                df = df.Filter("lep3_p > 5 && lep3_p < 75")
             elif sel_type == 'tight':
                 df = df.Filter("lep0_p > 25 && lep0_p < 80")
                 df = df.Filter("lep1_p > 15 && lep1_p < 80")
@@ -319,6 +319,8 @@ class RDFanalysis():
         
         df = df.Define("WW_leps_tlv0", "FCCAnalyses::ReconstructedParticle::get_tlv(WW_leps, 0)")
         df = df.Define("WW_leps_tlv1", "FCCAnalyses::ReconstructedParticle::get_tlv(WW_leps, 1)")
+        df = df.Define("WW_leps_mass", "(WW_leps_tlv0 + WW_leps_tlv1).M()")
+        df = df.Define("WW_leps_dPhi", "std::abs(WW_leps_tlv0.DeltaPhi(WW_leps_tlv1))")
         df = df.Define("WW_leps_dR", "WW_leps_tlv0.DeltaR(WW_leps_tlv1)")
 
         df = df.Define("WW_leps_category", "FCCAnalyses::ZHfunctions::getDileptonCategory(WW_leps)")
@@ -327,6 +329,8 @@ class RDFanalysis():
                 
         ## Build the WW system using the two leptons not coming from the Z and the missing energy vector
         df = df.Define("missingEnergy_vec", f"FCCAnalyses::ZHfunctions::missingEnergy({ecm}, ReconstructedParticles)")
+        df = df.Define("missingMass", "FCCAnalyses::ZHfunctions::get_missing_mass(missingEnergy_vec)")
+        
         df = df.Define("missingEnergy_tlv", "FCCAnalyses::ReconstructedParticle::get_tlv(missingEnergy_vec, 0)")
         df = df.Define("WW_tlv", "missingEnergy_tlv + WW_leps_tlv0 + WW_leps_tlv1")
         df = df.Define("WW_mass", "WW_tlv.M()")
@@ -445,6 +449,20 @@ class RDFanalysis():
             if sel_type == 'medium':
                 df = df.Filter("zll_leps_dR < 3.0")
 
+
+        # #########
+        # ### CUT 14: invariant mass of the W-candidate leptons (240 GeV only)
+        # #########
+        # if ecm == '240':
+        #     df = df.Filter("WW_leps_mass >= 5 && WW_leps_mass <= 80")
+
+
+        # #########
+        # ### CUT 15: missing mass (240 GeV only)
+        # #########
+        # if ecm == '240':
+        #     df = df.Filter("missingMass >= 0 && missingMass <= 80")
+
         
         if doInference:
             tmva_helper = TMVAHelperXGB(bdt_model_path, "bdt_model") # read the XGBoost training
@@ -496,6 +514,8 @@ class RDFanalysis():
             "WW_lep1_theta",
             "WW_lep1_phi",
 
+            "WW_leps_mass",
+            "WW_leps_dPhi",
             "WW_leps_dR",
             "WW_leps_category",
             "WW_lep0_p_index",
@@ -513,6 +533,7 @@ class RDFanalysis():
             # missing energy
             "miss_cosTheta",
             "miss_energy",
+            "missingMass",
             
             "ww_leptonic",
         ]

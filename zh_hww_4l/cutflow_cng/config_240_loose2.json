@@ -1,6 +1,6 @@
 {
   "name": "240_loose",
-  "title": "Cutflow for 240 GeV - Loose selection",
+  "title": "Cutflow for 240 GeV - Loose2 selection",
   "signal_combined_name": "Z(ll)H",
   "scaleSig": 1.0,
   "cuts": [
@@ -15,7 +15,9 @@
     "|cos#theta_{miss}| < 0.98",
     "20 < E_{miss} < 120",
     "60 < m_{WW*} < 135",
-    "#DeltaR(l_{WW*},l_{WW*}) > 0.25"
+    "#DeltaR(l_{WW*},l_{WW*}) > 0.25",
+    "5 < m_{l_{W1},l_{W2}} < 80",
+    "0 < m_{miss} < 80"
   ],
 
   "processes": {

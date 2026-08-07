@@ -42,8 +42,8 @@ if ecm == '240':
         "wzp6_ee_eeH_HWW_llnunu_ecm240",
         "wzp6_ee_mumuH_HWW_llnunu_ecm240",
         "p8_ee_WW_ecm240",
-        # "p8_ee_WW_ee_ecm240",
-        # "p8_ee_WW_mumu_ecm240",
+        "p8_ee_WW_ee_ecm240",
+        "p8_ee_WW_mumu_ecm240",
         "p8_ee_ZZ_ecm240",
     ]
 elif ecm == '365':
@@ -81,11 +81,12 @@ def apply_bdt(in_file, out_file):
         "lep0_p", "lep1_p", "lep2_p", "lep3_p", "muons_no", "electrons_no",  # leptons
         "zll_m", "zll_p", "zll_theta", "zll_phi", "zll_recoil_m",  # Z->ll system
         "zll_lep0_p", "zll_lep0_theta", "zll_lep0_phi", "zll_lep1_p", "zll_lep1_theta", "zll_lep1_phi", "zll_leps_dR",  # Z->ll leptons 
-        "WW_lep0_p", "WW_lep0_theta", "WW_lep0_phi", "WW_lep1_p", "WW_lep1_theta", "WW_lep1_phi", "WW_leps_dR", # WW leptons
+        "WW_lep0_p", "WW_lep0_theta", "WW_lep0_phi", "WW_lep1_p", "WW_lep1_theta", "WW_lep1_phi", "WW_leps_mass", "WW_leps_dPhi", "WW_leps_dR", # WW leptons
         "WW_mass", "WW_p", "WW_theta", "WW_phi",  # WW system
         "zll_WW_dR",  # Z->ll, WW
-        "miss_cosTheta", "miss_energy"  # missing energy
+        "miss_cosTheta", "miss_energy", "missingMass"  # missing energy
     ]
+    
     df = tree.arrays(features, library="pd")
 
     # Compute MVA score

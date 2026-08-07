@@ -56,10 +56,10 @@ variables = [
     "lep0_p", "lep1_p", "lep2_p", "lep3_p", "muons_no", "electrons_no",  # leptons
     "zll_m", "zll_p", "zll_theta", "zll_phi", "zll_recoil_m",  # Z->ll system
     "zll_lep0_p", "zll_lep0_theta", "zll_lep0_phi", "zll_lep1_p", "zll_lep1_theta", "zll_lep1_phi", "zll_leps_dR",  # Z->ll leptons 
-    "WW_lep0_p", "WW_lep0_theta", "WW_lep0_phi", "WW_lep1_p", "WW_lep1_theta", "WW_lep1_phi", "WW_leps_dR", # WW leptons
+    "WW_lep0_p", "WW_lep0_theta", "WW_lep0_phi", "WW_lep1_p", "WW_lep1_theta", "WW_lep1_phi", "WW_leps_mass", "WW_leps_dPhi", "WW_leps_dR", # WW leptons
     "WW_mass", "WW_p", "WW_theta", "WW_phi",  # WW system
     "zll_WW_dR",  # Z->ll, WW
-    "miss_cosTheta", "miss_energy"  # missing energy
+    "miss_cosTheta", "miss_energy", "missingMass"  # missing energy
 ]
 weight_sf = 1e9
 # weight_sf = 1.0
