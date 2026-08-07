@@ -148,7 +148,7 @@ for hname in hist_names:
         if debug: print(f"  Loading signal histogram {hname} from file {fs.GetName()}...")
         hs = fs.Get(hname)
         if not hs:
-            print(f"Histogram {hname} missing in signal file {fs.GetName()}")
+            print(f"WARNING Histogram {hname} missing in signal file {fs.GetName()}. Check variable name!")
             continue
         if args.rebin > 1:
             hs = hs.Rebin(args.rebin)
@@ -156,6 +156,11 @@ for hname in hist_names:
             h_sig_sum = hs.Clone("sig_sum_" + hname)
         else:
             h_sig_sum.Add(hs)
+
+    # check if signal histogram was found. if not, exit.
+    if h_sig_sum is None:
+        print(f"ERROR: Histogram {hname} not found in any signal files. Skipping...")
+        exit(1)
 
     # Sum of backgrounds
     h_bkg_sum = None
@@ -172,7 +177,13 @@ for hname in hist_names:
         else:
             h_bkg_sum.Add(hb)
 
-    if debug: print(f"  Signal sum integral: {full_integral(h_sig_sum):.3f} (number of entries: {h_sig_sum.GetEntries():.0f}), Background sum integral: {full_integral(h_bkg_sum):.3f} (number of entries: {h_bkg_sum.GetEntries():.0f})")
+    # check if background histogram was found. if not, exit.
+    if h_bkg_sum is None:
+        print(f"ERROR: Histogram {hname} not found in any background files. Skipping...")
+        exit(1)
+
+    if debug:
+        print(f"  Signal sum integral: {full_integral(h_sig_sum):.3f} (number of entries: {h_sig_sum.GetEntries():.0f}), Background sum integral: {full_integral(h_bkg_sum):.3f} (number of entries: {h_bkg_sum.GetEntries():.0f})")
 
     # if xmin and xmax are provided, instead of a scan, just calculate the significance for that fixed window
     if xmin is not None and xmax is not None:
