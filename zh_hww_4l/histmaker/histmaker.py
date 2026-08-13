@@ -12,6 +12,7 @@ Add lepton isolation cut:
     ecm=365 sel_type=5 chi2=1.0 iso=3 fccanalysis run histmaker.py
 
 Full run:
+    ecm=240 sel_type=1 fullrun=true fccanalysis run histmaker.py
     ecm=365 sel_type=5 chi2=1.0 fullrun=true fccanalysis run histmaker.py
 
 Full run for training:
@@ -162,8 +163,8 @@ elif ecm == '365':
 
 # define some binning for various histograms
 bins_p_mu = (n_bins, 0, n_bins) # 100 MeV bins
-bins_m_ll = (n_bins, 0, n_bins) # 100 MeV bins
-bins_m_ll_large = (n_bins*2, 0, n_bins*2) # 100 MeV bins
+bins_m_ll = (n_bins*10, 0, n_bins) # 100 MeV bins
+bins_m_ll_large = (n_bins*20, 0, n_bins*2) # 100 MeV bins
 bins_p_ll = (n_bins, 0, n_bins) # 100 MeV bins
 bins_recoil = (n_bins, 0, n_bins) # 1 GeV bins
 bins_cosThetaMiss = (10000, 0, 1)
@@ -295,7 +296,7 @@ def build_graph(df, dataset):
 
 
     #########
-    ### CUT 1a: exactly 4 isolated leptons (for `firm` selections only)
+    ### CUT 1a: exactly 4 isolated leptons
     #########
     if sel_type == 7:  # firm selection, use isolated leptons
         df = df.Define("n_leptons_iso", "muons_sel_iso.size() + electrons_sel_iso.size()")
@@ -752,30 +753,6 @@ def build_graph(df, dataset):
             df = df.Define(f"cut{icut}", str(icut))
             results.append(df.Histo1D(("cutFlow", "", *bins_count), f"cut{icut}"))
             icut += 1
-
-
-    # #########
-    # ### CUT 13: invariant mass of the W-candidate leptons
-    # #########
-    # results.append(df.Histo1D(("WW_leps_mass_cut13", "", *bins_m_ll), "WW_leps_mass"))
-    # if sel_type > 0:
-    #     if ecm == '240':
-    #         df = df.Filter("WW_leps_mass >= 5 && WW_leps_mass <= 80")
-    #         df = df.Define(f"cut{icut}", str(icut))
-    #         results.append(df.Histo1D(("cutFlow", "", *bins_count), f"cut{icut}"))
-    #         icut += 1
-
-
-    # #########
-    # ### CUT 14: missing mass
-    # #########
-    # results.append(df.Histo1D(("missingMass_cut14", "", *bins_m_ll_large), "missingMass"))
-    # if sel_type > 0:
-    #     if ecm == '240':
-    #         df = df.Filter("missingMass >= 0 && missingMass <= 80")
-    #         df = df.Define(f"cut{icut}", str(icut))
-    #         results.append(df.Histo1D(("cutFlow", "", *bins_count), f"cut{icut}"))
-    #         icut += 1
 
 
     ########################

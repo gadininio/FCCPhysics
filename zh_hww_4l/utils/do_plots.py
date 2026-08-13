@@ -343,8 +343,8 @@ def runPlots(config: dict[str, Any],
     rt = f'#sqrt{{s}} = {script_module.energy:.1f} TeV,   ' \
          f'{config["int_lumi_label"]}'
 
-    # For FCC-ee, use 'FCC-ee IDEA Simulation (Delphes) label (GADI)
     if 'ee' in script_module.collider:
+        # lt = 'FCC-ee IDEA Simulation (Delphes)'
         lt = 'FCC-ee #font[42]{IDEA Simulation (Delphes)}'
         rt = f'#sqrt{{s}} = {script_module.energy:g} GeV,   ' \
              f'{config["int_lumi_label"]}'
@@ -356,7 +356,6 @@ def runPlots(config: dict[str, Any],
         LOGGER.debug('No custom label, using nothing...')
 
     if 'AAAyields' in var:
-        # 'events' changed to 'Events' (GADI)
         drawStack(config, var, 'Events', leg, lt, rt, script_module.formats,
                   script_module.outdir + "/" + sel, False, True, histos,
                   colors, script_module.ana_tex, extralab,
@@ -366,14 +365,12 @@ def runPlots(config: dict[str, Any],
 
     if 'stack' in script_module.stacksig:
         if 'lin' in script_module.yaxis:
-            # 'events' changed to 'Events' (GADI)
             drawStack(config, var + "_stack_lin", 'Events', leg, lt, rt,
                       script_module.formats, script_module.outdir + "/" + sel,
                       False, True, histos, colors, script_module.ana_tex,
                       extralab, customLabel, nsig, nbkg, leg2,
                       yields, config['plot_stat_unc'])
         if 'log' in script_module.yaxis:
-            # 'events' changed to 'Events' (GADI)
             drawStack(config, var + "_stack_log", 'Events', leg, lt, rt,
                       script_module.formats, script_module.outdir + "/" + sel,
                       True, True, histos, colors, script_module.ana_tex,
@@ -386,7 +383,6 @@ def runPlots(config: dict[str, Any],
 
     if 'nostack' in script_module.stacksig:
         if 'lin' in script_module.yaxis:
-            # 'events' changed to 'Events' (GADI)
             drawStack(config, var + "_nostack_lin", 'Events', leg, lt, rt,
                       script_module.formats,
                       script_module.outdir + "/" + sel, False, False, histos,
@@ -394,7 +390,6 @@ def runPlots(config: dict[str, Any],
                       customLabel, nsig, nbkg, leg2, yields,
                       config['plot_stat_unc'])
         if 'log' in script_module.yaxis:
-            # 'events' changed to 'Events' (GADI)
             drawStack(config, var + "_nostack_log", 'Events', leg, lt, rt,
                       script_module.formats, script_module.outdir + "/" + sel,
                       True, False, histos, colors, script_module.ana_tex,
@@ -610,7 +605,16 @@ def drawStack(config, name, ylabel, legend, leftText, rightText, formats,
     iterh = iter(histos)
     next(iterh)
 
-    # Add bin width to y-axis label in a nice format with "GeV" units if specified in the x-axis label (GADI)
+    # unit = 'GeV'
+    # if 'TeV' in str(histos[0].GetXaxis().GetTitle()):
+    #     unit = 'TeV'
+
+    # if unit in str(histos[0].GetXaxis().GetTitle()):
+    #     bwidth = sumhistos.GetBinWidth(1)
+    #     if bwidth.is_integer():
+    #         ylabel += f' / {bwidth} {unit}'
+    #     else:
+    #         ylabel += f' / {bwidth:.2f} {unit}'
     bwidth = sumhistos.GetBinWidth(1)
     ylabel += f' / {bwidth:g}{" GeV" if "GeV" in histos[0].GetXaxis().GetTitle() or "GeV" in xtitle else ""}'
     ylabel.replace("  ", " ")
@@ -627,7 +631,8 @@ def drawStack(config, name, ylabel, legend, leftText, rightText, formats,
         for i, label in enumerate(xtitle):
             h_dummy.GetXaxis().SetBinLabel(i+1, label)
         h_dummy.GetXaxis().LabelsOption("u")
-        h_dummy.GetXaxis().SetLabelSize(1.1*h_dummy.GetXaxis().GetLabelSize())
+        font_scale = 0.8 if nbins > 10 else 1.1
+        h_dummy.GetXaxis().SetLabelSize(font_scale*h_dummy.GetXaxis().GetLabelSize())
         h_dummy.GetXaxis().SetLabelOffset(
             1.5*h_dummy.GetXaxis().GetLabelOffset())
     h_dummy.GetYaxis().SetTitle(ylabel)
@@ -745,7 +750,6 @@ def drawStack(config, name, ylabel, legend, leftText, rightText, formats,
 
     latex = ROOT.TLatex()
     
-    # Some changes to the titles, mainly the ugly italics removed (GADI)
     ## draw title
     latex.SetNDC()
     # latex.SetTextAlign(31)
@@ -796,7 +800,6 @@ def drawStack(config, name, ylabel, legend, leftText, rightText, formats,
     latex.SetTextSize(0.025)
     latex.DrawLatex(0.18, 0.66+y_shift, text)
 
-    # Note that the following text is drawn only if signal is scaled for ALL variables by setting a global parameter in plots.py (GADI)
     if config['scale_sig'] != 1.0:
         text = '#bf{#it{Signal Scaling = ' + f'{config["scale_sig"]:.3g}' + \
                '}}'

@@ -449,20 +449,6 @@ class RDFanalysis():
             if sel_type == 'medium':
                 df = df.Filter("zll_leps_dR < 3.0")
 
-
-        # #########
-        # ### CUT 14: invariant mass of the W-candidate leptons (240 GeV only)
-        # #########
-        # if ecm == '240':
-        #     df = df.Filter("WW_leps_mass >= 5 && WW_leps_mass <= 80")
-
-
-        # #########
-        # ### CUT 15: missing mass (240 GeV only)
-        # #########
-        # if ecm == '240':
-        #     df = df.Filter("missingMass >= 0 && missingMass <= 80")
-
         
         if doInference:
             tmva_helper = TMVAHelperXGB(bdt_model_path, "bdt_model") # read the XGBoost training

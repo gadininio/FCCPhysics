@@ -1,3 +1,9 @@
+'''
+Run with:
+    fccanalysis plots plots.py
+'''
+
+
 import ROOT
 
 flavor = 'll'  # 'mumu', 'ee', 'll'
@@ -10,6 +16,7 @@ is_plot_new = True
 # scheme = 'full_20251124_131805' # n_leptons>=4, with dR(Z,WW)>0.25 cut
 # scheme = 'full_20251124_150648' # n_leptons=4, with dR(Z,WW)>0.25 cut
 # scheme = 'full_20251125_134522' # n_leptons=4, with dR(Z,WW)>0.25 cut, bug in resonanceBuilder_mass_recoil_advanced fixed
+
 scheme = 'full_loose_20260126_112336' # loose cuts used as preselections for mva analysis
 scheme = 'loose_full_20260807_071945' # added variables and fixed lep3_p cut
 
@@ -66,9 +73,9 @@ legend['Z'] = 'Z#rightarrowll'
 
 if 'loose' in scheme:
     # cutflow_xaxis = ["All events", "4 leptons", "2 OS pairs", "#geq1 SF pair", "p_{l_{1}},p_{l_{2}},p_{l_{3}},p_{l_{4}}", "76 < m_{l^{+}l^{-}} < 106", "20 < p_{l^{+}l^{-}} < 70", "120 < m_{rec} < 145", "|cos#theta_{miss}| < 0.98", "20 < E_{miss} < 120", "60 < m_{WW*} < 135", "#DeltaR(l_{WW*,1}, l_{WW*,2})>0.25"]
-    cutflow_xaxis = ["All events", "4 leptons", "2 OS pairs", "#geq1 SF pair", "Leptons p", "76 < m_{l^{+}l^{-}} < 106", "20 < p_{l^{+}l^{-}} < 70", "120 < m_{rec} < 145", "|cos#theta_{miss}| < 0.98", "20 < E_{miss} < 120", "60 < m_{WW*} < 135", "#DeltaR(l_{WW*}, l_{WW*}) > 0.25"]
+    # cutflow_xaxis = ["All events", "4 leptons", "2 OS pairs", "#geq1 SF pair", "Leptons p", "76 < m_{l^{+}l^{-}} < 106", "20 < p_{l^{+}l^{-}} < 70", "120 < m_{rec} < 145", "|cos#theta_{miss}| < 0.98", "20 < E_{miss} < 120", "60 < m_{WW*} < 135", "#DeltaR(l_{WW*}, l_{WW*}) > 0.25"]
     # cutflow_xaxis = ["All events", "4 leptons", "2 OS pairs", "#geq1 SF pair", "Leptons p", "76 < m_{l^{+}l^{-}} < 106", "20 < p_{l^{+}l^{-}} < 70", "120 < m_{rec} < 145", "|cos#theta_{miss}| < 0.98", "20 < E_{miss} < 120", "60 < m_{WW*} < 135", "#DeltaR(l_{WW*}, l_{WW*}) > 0.25", "5<WW_leps_mass<80", "0<missingMass<80"]
-
+    cutflow_xaxis = ["All events", "4 leptons", "2 OS pairs", "#geq1 SF pair", "Leptons p", "76 < m_{ll} < 106", "20 < p_{ll} < 70", "120 < m_{rec} < 145", "|cos#theta_{miss}| < 0.98", "20 < E_{miss} < 120", "60 < m_{WW*} < 135", "#DeltaR(l_{W1},l_{W2}) > 0.25"]
 else:
     cutflow_xaxis = ["All events", "4 leptons", "2 OS pairs", "#geq1 SF pair", "p_{l_{1}},p_{l_{2}},p_{l_{3}},p_{l_{4}}", "76 < m_{l^{+}l^{-}} < 106", "20 < p_{l^{+}l^{-}} < 70", "120 < m_{rec} < 140", "|cos#theta_{miss}| < 0.98", "30 < E_{miss} < 110", "80 < m_{WW*} < 135", "#DeltaR(l_{WW*,1}, l_{WW*,2})>0.25"]
 
@@ -377,7 +384,7 @@ hists["zll_recoil_m_final"] = {
     "output":   "zll_recoil_m",
     "logy":     False,
     "stack":    False,
-    "rebin":    10,
+    "rebin":    1,
     "xmin":     115,
     "xmax":     150,
     "ymin":     0,

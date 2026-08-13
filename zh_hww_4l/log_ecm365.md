@@ -856,3 +856,43 @@ This range contains only ~15% of the VBF component.
 Use the same training.
 
 use sel_type=8 (medium with 61 < mll < 121).
+
+
+# 07/08/2026
+
+
+ecm=365 sel_type=5 chi2=1.0 iso=3 fullrun=true fccanalysis run histmaker.py
+
+scheme=medium3_full_chi2-1.0_iso-3.0 inclWW=true iso=true fccanalysis plots plots_ecm365.py
+scheme=medium3_full_chi2-1.0_iso-3.0 inclWW=true iso=true no_new=True fccanalysis plots plots_ecm365.py
+
+python3 detailed_cutflow.py \
+        -cfg ../zh_hww_4l/cutflow_cng/config_365_medium3_inclWWInFit_iso.json \
+        -i ../../../outputs/higgs/zh_hww_4l/histmaker/ecm365/hists/medium3_full_chi2-1.0_iso-3.0/ \
+        -o ../../../outputs/higgs/zh_hww_4l/histmaker/ecm365/plots/medium3_full_chi2-1.0_iso-3.0/ll/
+
+
+# 13/08/2026
+
+[gino@lxplus940 utils]$ root -l -q 'PrintEntries.C("../../../outputs/higgs/zh_hww_4l/mva/ecm365/medium_full_chi2-1.0_iso-3.0_20260813_091733/preselection")'
+../../../outputs/higgs/zh_hww_4l/mva/ecm365/medium_full_chi2-1.0_iso-3.0_20260813_091733/preselection/p8_ee_ZZ_ecm365.root: 5015 entries
+../../../outputs/higgs/zh_hww_4l/mva/ecm365/medium_full_chi2-1.0_iso-3.0_20260813_091733/preselection/p8_ee_WW_ee_ecm365.root: 167 entries
+../../../outputs/higgs/zh_hww_4l/mva/ecm365/medium_full_chi2-1.0_iso-3.0_20260813_091733/preselection/p8_ee_WW_mumu_ecm365.root: 60 entries
+../../../outputs/higgs/zh_hww_4l/mva/ecm365/medium_full_chi2-1.0_iso-3.0_20260813_091733/preselection/p8_ee_WW_ecm365.root: 172 entries
+../../../outputs/higgs/zh_hww_4l/mva/ecm365/medium_full_chi2-1.0_iso-3.0_20260813_091733/preselection/p8_ee_tt_ecm365.root: 25 entries
+../../../outputs/higgs/zh_hww_4l/mva/ecm365/medium_full_chi2-1.0_iso-3.0_20260813_091733/preselection/wzp6_ee_eeH_HWW_ecm365_inc.root: 27262 entries
+../../../outputs/higgs/zh_hww_4l/mva/ecm365/medium_full_chi2-1.0_iso-3.0_20260813_091733/preselection/wzp6_ee_eeH_HWW_ecm365.root: 20768 entries
+../../../outputs/higgs/zh_hww_4l/mva/ecm365/medium_full_chi2-1.0_iso-3.0_20260813_091733/preselection/wzp6_ee_mumuH_HWW_ecm365_inc.root: 45395 entries
+../../../outputs/higgs/zh_hww_4l/mva/ecm365/medium_full_chi2-1.0_iso-3.0_20260813_091733/preselection/wzp6_ee_mumuH_HWW_ecm365.root: 34688 entries
+
+[gino@lxplus940 utils]$ root -l -q 'PrintEntries.C("../../../outputs/higgs/zh_hww_4l/mva/ecm365/medium_full_chi2-1.0_iso-3.0_20260813_091733/preselection/training")'
+../../../outputs/higgs/zh_hww_4l/mva/ecm365/medium_full_chi2-1.0_iso-3.0_20260813_091733/preselection/training/p8_ee_ZZ_llX_ecm365.root: 72372 entries
+../../../outputs/higgs/zh_hww_4l/mva/ecm365/medium_full_chi2-1.0_iso-3.0_20260813_091733/preselection/training/p8_ee_ZZ_tautauX_ecm365.root: 68161 entries
+../../../outputs/higgs/zh_hww_4l/mva/ecm365/medium_full_chi2-1.0_iso-3.0_20260813_091733/preselection/training/p8_ee_ZZ_ecm365.root: 2054 entries
+../../../outputs/higgs/zh_hww_4l/mva/ecm365/medium_full_chi2-1.0_iso-3.0_20260813_091733/preselection/training/p8_ee_WW_ee_ecm365.root: 897 entries
+../../../outputs/higgs/zh_hww_4l/mva/ecm365/medium_full_chi2-1.0_iso-3.0_20260813_091733/preselection/training/p8_ee_WW_mumu_ecm365.root: 286 entries
+../../../outputs/higgs/zh_hww_4l/mva/ecm365/medium_full_chi2-1.0_iso-3.0_20260813_091733/preselection/training/p8_ee_WW_ecm365.root: 15 entries
+../../../outputs/higgs/zh_hww_4l/mva/ecm365/medium_full_chi2-1.0_iso-3.0_20260813_091733/preselection/training/wzp6_ee_eeH_HWW_ecm365_inc.root: 29375 entries
+../../../outputs/higgs/zh_hww_4l/mva/ecm365/medium_full_chi2-1.0_iso-3.0_20260813_091733/preselection/training/wzp6_ee_eeH_HWW_ecm365.root: 22567 entries
+../../../outputs/higgs/zh_hww_4l/mva/ecm365/medium_full_chi2-1.0_iso-3.0_20260813_091733/preselection/training/wzp6_ee_mumuH_HWW_ecm365_inc.root: 49663 entries
+../../../outputs/higgs/zh_hww_4l/mva/ecm365/medium_full_chi2-1.0_iso-3.0_20260813_091733/preselection/training/wzp6_ee_mumuH_HWW_ecm365.root: 38183 entries
