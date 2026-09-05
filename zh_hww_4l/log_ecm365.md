@@ -896,3 +896,9 @@ python3 detailed_cutflow.py \
 ../../../outputs/higgs/zh_hww_4l/mva/ecm365/medium_full_chi2-1.0_iso-3.0_20260813_091733/preselection/training/wzp6_ee_eeH_HWW_ecm365.root: 22567 entries
 ../../../outputs/higgs/zh_hww_4l/mva/ecm365/medium_full_chi2-1.0_iso-3.0_20260813_091733/preselection/training/wzp6_ee_mumuH_HWW_ecm365_inc.root: 49663 entries
 ../../../outputs/higgs/zh_hww_4l/mva/ecm365/medium_full_chi2-1.0_iso-3.0_20260813_091733/preselection/training/wzp6_ee_mumuH_HWW_ecm365.root: 38183 entries
+
+Training AUC: 0.996000
+Testing AUC: 0.992689
+
+==> 7.44% precision for 365 GeV
+==> 2.90% precision for combined fit 240+365 GeV

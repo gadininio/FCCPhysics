@@ -2,20 +2,20 @@
 This script generates plots for the VBF contribution in the e+e- -> ZH process by subtracting the mumuH histogram (ZH only) from the eeH histogram (inclusive). The resulting histogram represents the VBF contribution plus any interference effects.
 
 Run with:
-    python plot_VBF.py --ecm 365 --scheme presel --label "Preselection (#chi^{2} parameter f=0.4)"
-    python plot_VBF.py --ecm 365 --scheme presel_chi2-1.0 --label "Preselection (#chi^{2} parameter f=1.0)"
+    python plot_VBF.py --ecm 365 --scheme presel --label "Preselection" --f 0.4
+    python plot_VBF.py --ecm 365 --scheme presel_chi2-1.0 --label "Preselection" --f 1.0
 
-    python plot_VBF.py --ecm 365 --scheme medium3_chi2-0.0 --label "Medium3 selections (#chi^{2} parameter f=0.0)"
-    python plot_VBF.py --ecm 365 --scheme medium3_chi2-0.1 --label "Medium3 selections (#chi^{2} parameter f=0.1)"
-    python plot_VBF.py --ecm 365 --scheme medium3_chi2-0.2 --label "Medium3 selections (#chi^{2} parameter f=0.2)"
-    python plot_VBF.py --ecm 365 --scheme medium3          --label "Medium3 selections (#chi^{2} parameter f=0.4)"
-    python plot_VBF.py --ecm 365 --scheme medium3_chi2-0.3 --label "Medium3 selections (#chi^{2} parameter f=0.3)"
-    python plot_VBF.py --ecm 365 --scheme medium3_chi2-0.5 --label "Medium3 selections (#chi^{2} parameter f=0.5)"
-    python plot_VBF.py --ecm 365 --scheme medium3_chi2-0.6 --label "Medium3 selections (#chi^{2} parameter f=0.6)"
-    python plot_VBF.py --ecm 365 --scheme medium3_chi2-0.7 --label "Medium3 selections (#chi^{2} parameter f=0.7)"
-    python plot_VBF.py --ecm 365 --scheme medium3_chi2-0.8 --label "Medium3 selections (#chi^{2} parameter f=0.8)"
-    python plot_VBF.py --ecm 365 --scheme medium3_chi2-0.9 --label "Medium3 selections (#chi^{2} parameter f=0.9)"
-    python plot_VBF.py --ecm 365 --scheme medium3_chi2-1.0 --label "Medium3 selections (#chi^{2} parameter f=1.0)"
+    python plot_VBF.py --ecm 365 --scheme medium3_chi2-0.0 --label "Medium3 selections" --f 0.0
+    python plot_VBF.py --ecm 365 --scheme medium3_chi2-0.1 --label "Medium3 selections" --f 0.1
+    python plot_VBF.py --ecm 365 --scheme medium3_chi2-0.2 --label "Medium3 selections" --f 0.2
+    python plot_VBF.py --ecm 365 --scheme medium3          --label "Medium3 selections" --f 0.4
+    python plot_VBF.py --ecm 365 --scheme medium3_chi2-0.3 --label "Medium3 selections" --f 0.3
+    python plot_VBF.py --ecm 365 --scheme medium3_chi2-0.5 --label "Medium3 selections" --f 0.5
+    python plot_VBF.py --ecm 365 --scheme medium3_chi2-0.6 --label "Medium3 selections" --f 0.6
+    python plot_VBF.py --ecm 365 --scheme medium3_chi2-0.7 --label "Medium3 selections" --f 0.7
+    python plot_VBF.py --ecm 365 --scheme medium3_chi2-0.8 --label "Medium3 selections" --f 0.8
+    python plot_VBF.py --ecm 365 --scheme medium3_chi2-0.9 --label "Medium3 selections" --f 0.9
+    python plot_VBF.py --ecm 365 --scheme medium3_chi2-1.0 --label "Medium3 selections" --f 1.0
     
 """
 
@@ -87,42 +87,49 @@ def generate_vbf_plots(file_ee_path, file_mumu_path, variables, output_dir, ecm,
             unit = " GeV^{2}"
             
         h_ee.GetYaxis().SetTitle(f'Events / {bin_width:g}{unit}')
-        h_ee.GetXaxis().SetTitle(props.get("xtitle", var)) # Use custom title from dict
+        h_ee.GetXaxis().SetTitle(props.get("xtitle", var).replace("(before cut) ", "")) # Use custom title from dict GADI
         h_ee.GetYaxis().SetTitleSize(0.045)
         h_ee.GetXaxis().SetTitleSize(0.045)
-        h_ee.SetMarkerStyle(20)
-        h_ee.SetMarkerSize(1.2)
+        # h_ee.SetMarkerStyle(20)
+        h_ee.SetMarkerSize(0)
         h_ee.SetMarkerColor(ROOT.kBlack)
         h_ee.SetLineColor(ROOT.kBlack)
         h_ee.SetLineWidth(2)
+        h_ee.SetLineStyle(1)
             
         # Formatting: mumuH (ZH only)
-        h_mumu.SetMarkerStyle(21)
-        h_mumu.SetMarkerSize(1.2)
+        # h_mumu.SetMarkerStyle(21)
+        h_mumu.SetMarkerSize(0)
         h_mumu.SetMarkerColor(ROOT.kRed)
         h_mumu.SetLineColor(ROOT.kRed)
         h_mumu.SetLineWidth(2)
+        h_mumu.SetLineStyle(7)
 
         # Formatting: Subtracted (VBF + interference)
-        h_vbf.SetMarkerStyle(22)
-        h_vbf.SetMarkerSize(1.2)
+        # h_vbf.SetMarkerStyle(22)
+        h_vbf.SetMarkerSize(0)
         h_vbf.SetMarkerColor(ROOT.kBlue)
         h_vbf.SetLineColor(ROOT.kBlue)
         h_vbf.SetLineWidth(2)
+        h_vbf.SetLineStyle(2)
 
         # Calculate maximum Y to scale the axis properly
         # Note: If RangeUser restricts the view, GetMaximum() still checks all bins. 
         # For precision, you might want to calculate the max within the specific range.
         max_y = max(h_ee.GetMaximum(), h_mumu.GetMaximum(), h_vbf.GetMaximum())
         min_y = min(h_ee.GetMinimum(), h_mumu.GetMinimum(), h_vbf.GetMinimum()) 
-        h_ee.SetMaximum(max_y * 1.7)
-        if min_y < 0: h_ee.SetMinimum(min_y * 2)
+        if 'ymin' in props and 'ymax' in props:
+            h_ee.SetMaximum(props['ymax'])
+            h_ee.SetMinimum(props['ymin'])
+        else:
+            h_ee.SetMaximum(max_y * 1.7)
+            if min_y < 0: h_ee.SetMinimum(min_y * 2)
 
         # Draw histograms (Added "P" so your marker settings render correctly alongside the lines)
         draw_style = ""  # "PL"
         h_ee.Draw(f"HIST {draw_style}")
-        h_mumu.Draw(f"HIST {draw_style} SAME")
-        h_vbf.Draw(f"HIST {draw_style} SAME")
+        # h_mumu.Draw(f"HIST {draw_style} SAME")
+        # h_vbf.Draw(f"HIST {draw_style} SAME")
 
         # Add a zero line if there is negative interference
         if min_y < 0:
@@ -130,9 +137,13 @@ def generate_vbf_plots(file_ee_path, file_mumu_path, variables, output_dir, ecm,
             x_min_line = xmin if xmin is not None else h_ee.GetXaxis().GetXmin()
             x_max_line = xmax if xmax is not None else h_ee.GetXaxis().GetXmax()
             line = ROOT.TLine(x_min_line, 0, x_max_line, 0)
-            line.SetLineColor(ROOT.kGray)
-            line.SetLineStyle(1)
+            # line.SetLineColor(ROOT.kGray)
+            # line.SetLineStyle(ROOT.kDashed)
             line.Draw("SAME")
+
+        h_ee.Draw(f"HIST {draw_style} SAME")
+        h_mumu.Draw(f"HIST {draw_style} SAME")
+        h_vbf.Draw(f"HIST {draw_style} SAME")
 
         # Construct the Legend
         leg = ROOT.TLegend(0.18, 0.78, 0.5, 0.65)  # coordinates: (X1, Y1, X2, Y2)
@@ -156,12 +167,20 @@ def generate_vbf_plots(file_ee_path, file_mumu_path, variables, output_dir, ecm,
         tex.DrawLatex(0.15, 0.91, "#bf{FCC-ee} IDEA Simulation (Delphes)")
         tex.DrawLatex(0.62, 0.91, f"#sqrt{{s}} = {ecm} GeV, {lumi} ab^{{-1}}")
         tex.DrawLatex(latex_x, latex_y-0.05, "e^{+}e^{-} #rightarrow Z(ll)H, H #rightarrow WW* #rightarrow l#nul#nu")
-        label_str = label if label != "" else f"Selections: {scheme}{scheme_postfix}"
+        
+        label_str = ""
+        if label != "":
+            if '(before cut)' in props.get("xtitle", var):
+                label_str = f"Preselections (f = {f_value})"
+            else:
+                label_str = f"{label} (f = {f_value})"
+        else:
+            label_str = f"Selections: {scheme}{scheme_postfix}" # GADI
         tex.DrawLatex(latex_x, latex_y-0.10, label_str)
 
-        # add grid lines
-        c.SetGridx()
-        c.SetGridy()
+        # # add grid lines
+        # c.SetGridx()
+        # c.SetGridy()
 
         # Save the plot
         output_path = os.path.join(output_dir, f"VBF_{var}.pdf")
@@ -182,7 +201,8 @@ if __name__ == "__main__":
     parser.add_argument("--ecm", "-ecm", type=str, default="365", help="Center-of-mass energy (e.g., 365)")
     parser.add_argument("--scheme", "-scheme", type=str, default="medium3", help="Selection scheme (e.g., medium3)")
     parser.add_argument("--scheme_postfix", "-scheme_postfix", type=str, default="", help="chi2 parameter value (e.g., #chi2=0.4)")
-    parser.add_argument("--label", "-l", type=str, default="", help="chi2 parameter value (e.g., #chi2=0.4)")
+    parser.add_argument("--label", "-l", type=str, default="", help="Label with selection scheme")
+    parser.add_argument("--f", "-f", type=str, default="", help="chi2 parameter value (e.g., #chi2=0.4)")
 
     args = parser.parse_args()
         
@@ -217,12 +237,10 @@ if __name__ == "__main__":
             "xmax": 250, 
             "rebin": 5, 
             "xtitle": "m_{ll} (before cut) [GeV]",
-            "y_limits": {
-                # "Inclusive": {"ymin": 0, "ymax": 500},
-                # "ZH_Only": {"ymin": 0, "ymax": 450},
-                "VBF": {"ymin": -3, "ymax": 4.5}
-            }
+            "ymin": -9,
+            "ymax": 96,
         },
+        
         "zll_m_final": {
             "xmin": 71, 
             "xmax": 111, 
@@ -358,6 +376,7 @@ if __name__ == "__main__":
     scheme = args.scheme
     scheme_postfix = args.scheme_postfix
     label = args.label
+    f_value = args.f
     
     INPUT_DIRECTORY = f"../../../outputs/higgs/zh_hww_4l/histmaker/ecm{ecm}/hists/{scheme}"
     FILE_EE = os.path.join(INPUT_DIRECTORY, "wzp6_ee_eeH_HWW_ecm365.root")

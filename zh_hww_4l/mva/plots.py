@@ -9,7 +9,8 @@ import os
 
 ecm = os.environ.get("ecm", "240")  # '240' or '365'
 scheme = os.environ.get("scheme", "loose_full")
-
+ymax_score = float(os.environ.get("ymax", "-1"))  # -1 means automatic
+ymin_score = float(os.environ.get("ymin", "-1"))  # -1 means automatic
 
 lumi = "10.8" if ecm == '240' else "3"
 
@@ -32,6 +33,10 @@ plotStatUnc    = True
 
 variables = ['zll_recoil_m', 'zll_recoil_m_final', 'zll_m', 'zll_p', 'mva_score']
 rebin = [10, 1, 1, 1, 5] # uniform rebin per variable (optional)
+
+# One value per variable; -1 means automatic.
+ymin = [-1, -1, -1, -1, ymin_score]
+ymax = [-1, -1, -1, -1, ymax_score]
 
 ###Dictonnary with the analysis name as a key, and the list of selections to be plotted for this analysis. The name of the selections should be the same than in the final selection
 selections = {}

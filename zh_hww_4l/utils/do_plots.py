@@ -256,7 +256,9 @@ def runPlots(config: dict[str, Any],
              script_module,
              hsignal,
              hbackgrounds,
-             extralab):
+             extralab,
+             ymin=-1,
+             ymax=-1):
 
     # Below are settings for separate signal and background legends
     if config['split_leg']:
@@ -369,13 +371,13 @@ def runPlots(config: dict[str, Any],
                       script_module.formats, script_module.outdir + "/" + sel,
                       False, True, histos, colors, script_module.ana_tex,
                       extralab, customLabel, nsig, nbkg, leg2,
-                      yields, config['plot_stat_unc'])
+                      yields, config['plot_stat_unc'], ymin=ymin, ymax=ymax)
         if 'log' in script_module.yaxis:
             drawStack(config, var + "_stack_log", 'Events', leg, lt, rt,
                       script_module.formats, script_module.outdir + "/" + sel,
                       True, True, histos, colors, script_module.ana_tex,
                       extralab, customLabel, nsig, nbkg, leg2,
-                      yields, config['plot_stat_unc'])
+                      yields, config['plot_stat_unc'], ymin=ymin, ymax=ymax)
         if 'lin' not in script_module.yaxis and \
                 'log' not in script_module.yaxis:
             LOGGER.info('Unrecognized option in formats, should be '
@@ -388,13 +390,13 @@ def runPlots(config: dict[str, Any],
                       script_module.outdir + "/" + sel, False, False, histos,
                       colors, script_module.ana_tex, extralab,
                       customLabel, nsig, nbkg, leg2, yields,
-                      config['plot_stat_unc'])
+                      config['plot_stat_unc'], ymin=ymin, ymax=ymax)
         if 'log' in script_module.yaxis:
             drawStack(config, var + "_nostack_log", 'Events', leg, lt, rt,
                       script_module.formats, script_module.outdir + "/" + sel,
                       True, False, histos, colors, script_module.ana_tex,
                       extralab, customLabel, nsig, nbkg, leg2,
-                      yields, config['plot_stat_unc'])
+                      yields, config['plot_stat_unc'], ymin=ymin, ymax=ymax)
         if 'lin' not in script_module.yaxis and \
                 'log' not in script_module.yaxis:
             LOGGER.info('Unrecognised option in formats, should be '
@@ -1064,6 +1066,16 @@ def run(args):
                     if len(script_module.rebin) == \
                             len(script_module.variables):
                         rebin_tmp = script_module.rebin[var_index]
+                        
+                ymin_tmp = -1
+                if hasattr(script_module, "ymin"):
+                    if len(script_module.ymin) == len(script_module.variables):
+                        ymin_tmp = script_module.ymin[var_index]
+
+                ymax_tmp = -1
+                if hasattr(script_module, "ymax"):
+                    if len(script_module.ymax) == len(script_module.variables):
+                        ymax_tmp = script_module.ymax[var_index]
 
                 LOGGER.info('  var: %s     label: %s     selection: %s',
                             var, label, sel)
@@ -1080,7 +1092,9 @@ def run(args):
                          script_module,
                          hsignal,
                          hbackgrounds,
-                         script_module.extralabel[sel])
+                         script_module.extralabel[sel],
+                         ymin=ymin_tmp,
+                         ymax=ymax_tmp)
                 if counter == 0:
                     runPlots(config,
                              args,

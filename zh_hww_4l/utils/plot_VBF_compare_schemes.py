@@ -16,11 +16,12 @@ import argparse
 def generate_comparison_plots(schemes, variables, ecm, lumi, label=''):
     # Define distinct colors and marker styles for up to 11+ schemes
     colors = [
-        ROOT.kBlack, ROOT.kRed, ROOT.kBlue, ROOT.kGreen+2, 
+        ROOT.kRed, ROOT.kBlue, ROOT.kGreen+2, 
         ROOT.kMagenta, ROOT.kCyan+1, ROOT.kOrange+7, 
         ROOT.kYellow+2, ROOT.kAzure+7, ROOT.kViolet+1, ROOT.kSpring-6
     ]
     markers = [20, 21, 22, 23, 24, 25, 26, 32, 28, 29, 30]
+    line_styles = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
     for var, props in variables.items():
         # Dictionaries to store histograms for the current variable
@@ -87,6 +88,7 @@ def generate_comparison_plots(schemes, variables, ecm, lumi, label=''):
                 # h.SetMarkerStyle(markers[c_idx])
                 # h.SetMarkerSize(1.2)
                 h.SetLineWidth(line_width)
+                h.SetLineStyle(line_styles[c_idx])
                 h.SetStats(0)
                 h.SetTitle("")
 
@@ -112,8 +114,8 @@ def generate_comparison_plots(schemes, variables, ecm, lumi, label=''):
             c = ROOT.TCanvas(f"c_{var}_{dist_key}", f"{var} {dist_key}", 800, 800)
             c.SetLeftMargin(0.15)
             c.SetBottomMargin(0.12)
-            c.SetGridx()
-            c.SetGridy()
+            # c.SetGridx()
+            # c.SetGridy()
             
             # Use the first histogram as the base to draw axes
             h_base = dist_hists[0][1]
@@ -162,7 +164,7 @@ def generate_comparison_plots(schemes, variables, ecm, lumi, label=''):
                 unit = " GeV^{2}"            
             
             h_base.GetYaxis().SetTitle(f'Events / {bin_width:g}{unit}')
-            h_base.GetXaxis().SetTitle(props.get("xtitle", var))
+            h_base.GetXaxis().SetTitle(props.get("xtitle", var).replace("(before cut) ", "")) # Use custom title from dict
             h_base.GetYaxis().SetTitleSize(0.045)
             h_base.GetXaxis().SetTitleSize(0.045)
 
@@ -177,9 +179,9 @@ def generate_comparison_plots(schemes, variables, ecm, lumi, label=''):
                 x_min_line = xmin if xmin is not None else h_base.GetXaxis().GetXmin()
                 x_max_line = xmax if xmax is not None else h_base.GetXaxis().GetXmax()
                 line = ROOT.TLine(x_min_line, 0, x_max_line, 0)
-                line.SetLineColor(ROOT.kGray)
+                # line.SetLineColor(ROOT.kGray)
                 # line.SetLineStyle(2)
-                line.SetLineWidth(2)
+                # line.SetLineWidth(2)
                 line.Draw("SAME")
 
             # Draw histograms again to ensure they are on top of the zero line
@@ -200,18 +202,25 @@ def generate_comparison_plots(schemes, variables, ecm, lumi, label=''):
             if label == '':
                 tex.DrawLatex(latex_x, latex_y-0.10, dist_title)
             else:
+                
+                if '(before cut)' in props.get("xtitle", var):
+                    label_str = "Preselections"
+                else:
+                    label_str = label
+                
                 tex.DrawLatex(latex_x, latex_y-0.10, "#chi^{2} = (1-f)(m_{ll}-91)^{2} + f(m_{rec}-125)^{2}")
-                tex.DrawLatex(latex_x, latex_y-0.15, label)
+                tex.DrawLatex(latex_x, latex_y-0.15, label_str)                
                 tex.DrawLatex(latex_x, latex_y-0.20, dist_title)
 
             # Setup multi-column legend at the top
             # leg = ROOT.TLegend(0.18, 0.68, 0.88, 0.88)
             # leg.SetNColumns(2)
             # leg = ROOT.TLegend(0.6, latex_y-0.02, 0.88, latex_y-0.02-0.04*len(dist_hists))
-            leg = ROOT.TLegend(0.65, latex_y-0.02, 0.88, latex_y-0.02-0.04*len(dist_hists))
+            leg = ROOT.TLegend(0.7, latex_y-0.02, 0.92, latex_y-0.02-0.06*len(dist_hists))
             leg.SetBorderSize(0)
             leg.SetFillStyle(0)
-            leg.SetTextSize(0.025)
+            # leg.SetTextSize(0.025)
+            leg.SetTextSize(0.03)
             
             for scheme_name, h, scheme_label in dist_hists:
                 if scheme_label:

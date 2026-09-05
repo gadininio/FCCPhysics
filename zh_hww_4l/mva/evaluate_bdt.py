@@ -55,7 +55,7 @@ def plot_roc():
     plt.ylabel('Signal efficiency (TPR)', fontsize=args.labelFontSize)
     # set larger xlabel font size
     # plt.title('Receiver Operating Characteristic (ROC) Curve')
-    plt.legend()
+    plt.legend(fontsize=11)
     plt.grid()
     # plt.savefig(f"{outDir}/roc.png")
     plt.savefig(f"{outDir}/roc.pdf")
@@ -70,14 +70,21 @@ def plot_roc():
     train_bkg_rej[train_fpr == 0] = np.inf
     test_bkg_rej[test_fpr == 0] = np.inf
     
+    # # add random guess line for bkg rejection vs sig eff. plot
+    # train_tpr_random = np.linspace(0, 1, 100)
+    # train_fpr_random = np.linspace(0, 1, 100)
+    # random_guess_bkg_rej = 1./train_fpr_random
+    
     plt.figure(figsize=(8, 6))
     plt.plot(train_tpr, train_bkg_rej, color='blue', label=f"Training ROC (AUC = {train_roc_auc:.2%})")
     plt.plot(test_tpr, test_bkg_rej, color='red', label=f"Testing ROC (AUC = {test_roc_auc:.2%})")
+    # plt.plot(train_tpr_random, random_guess_bkg_rej, linestyle='--', color='gray', label='Random Guess')
     plt.xlabel('Signal efficiency (TPR)', fontsize=args.labelFontSize)
     plt.ylabel('Background rejection (1/FPR)', fontsize=args.labelFontSize)
     plt.yscale('log')
     # plt.title('Receiver Operating Characteristic (ROC) Curve')
-    plt.legend()
+    # print legend with larger text size
+    plt.legend(fontsize=11)
     plt.grid()
     # plt.savefig(f"{outDir}/roc.png")
     plt.savefig(f"{outDir}/roc_rej.pdf")
@@ -107,7 +114,7 @@ def plot_score():
     plt.xlabel('BDT score', fontsize=args.labelFontSize)
     plt.ylabel('Number of events (normalized)', fontsize=args.labelFontSize)
     # plt.title('BDT Score Distribution')
-    plt.legend()
+    plt.legend(fontsize=11, loc='upper center')
     plt.grid()
     # plt.savefig(f"{outDir}/score.png")
     plt.savefig(f"{outDir}/score.pdf")
@@ -123,7 +130,7 @@ def plot_score():
     plt.ylabel('Number of events (normalized)', fontsize=args.labelFontSize)
     plt.yscale('log')
     # plt.title('BDT Score Distribution')
-    plt.legend()
+    plt.legend(fontsize=11, loc='upper center')
     plt.grid()
     # plt.savefig(f"{outDir}/score.png")
     plt.savefig(f"{outDir}/score_log.pdf")
